@@ -246,7 +246,7 @@ static const struct luaL_Reg cppunitLuaFunctions[] =
 };
 
 extern "C"
-int AFL_API luaopen_cppunit(lua_State *L)
+int TESTUNIT_API luaopen_cppunit(lua_State *L)
 {
 	luaL_register(L, "cppunit", cppunitLuaFunctions);
 	return 0;

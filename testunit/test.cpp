@@ -25,7 +25,7 @@ public:
     TestConditionException(const TestConditionException& rhs);
     TestConditionException& operator=(const TestConditionException& rhs);
 
-    virtual void message(char* buffer, const uint_max_t bufferSize) const;
+    virtual void message(char* buffer, const unsigned int bufferSize) const;
 
 private:
     const char* condition_;
@@ -43,7 +43,7 @@ public:
     TestMessageException(const TestMessageException<CharType>& rhs);
     TestMessageException<CharType>& operator=(const TestMessageException<CharType>& rhs);
 
-    virtual void message(char* buffer, const uint_max_t bufferSize) const;
+    virtual void message(char* buffer, const unsigned int bufferSize) const;
 
 private:
     const CharType* message_;
@@ -58,7 +58,7 @@ private:
 
 public:
     TestEqualException(const SourceLine& sourceLine, const T1 expected, const T2 actual, bool mustBeEqual);
-    virtual void message(char* buffer, const uint_max_t bufferSize) const;
+    virtual void message(char* buffer, const unsigned int bufferSize) const;
 
 private:
     T1 expected_;
@@ -76,7 +76,7 @@ private:
 public:
     TestDoubleEqualException(const SourceLine& sourceLine, const T expected, const T actual, const T delta,
 		bool mustBeEqual);
-    virtual void message(char* buffer, const uint_max_t bufferSize) const;
+    virtual void message(char* buffer, const unsigned int bufferSize) const;
 
 private:
     T expected_;
@@ -279,7 +279,7 @@ SourceLine::SourceLine()
 {
 }
 
-SourceLine::SourceLine(const char* fileName, const int_max_t lineNumber)
+SourceLine::SourceLine(const char* fileName, const int lineNumber)
         : fileName_(fileName)
         , lineNumber_(lineNumber)
 {
@@ -296,7 +296,7 @@ int SourceLine::lineNumber() const
 }
 
 const char* SourceLine::unknownFileName_ = "<unknown>";
-const int_max_t SourceLine::unknownLineNumber_ = -1;
+const int SourceLine::unknownLineNumber_ = -1;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TestException::TestException(const SourceLine& sourceLine)
@@ -336,7 +336,7 @@ TestConditionException& TestConditionException::operator=(const TestConditionExc
     return *this;
 }
 
-void TestConditionException::message(char* buffer, const uint_max_t bufferSize) const
+void TestConditionException::message(char* buffer, const unsigned int bufferSize) const
 {
     TS_SNPRINTF(buffer, bufferSize - 1, "%s != true", condition_);
 }
@@ -367,13 +367,13 @@ TestMessageException<CharType>& TestMessageException<CharType>::operator=(const 
 }
 
 template<typename CharType>
-void TestMessageException<CharType>::message(char* buffer, const uint_max_t bufferSize) const
+void TestMessageException<CharType>::message(char* buffer, const unsigned int bufferSize) const
 {
 	::strncpy(buffer, message_, bufferSize);
 }
 
 template<>
-void TestMessageException<wchar_t>::message(char* buffer, const uint_max_t bufferSize) const
+void TestMessageException<wchar_t>::message(char* buffer, const unsigned int bufferSize) const
 {
     TS_SNPRINTF(buffer, bufferSize - 1, "%ws", message_);
 }
@@ -392,31 +392,31 @@ TestEqualException<T1, T2>::TestEqualException(const SourceLine& sourceLine,
 }
 
 template<typename T1, typename T2>
-void TestEqualException<T1, T2>::message(char* buffer, const uint_max_t bufferSize) const
+void TestEqualException<T1, T2>::message(char* buffer, const unsigned int bufferSize) const
 {
 	TS_SNPRINTF(buffer, bufferSize - 1, mustBeEqual_ ? "%d != %d" : "%d == %d", expected_, actual_);
 }
 
 template<>
-void TestEqualException<const char*, const char*>::message(char* buffer, const uint_max_t bufferSize) const
+void TestEqualException<const char*, const char*>::message(char* buffer, const unsigned int bufferSize) const
 {
 	TS_SNPRINTF(buffer, bufferSize - 1, mustBeEqual_ ? "\"%s\" != \"%s\"" : "\"%s\" == \"%s\"", expected_, actual_);
 }
 
 template<>
-void TestEqualException<const wchar_t*, const wchar_t*>::message(char* buffer, const uint_max_t bufferSize) const
+void TestEqualException<const wchar_t*, const wchar_t*>::message(char* buffer, const unsigned int bufferSize) const
 {
 	TS_SNPRINTF(buffer, bufferSize - 1, mustBeEqual_ ? "\"%ws\" != \"%ws\"" : "\"%ws\" == \"%ws\"", expected_, actual_);
 }
 
 template<>
-void TestEqualException<std::wstring, std::wstring>::message(char* buffer, const uint_max_t bufferSize) const
+void TestEqualException<std::wstring, std::wstring>::message(char* buffer, const unsigned int bufferSize) const
 {
 	TS_SNPRINTF(buffer, bufferSize - 1, mustBeEqual_ ? "\"%ws\" != \"%ws\"" : "\"%ws\" == \"%ws\"", expected_.c_str(), actual_.c_str());
 }
 
 template<>
-void TestEqualException<std::string, std::string>::message(char* buffer, const uint_max_t bufferSize) const
+void TestEqualException<std::string, std::string>::message(char* buffer, const unsigned int bufferSize) const
 {
 	TS_SNPRINTF(buffer, bufferSize - 1, mustBeEqual_ ? "\"%s\" != \"%s\"" : "\"%s\" == \"%s\"", expected_.c_str(), actual_.c_str());
 }
@@ -437,7 +437,7 @@ TestDoubleEqualException<T>::TestDoubleEqualException(const SourceLine& sourceLi
 }
 
 template<typename T>
-void TestDoubleEqualException<T>::message(char* buffer, const uint_max_t bufferSize) const
+void TestDoubleEqualException<T>::message(char* buffer, const unsigned int bufferSize) const
 {
 	TS_SNPRINTF(buffer, bufferSize - 1, mustBeEqual_ ? "%f != %f +- %f" : "%f == %f +- %f", expected_, actual_, delta_);
 }
@@ -454,17 +454,17 @@ bool cppunitAssert(const bool condition)
     return condition;
 }
 
-template bool cppunitAssert<int_max_t>(const int_max_t expected, const int_max_t actual);
-template bool cppunitAssert<uint_max_t>(const uint_max_t expected, const uint_max_t actual);
+template bool cppunitAssert<int>(const int expected, const int actual);
+template bool cppunitAssert<unsigned int>(const unsigned int expected, const unsigned int actual);
 
-//bool cppunitAssert(const int_max_t expected, const int_max_t actual)
+//bool cppunitAssert(const int expected, const int actual)
 //{
-//	return cppunitAssert<int_max_t>(expected, actual);
+//	return cppunitAssert<int>(expected, actual);
 //}
 //
-//bool cppunitAssert(const uint_max_t expected, const uint_max_t actual)
+//bool cppunitAssert(const unsigned int expected, const unsigned int actual)
 //{
-//	return cppunitAssert<uint_max_t>(expected, actual);
+//	return cppunitAssert<unsigned int>(expected, actual);
 //}
 
 /// \brief All float point types have imprecission, so we must know precission of type for normal check
@@ -485,22 +485,22 @@ bool cppunitAssert(const double expected, const double actual, const double delt
     return cppunitAssert<double>(expected, actual, delta, 0.000000000000001);
 }
 
-bool AFL_API cppunitAssert(const char *expected, const char *actual)
+bool TESTUNIT_API cppunitAssert(const char *expected, const char *actual)
 {
 	return 0 == strcmp(expected, actual);
 }
 
-bool AFL_API cppunitAssert(const wchar_t *expected, const wchar_t *actual)
+bool TESTUNIT_API cppunitAssert(const wchar_t *expected, const wchar_t *actual)
 {
 	return 0 == wcscmp(expected, actual);
 }
 
-bool AFL_API cppunitAssert(const std::wstring& expected, const std::wstring& actual)
+bool TESTUNIT_API cppunitAssert(const std::wstring& expected, const std::wstring& actual)
 {
 	return expected == actual;
 }
 
-bool AFL_API cppunitAssert(const std::string& expected, const std::string& actual)
+bool TESTUNIT_API cppunitAssert(const std::string& expected, const std::string& actual)
 {
 	return expected == actual;
 }
@@ -527,33 +527,39 @@ void throwException(const SourceLine& sourceLine, const T1 expected, const T2 ac
     throw TestEqualException<T1, T2>(sourceLine, expected, actual, mustBeEqual);
 }
 
-void throwException(const SourceLine& sourceLine, const int_max_t expected, const int_max_t actual, bool mustBeEqual)
+void throwException(const SourceLine& sourceLine, const int expected, const int actual, bool mustBeEqual)
 {
-    throwException<int_max_t, int_max_t>(sourceLine, expected, actual, mustBeEqual);
+    throwException<int, int>(sourceLine, expected, actual, mustBeEqual);
 }
 
-//void throwException(const SourceLine& sourceLine, const uint_max_t expected, const uint_max_t actual)
+void throwException(const SourceLine& sourceLine, const unsigned int expected, const unsigned int actual,
+							bool mustBeEqual)
+{
+    throwException<unsigned int, unsigned int>(sourceLine, expected, actual, mustBeEqual);
+}
+
+//void throwException(const SourceLine& sourceLine, const unsigned int expected, const unsigned int actual)
 //{
-//	throwException<uint_max_t>(sourceLine, expected, actual);
+//	throwException<unsigned int>(sourceLine, expected, actual);
 //}
 
-void AFL_API throwException(const SourceLine& sourceLine, const char *expected, const char *actual, bool mustBeEqual)
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const char *expected, const char *actual, bool mustBeEqual)
 {
     throwException<const char*, const char*>(sourceLine, expected, actual, mustBeEqual);
 }
 
-void AFL_API throwException(const SourceLine& sourceLine, const wchar_t *expected, const wchar_t *actual, bool mustBeEqual)
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const wchar_t *expected, const wchar_t *actual, bool mustBeEqual)
 {
     throwException<const wchar_t*, const wchar_t*>(sourceLine, expected, actual, mustBeEqual);
 }
 
-void AFL_API throwException(const SourceLine& sourceLine, const std::wstring& expected, const std::wstring& actual,
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const std::wstring& expected, const std::wstring& actual,
 							bool mustBeEqual)
 {
     throwException<std::wstring, std::wstring>(sourceLine, expected, actual, mustBeEqual);
 }
 
-void AFL_API throwException(const SourceLine& sourceLine, const std::string& expected, const std::string& actual,
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const std::string& expected, const std::string& actual,
 							bool mustBeEqual)
 {
     throwException<std::string, std::string>(sourceLine, expected, actual, mustBeEqual);

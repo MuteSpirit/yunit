@@ -67,7 +67,7 @@
 /// \fn TESTUNIT_MSG(message)
 /// \brief Output text message
 
-/// \fn bool protectTestThunkInvoke(Thunk thunk, char* msgBuf, const afl::uint_max_t msgBufSize)
+/// \fn bool protectTestThunkInvoke(Thunk thunk, char* msgBuf, const unsigned int msgBufSize)
 /// \param[in] thunk Thunk, whitch function invoke() will be called
 /// \param[out] msgBuf Buffer for error message
 /// \param[in] msgBufSize Awailable size of buffer
@@ -107,7 +107,6 @@ TEST_FIXTURE(SetUpCallCheck)
 		setUpCall_ = false;
 	}
 
-protected:
 	bool setUpCall_;
 };
 
@@ -171,10 +170,33 @@ TEST_SUITE(CppUnitAssertsTests)
 	TEST_CASE_END
 
 	TEST_CASE(testAssertEqual)
-		ASSERT_EQUAL(1, 1);
-		ASSERT_EQUAL(0, 0);
-		ASSERT_EQUAL(-1, -1);
+		ASSERT_EQUAL((unsigned int)1, (unsigned int)1);
+		ASSERT_EQUAL((unsigned int)0, (unsigned int)0);
+
+		ASSERT_EQUAL((int)1, (int)1);
+		ASSERT_EQUAL((int)0, (int)0);
+        ASSERT_EQUAL((int)-1, (int)-1);
 	TEST_CASE_END
+
+	TEST_CASE(testAssertEqualWithTypedefs)
+        typedef unsigned int uint_max_t;
+		ASSERT_EQUAL((uint_max_t)1, (uint_max_t)1);
+		ASSERT_EQUAL((uint_max_t)0, (uint_max_t)0);
+
+        typedef unsigned __int32 uint_max_t;
+		ASSERT_EQUAL((uint_max_t)1, (uint_max_t)1);
+		ASSERT_EQUAL((uint_max_t)0, (uint_max_t)0);
+
+        typedef int int_max_t;
+		ASSERT_EQUAL((int_max_t)1, (int_max_t)1);
+		ASSERT_EQUAL((int_max_t)0, (int_max_t)0);
+        ASSERT_EQUAL((int_max_t)-1, (int_max_t)-1);
+
+        typedef __int32 int_max_t;
+		ASSERT_EQUAL((int_max_t)1, (int_max_t)1);
+		ASSERT_EQUAL((int_max_t)0, (int_max_t)0);
+        ASSERT_EQUAL((int_max_t)-1, (int_max_t)-1);
+    TEST_CASE_END
 
 	TEST_CASE(testAssertEqualNot)
 		ASSERT_NOT_EQUAL(1, 0);

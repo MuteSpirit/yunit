@@ -8,8 +8,8 @@
 // This situation with TestFixture and TestCase, inherited from it
 #pragma warning(disable : 4250)
 //
-// warning C4251: 'afl::CppUnit::TestSuite::testCases_' : class 'std::list<_Ty>' needs to have dll-interface
-// to be used by clients of class 'afl::CppUnit::TestSuite'
+// warning C4251: 'CppUnit::TestSuite::testCases_' : class 'std::list<_Ty>' needs to have dll-interface
+// to be used by clients of class 'CppUnit::TestSuite'
 #pragma warning(disable : 4251)
 #endif
 
@@ -23,23 +23,19 @@
 #define _TESTUNIT_PORTABILITY_HEADER_
 
 
-namespace afl {
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if defined(TESTUNIT_NO_NAMESPACE)
-# define TESTUNIT_NS_BEGIN
-# define TESTUNIT_NS_END
-# define TESTUNIT_NS
+#   define TESTUNIT_NS_BEGIN
+#   define TESTUNIT_NS_END
+#   define TESTUNIT_NS
 #else   // defined(TESTUNIT_NO_NAMESPACE)
-#define TESTUNIT_NS_BEGIN	\
-namespace afl {				\
-namespace CppUnit {
+#   define TESTUNIT_NS_BEGIN    \
+namespace TestUnit {
 
-#define TESTUNIT_NS_END	\
-}						\
+#   define TESTUNIT_NS_END  \
 }
 
-#define TESTUNIT_NS afl::CppUnit
+#   define TESTUNIT_NS TestUnit
 #endif // defined(TESTUNIT_NO_NAMESPACE)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,8 +66,6 @@ namespace CppUnit {
 #define TS_T(x)  TS_T2(x)
 #endif
 
-} // namespace afl
-
 #endif // _TESTUNIT_PORTABILITY_HEADER_
 
 #ifndef _TESTUNIT_TEST_HEADER_
@@ -95,14 +89,10 @@ namespace CppUnit {
 #include "thunk.h"
 #endif
 
-#ifndef _TYPE_INT_HEADER_
-#include "type_int.h"
-#endif
-
 TESTUNIT_NS_BEGIN
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class AFL_API Test
+class TESTUNIT_API Test
 {
 public:
 	virtual void test() = 0;
@@ -117,7 +107,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class AFL_API Fixture
+class TESTUNIT_API Fixture
 {
 public:
 	virtual void setUp() = 0;
@@ -137,7 +127,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class AFL_API TestCase : public Test, public virtual Fixture
+class TESTUNIT_API TestCase : public Test, public virtual Fixture
 {
 public:
 	virtual ~TestCase();
@@ -156,7 +146,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class AFL_API TestSuite
+class TESTUNIT_API TestSuite
 {
 public:
 	typedef std::list<TestCase*> TestCaseList;
@@ -195,23 +185,23 @@ public:
 	typedef TestSuiteList::const_iterator TestSuiteConstIter;
 
 public:
-	static AFL_API TestRegistry* initialize();
-	static AFL_API void reinitialize(TestRegistry* newValue);	// for tests
+	static TESTUNIT_API TestRegistry* initialize();
+	static TESTUNIT_API void reinitialize(TestRegistry* newValue);	// for tests
 
-	void AFL_API addTestCase(TestCase* testCase);
-	void AFL_API addTestSuite(TestSuite* testSuite);
+	void TESTUNIT_API addTestCase(TestCase* testCase);
+	void TESTUNIT_API addTestSuite(TestSuite* testSuite);
 
-	AFL_API TestSuiteIter beginTestSuites();
-	AFL_API TestSuiteIter endTestSuites();
+	TESTUNIT_API TestSuiteIter beginTestSuites();
+	TESTUNIT_API TestSuiteIter endTestSuites();
 
-	AFL_API TestSuiteList& testSuiteList();
+	TESTUNIT_API TestSuiteList& testSuiteList();
 
 protected:
 	TestRegistry();
 
 private:
-	static AFL_API TestRegistry* thisPtr_;
-	static AFL_API TestSuite defaultTestSuite_;
+	static TESTUNIT_API TestRegistry* thisPtr_;
+	static TESTUNIT_API TestSuite defaultTestSuite_;
 
 	TestSuiteList testSuiteList_;
 };
@@ -238,21 +228,21 @@ public:
 class SourceLine
 {
 public:
-	AFL_API SourceLine(const char* fileName, const int_max_t lineNumber);
+	TESTUNIT_API SourceLine(const char* fileName, const int lineNumber);
 
 	const char* fileName() const;
-	int_max_t lineNumber() const;
+	int lineNumber() const;
 
 public:
 	static const char* unknownFileName_;
-	static const int_max_t unknownLineNumber_;
+	static const int unknownLineNumber_;
 
 protected:
     SourceLine();
 
 private:
 	const char* fileName_;
-	int_max_t lineNumber_;
+	int lineNumber_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -262,7 +252,7 @@ public:
     virtual ~TestException();
     const SourceLine& sourceLine() const;
 
-    virtual void message(char* buffer, const uint_max_t bufferSize) const = 0;
+    virtual void message(char* buffer, const unsigned int bufferSize) const = 0;
 
 protected:
     TestException(const SourceLine& sourceLine);
@@ -296,7 +286,7 @@ RegisterTestCase<TestCaseClass>::RegisterTestCase(const char* name, TestSuite* t
 class IgnoreTestCaseGuard
 {
 public:
-    AFL_API IgnoreTestCaseGuard(TestSuite* testSuite)
+    TESTUNIT_API IgnoreTestCaseGuard(TestSuite* testSuite)
     {
         testSuite->ignoreAddingTestCases(true);
     }
@@ -306,7 +296,7 @@ public:
 class NotIgnoreTestCaseGuard
 {
 public:
-    AFL_API NotIgnoreTestCaseGuard(TestSuite* testSuite)
+    TESTUNIT_API NotIgnoreTestCaseGuard(TestSuite* testSuite)
     {
         testSuite->ignoreAddingTestCases(false);
     }
@@ -411,13 +401,13 @@ void functionName##TestCase::test()
 		{
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_CASE_END\
+#define TEST_CASE_END   \
 		}\
 	};\
 	TESTUNIT_NS::NotIgnoreTestCaseGuard UNIQUENAME(notIgnore)(localTestSuite);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool AFL_API cppunitAssert(const bool condition);
+bool TESTUNIT_API cppunitAssert(const bool condition);
 
 template<typename T>
 bool cppunitAssert(const T expected, const T actual);
@@ -435,35 +425,37 @@ bool cppunitAssert(const T expected, const T actual)
 }
 
 /// \param[in] delta must be at [0.00000001f, +INFINITE)
-bool AFL_API cppunitAssert(const float expected, const float actual, const float delta);
+bool TESTUNIT_API cppunitAssert(const float expected, const float actual, const float delta);
 
 /// \param[in] delta must be at [0.000000000000001, +INFINITE)
-bool AFL_API cppunitAssert(const double expected, const double actual, const double delta);
+bool TESTUNIT_API cppunitAssert(const double expected, const double actual, const double delta);
 
 /// \param[in] delta must be at [0.000000000000001, +INFINITE)
-bool AFL_API cppunitAssert(const long double expected, const long double actual, const long double delta);
+bool TESTUNIT_API cppunitAssert(const long double expected, const long double actual, const long double delta);
 
-bool AFL_API cppunitAssert(const char *expected, const char *actual);
-bool AFL_API cppunitAssert(const wchar_t *expected, const wchar_t *actual);
-bool AFL_API cppunitAssert(const std::wstring& expected, const std::wstring& actual);
-bool AFL_API cppunitAssert(const std::string& expected, const std::string& actual);
+bool TESTUNIT_API cppunitAssert(const char *expected, const char *actual);
+bool TESTUNIT_API cppunitAssert(const wchar_t *expected, const wchar_t *actual);
+bool TESTUNIT_API cppunitAssert(const std::wstring& expected, const std::wstring& actual);
+bool TESTUNIT_API cppunitAssert(const std::string& expected, const std::string& actual);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void AFL_API throwException(const SourceLine& sourceLine, const char* condition);
-void AFL_API throwException(const SourceLine& sourceLine, const char* message, bool);
-void AFL_API throwException(const SourceLine& sourceLine, const wchar_t* message, bool);
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const char* condition);
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const char* message, bool);
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const wchar_t* message, bool);
 
-void AFL_API throwException(const SourceLine& sourceLine, const int_max_t expected, const int_max_t actual,
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const int expected, const int actual,
 							bool mustBeEqual);
-void AFL_API throwException(const SourceLine& sourceLine, const char *expected, const char *actual,
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const unsigned int expected, const unsigned int actual,
 							bool mustBeEqual);
-void AFL_API throwException(const SourceLine& sourceLine, const wchar_t *expected, const wchar_t *actual,
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const char *expected, const char *actual,
 							bool mustBeEqual);
-void AFL_API throwException(const SourceLine& sourceLine, const std::wstring& expected, const std::wstring& actual,
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const wchar_t *expected, const wchar_t *actual,
 							bool mustBeEqual);
-void AFL_API throwException(const SourceLine& sourceLine, const std::string& expected, const std::string& actual,
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const std::wstring& expected, const std::wstring& actual,
 							bool mustBeEqual);
-void AFL_API throwException(const SourceLine& sourceLine, const double expected, const double actual,
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const std::string& expected, const std::string& actual,
+							bool mustBeEqual);
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expected, const double actual,
 							const double delta, bool mustBeEqual);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

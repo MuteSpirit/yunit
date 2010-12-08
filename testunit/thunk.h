@@ -6,25 +6,25 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef AFL_API
+#ifndef TESTUNIT_API
 #	if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
 #		if defined(AFL_STATIC_LINKED)
-#			define AFL_API
+#			define TESTUNIT_API
 #		elif defined(AFL_DLL)
-#			define AFL_API __declspec(dllimport)
+#			define TESTUNIT_API __declspec(dllimport)
 #		else
-#			define AFL_API __declspec(dllexport)
+#			define TESTUNIT_API __declspec(dllexport)
 #		endif
 #	else
 #	   if defined(__GNUC__) && defined(GCC_HASCLASSVISIBILITY)
-#			define AFL_API __attribute__ ((visibility("default")))
+#			define TESTUNIT_API __attribute__ ((visibility("default")))
 #	   else
-#			define AFL_API
+#			define TESTUNIT_API
 #	   endif
 #	endif
 #endif
 
-class AFL_API Thunk
+class TESTUNIT_API Thunk
 {
 public:
     Thunk() throw();
