@@ -79,9 +79,9 @@
 
 local require, print = require, print;
 
-local testListeners = require("afl.test_listeners");
-local testRunner = require("afl.test_runner");
-local luaUnit = require("afl.lua_unit");
+local testListeners = require("testunit.test_listeners");
+local testRunner = require("testunit.test_runner");
+local luaUnit = require("testunit.lua_unit");
 
 local _G = _G;
 

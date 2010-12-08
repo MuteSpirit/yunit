@@ -2,12 +2,12 @@ local setmetatable, ipairs, tostring, pcall, require, dofile, error = setmetatab
 local debug_traceback = debug.traceback;
 local table, io, string, package, os = table, io, string, package, os;
 
-local testRunner = require("afl.test_runner");
+local testRunner = require("testunit.test_runner");
 
 require("LuaXML");
 local xml = xml;
 --------------------------------------------------------------------------------------------------------------
-module('afl.test_listeners');
+module('testunit.test_listeners');
 --------------------------------------------------------------------------------------------------------------
 
 
@@ -98,7 +98,7 @@ function TextTestProgressListener:endTests()
     end
     message = message.."\n";
 
-    message = message.."\t\t\tError:       "..tostring(self.errorTestsNum);
+    message = message.."\t\t\tErrors:       "..tostring(self.errorTestsNum);
     if self.errorTestsNum > 0 then
         message = message.."\t(0_0) ???";
     end

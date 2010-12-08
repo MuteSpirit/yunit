@@ -28,7 +28,7 @@ local table, io, string, package, os = table, io, string, package, os;
 local print = print;
 
 --------------------------------------------------------------------------------------------------------------
-module('afl.test_runner');
+module('testunit.test_runner');
 --------------------------------------------------------------------------------------------------------------
 
 function fakeFunction()
@@ -249,8 +249,8 @@ function isCppTestDriver(filePath)
 end
 
 function initializeTestUnits()
-    if not package.loaded["afl.lua_unit"] then
-        luaUnit = require("afl.lua_unit");
+    if not package.loaded["testunit.lua_unit"] then
+        luaUnit = require("testunit.lua_unit");
     end
 
     if not package.loaded["cppunit"] then
@@ -292,7 +292,7 @@ local function addTestCaseToGlobalList(name, object)
 end
 
 function copyAllLuaTestCasesToGlobalTestList()
-    local luaUnit = require("afl.lua_unit");
+    local luaUnit = require("testunit.lua_unit");
     local testcases = luaUnit.getTestList();
     for _, testcase in ipairs(testcases) do
         addTestCaseToGlobalList(testcase.name_, testcase);

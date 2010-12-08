@@ -74,7 +74,7 @@
 --- \param[in] testFunc 'test', 'setUp' or 'tearDown' function of 'testcase'
 --- \return status code of 'testFunc' execution and ErrorObject with additional info
 
-local luaUnit = require("afl.lua_unit");
+local luaUnit = require("testunit.lua_unit");
 
 --------------------------------------------------------------------------------------------------------------
 -- Sample of test writing sintax
@@ -201,7 +201,7 @@ end
 module("LuaUnitTestRegistryTest", lunit.testcase, package.seeall)
 --------------------------------------------------------------------------------------------------------------
 
-local testRunner = require("afl.test_runner");
+local testRunner = require("testunit.test_runner");
 
 function setUp()
     luaUnit.TestRegistry:reset();
