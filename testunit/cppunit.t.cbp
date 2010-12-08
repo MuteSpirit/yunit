@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="cppunit.t" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug Win32">
+				<Option output="..\_bin\cppunit.t.dll" prefix_auto="1" extension_auto="0" />
+				<Option object_output="_tmp" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-Weffc++" />
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-DTS_DEBUG" />
+					<Add option="-DTS_TEST" />
+					<Add directory=".." />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory=".." />
+				</ResourceCompiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-static-libgcc" />
+					<Add library="cppunit" />
+					<Add directory="..\_lib" />
+					<Add directory="..\_bin" />
+				</Linker>
+			</Target>
+			<Target title="Release Win32">
+				<Option output="..\_bin\cppunit.t.dll" prefix_auto="1" extension_auto="0" />
+				<Option object_output="_tmp" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-DTS_TEST" />
+					<Add directory=".." />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory=".." />
+				</ResourceCompiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-static-libgcc" />
+					<Add library="cppunit" />
+					<Add directory="..\_lib" />
+					<Add directory="..\_bin" />
+				</Linker>
+			</Target>
+		</Build>
+		<ExtraCommands>
+			<Add after='..\_bin\lua5.1.exe -e &quot;package.path=&apos;./?.lua;./?/init.lua;../?.lua;../?/init.lua;&apos;.. package.path;package.cpath=&apos;../_bin/?.dll;&apos;.. package.cpath;local testRunner = require(&apos;afl.test_runner&apos;);local testListeners = require(&apos;afl.test_listeners&apos;);testRunner.loadTestDrivers{&apos;../_bin/cppunit.t.dll&apos;};local testObserver = testRunner.TestObserver:new();testObserver:addTestListener(testListeners.TextTestProgressListener:new());local xmlOutputter = testListeners.XmlListenerAlaCppUnitXmlOutputter:new();xmlOutputter:xmlPath(&apos;../_bin/cppunit.t.xml&apos;);testObserver:addTestListener(xmlOutputter);testRunner.runAllTestCases(testObserver);&quot;' />
+			<Mode after="always" />
+		</ExtraCommands>
+		<Unit filename="test.t.cpp" />
+		<Unit filename="type_int.t.cpp" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
