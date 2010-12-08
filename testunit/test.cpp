@@ -12,7 +12,7 @@
 #include <string.h>
 #endif
 
-CPPUNIT_NS_BEGIN
+TESTUNIT_NS_BEGIN
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class TestConditionException : public TestException
@@ -568,4 +568,4 @@ void throwException(const SourceLine& sourceLine,
     throw TestDoubleEqualException<double>(sourceLine, expected, actual, delta, mustBeEqual);
 }
 
-CPPUNIT_NS_END
+TESTUNIT_NS_END

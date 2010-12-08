@@ -159,7 +159,6 @@
     <ClCompile Include="thunk.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ltest.h" />
     <ClInclude Include="test.h" />
     <ClInclude Include="thunk.h" />
     <ClInclude Include="type_int.h" />

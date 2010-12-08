@@ -64,7 +64,7 @@
 /// \brief Macro ASSERT_NO_THROW check that exception of exceptionType WILL NOT BE THROWN during expression
 /// execution
 
-/// \fn CPPUNIT_MSG(message)
+/// \fn TESTUNIT_MSG(message)
 /// \brief Output text message
 
 /// \fn bool protectTestThunkInvoke(Thunk thunk, char* msgBuf, const afl::uint_max_t msgBufSize)
@@ -73,7 +73,7 @@
 /// \param[in] msgBufSize Awailable size of buffer
 /// \return true, if call of invoke() function not throw exception, else return false
 
-/// \fn int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(CPPUNIT_NS::TestCase*))
+/// \fn int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*))
 /// \brief There is TestCase object on the top of Lua stack. This function call protectTestThunkInvoke
 /// for that Thunk, whitch return function 'getThunkFunc'.
 /// \return 0, or call lua_error in case of unsuccesfull protectTestThunkInvoke
@@ -248,8 +248,8 @@ TEST_SUITE(CppUnitAssertsTests)
 	TEST_CASE_END
 
 	TEST_CASE(testSourceLineCreation)
-		CPPUNIT_SOURCELINE();
-		CPPUNIT_NS::SourceLine sourceLine(__FILE__, __LINE__);
+		TESTUNIT_SOURCELINE();
+		TESTUNIT_NS::SourceLine sourceLine(__FILE__, __LINE__);
 	TEST_CASE_END
 
 	TEST_CASE(assertEqualStringsTest)

@@ -19,28 +19,28 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef _CPPUNIT_PORTABILITY_HEADER_
-#define _CPPUNIT_PORTABILITY_HEADER_
+#ifndef _TESTUNIT_PORTABILITY_HEADER_
+#define _TESTUNIT_PORTABILITY_HEADER_
 
 
 namespace afl {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined(CPPUNIT_NO_NAMESPACE)
-# define CPPUNIT_NS_BEGIN
-# define CPPUNIT_NS_END
-# define CPPUNIT_NS
-#else   // defined(CPPUNIT_NO_NAMESPACE)
-#define CPPUNIT_NS_BEGIN	\
+#if defined(TESTUNIT_NO_NAMESPACE)
+# define TESTUNIT_NS_BEGIN
+# define TESTUNIT_NS_END
+# define TESTUNIT_NS
+#else   // defined(TESTUNIT_NO_NAMESPACE)
+#define TESTUNIT_NS_BEGIN	\
 namespace afl {				\
 namespace CppUnit {
 
-#define CPPUNIT_NS_END	\
+#define TESTUNIT_NS_END	\
 }						\
 }
 
-#define CPPUNIT_NS afl::CppUnit
-#endif // defined(CPPUNIT_NO_NAMESPACE)
+#define TESTUNIT_NS afl::CppUnit
+#endif // defined(TESTUNIT_NO_NAMESPACE)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef TS_T
@@ -72,10 +72,10 @@ namespace CppUnit {
 
 } // namespace afl
 
-#endif // _CPPUNIT_PORTABILITY_HEADER_
+#endif // _TESTUNIT_PORTABILITY_HEADER_
 
-#ifndef _CPPUNIT_TEST_HEADER_
-#define _CPPUNIT_TEST_HEADER_
+#ifndef _TESTUNIT_TEST_HEADER_
+#define _TESTUNIT_TEST_HEADER_
 
 #ifdef _MSC_VER
 	#define _CRT_SECURE_NO_WARNINGS 1
@@ -91,7 +91,7 @@ namespace CppUnit {
 #include <string>
 #endif
 
-#ifndef _CPPUNIT_THUNK_HEADER_
+#ifndef _TESTUNIT_THUNK_HEADER_
 #include "thunk.h"
 #endif
 
@@ -99,7 +99,7 @@ namespace CppUnit {
 #include "type_int.h"
 #endif
 
-CPPUNIT_NS_BEGIN
+TESTUNIT_NS_BEGIN
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class AFL_API Test
@@ -317,14 +317,14 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define CPPUNIT_SOURCELINE()   CPPUNIT_NS::SourceLine(__FILE__, __LINE__)
+#define TESTUNIT_SOURCELINE()   TESTUNIT_NS::SourceLine(__FILE__, __LINE__)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_FIXTURE_NAME(name) name##TestFixture
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_FIXTURE(fixtureName)\
-class TEST_FIXTURE_NAME(fixtureName) : public virtual CPPUNIT_NS::Fixture\
+class TEST_FIXTURE_NAME(fixtureName) : public virtual TESTUNIT_NS::Fixture\
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define SETUP\
@@ -339,7 +339,7 @@ class TEST_FIXTURE_NAME(fixtureName) : public virtual CPPUNIT_NS::Fixture\
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_FUNCTION(functionName)\
 \
-class functionName##TestCase : public CPPUNIT_NS::TestCase\
+class functionName##TestCase : public TESTUNIT_NS::TestCase\
 {\
 public:\
     virtual void test();\
@@ -355,18 +355,18 @@ void functionName##TestCase::test()
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_SUITE(testSuiteName)\
-	class testSuiteName : public CPPUNIT_NS::TestSuite\
+	class testSuiteName : public TESTUNIT_NS::TestSuite\
 	{\
 	public:\
 		testSuiteName(const char* name)\
-		: CPPUNIT_NS::TestSuite(name)\
+		: TESTUNIT_NS::TestSuite(name)\
 		{\
 		}\
 	};\
-	CPPUNIT_NS::RegisterTestSuite<testSuiteName> UNIQUE_REGISTER_NAME(testSuiteName)(#testSuiteName);\
+	TESTUNIT_NS::RegisterTestSuite<testSuiteName> UNIQUE_REGISTER_NAME(testSuiteName)(#testSuiteName);\
 	namespace UNIQUE_TEST_SUITE_NAMESPACE(testSuiteName)\
 	{\
-		static CPPUNIT_NS::TestSuite* localTestSuite = UNIQUE_REGISTER_NAME(testSuiteName).testsuite_;\
+		static TESTUNIT_NS::TestSuite* localTestSuite = UNIQUE_REGISTER_NAME(testSuiteName).testsuite_;\
 	}\
 	namespace UNIQUE_TEST_SUITE_NAMESPACE(testSuiteName)
 
@@ -377,18 +377,18 @@ void functionName##TestCase::test()
 #define UNIQUENAME(prefix) CONCAT2(prefix, __COUNTER__)
 
 #define IGNORE_TEST \
-    CPPUNIT_NS::IgnoreTestCaseGuard UNIQUENAME(ignore)(localTestSuite);
+    TESTUNIT_NS::IgnoreTestCaseGuard UNIQUENAME(ignore)(localTestSuite);
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_CASE(testName)\
 	class TestCase##testName;\
-	CPPUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, localTestSuite);\
-	class TestCase##testName : public CPPUNIT_NS::TestCase\
+	TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, localTestSuite);\
+	class TestCase##testName : public TESTUNIT_NS::TestCase\
 	{\
 	public:\
 		TestCase##testName(const char* name, bool isIgnored)\
-		: CPPUNIT_NS::TestCase(name, isIgnored)\
+		: TESTUNIT_NS::TestCase(name, isIgnored)\
 		{\
 		}\
 		SETUP {}\
@@ -399,12 +399,12 @@ void functionName##TestCase::test()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_CASE_EX(testName, fixtureName)\
 	class TestCase##testName;\
-	CPPUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, localTestSuite);\
-	class TestCase##testName : public CPPUNIT_NS::TestCase, public TEST_FIXTURE_NAME(fixtureName)\
+	TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, localTestSuite);\
+	class TestCase##testName : public TESTUNIT_NS::TestCase, public TEST_FIXTURE_NAME(fixtureName)\
 	{\
 	public:\
 		TestCase##testName(const char* name, bool isIgnored)\
-		: CPPUNIT_NS::TestCase(name, isIgnored)\
+		: TESTUNIT_NS::TestCase(name, isIgnored)\
 		{\
 		}\
 		virtual void test()\
@@ -414,7 +414,7 @@ void functionName##TestCase::test()
 #define TEST_CASE_END\
 		}\
 	};\
-	CPPUNIT_NS::NotIgnoreTestCaseGuard UNIQUENAME(notIgnore)(localTestSuite);
+	TESTUNIT_NS::NotIgnoreTestCaseGuard UNIQUENAME(notIgnore)(localTestSuite);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool AFL_API cppunitAssert(const bool condition);
@@ -468,37 +468,37 @@ void AFL_API throwException(const SourceLine& sourceLine, const double expected,
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#define ASSERT_MESSAGE(message)
-	//CPPUNIT_NS::throwException(CPPUNIT_SOURCELINE(), message, true)
+	//TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), message, true)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define ASSERT(condition)\
-	if(!CPPUNIT_NS::cppunitAssert(condition))\
-		CPPUNIT_NS::throwException(CPPUNIT_SOURCELINE(), #condition)
+	if(!TESTUNIT_NS::cppunitAssert(condition))\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), #condition)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define ASSERT_NOT(condition)\
-	if(CPPUNIT_NS::cppunitAssert(condition))\
-		CPPUNIT_NS::throwException(CPPUNIT_SOURCELINE(), #condition " != false", false)
+	if(TESTUNIT_NS::cppunitAssert(condition))\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), #condition " != false", false)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define ASSERT_EQUAL(expected, actual)\
-	if(!CPPUNIT_NS::cppunitAssert((expected), (actual)))\
-		CPPUNIT_NS::throwException(CPPUNIT_SOURCELINE(), (expected), (actual), true)
+	if(!TESTUNIT_NS::cppunitAssert((expected), (actual)))\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), (expected), (actual), true)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define ASSERT_NOT_EQUAL(expected, actual)\
-	if(CPPUNIT_NS::cppunitAssert((expected), (actual)))\
-		CPPUNIT_NS::throwException(CPPUNIT_SOURCELINE(), (expected), (actual), false)
+	if(TESTUNIT_NS::cppunitAssert((expected), (actual)))\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), (expected), (actual), false)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define ASSERT_DOUBLES_EQUAL(expected, actual, delta)\
-	if(!CPPUNIT_NS::cppunitAssert((expected), (actual), (delta)))\
-		CPPUNIT_NS::throwException(CPPUNIT_SOURCELINE(), (expected), (actual), (delta), true)
+	if(!TESTUNIT_NS::cppunitAssert((expected), (actual), (delta)))\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), (expected), (actual), (delta), true)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define ASSERT_DOUBLES_NOT_EQUAL(expected, actual, delta)\
-	if(CPPUNIT_NS::cppunitAssert((expected), (actual), (delta)))\
-		CPPUNIT_NS::throwException(CPPUNIT_SOURCELINE(), (expected), (actual), (delta), false)
+	if(TESTUNIT_NS::cppunitAssert((expected), (actual), (delta)))\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), (expected), (actual), (delta), false)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define ASSERT_THROW(expression, exceptionType)																\
@@ -513,7 +513,7 @@ void AFL_API throwException(const SourceLine& sourceLine, const double expected,
 			break;																							\
 		}																									\
 																											\
-		CPPUNIT_NS::throwException(CPPUNIT_SOURCELINE(),													\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(),													\
 			"Expected exception \"" #exceptionType "\" hasn't been not thrown.", true);						\
 	}
 
@@ -525,7 +525,7 @@ void AFL_API throwException(const SourceLine& sourceLine, const double expected,
 	}																									\
 	catch(const exceptionType&)																			\
 	{																									\
-		CPPUNIT_NS::throwException(CPPUNIT_SOURCELINE(),													\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(),													\
 			"Not expected exception \"" #exceptionType "\" has been thrown.", true);			\
 	}
 
@@ -537,7 +537,7 @@ void AFL_API throwException(const SourceLine& sourceLine, const double expected,
 	}																									\
 	catch(...)																			\
 	{																									\
-		CPPUNIT_NS::throwException(CPPUNIT_SOURCELINE(),													\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(),													\
 			"Unwanted C++ exception has been thrown.", true);			\
 	}
 
@@ -549,9 +549,9 @@ void AFL_API throwException(const SourceLine& sourceLine, const double expected,
 	}																										\
 	__except(EXCEPTION_EXECUTE_HANDLER)																		\
 	{																										\
-		CPPUNIT_NS::throwException(CPPUNIT_SOURCELINE(), "Unwanted SEH exception has been thrown.", true);		\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), "Unwanted SEH exception has been thrown.", true);		\
 	}
 
-CPPUNIT_NS_END
+TESTUNIT_NS_END
 
-#endif // _CPPUNIT_TEST_HEADER_
+#endif // _TESTUNIT_TEST_HEADER_

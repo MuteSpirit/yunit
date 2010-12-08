@@ -99,8 +99,13 @@
       </AdditionalOptions>
     </Link>
     <PostBuildEvent>
+      <Command>
+      </Command>
+      <Message>Run unit tests...</Message>
+    </PostBuildEvent>
+    <PreLinkEvent>
       <Command>setlocal
-set RUN_TEST_SCRIPT=$(ProjectDir)/$(IntDir)/$(ProjectName)_run_test_units.lua
+set RUN_TEST_SCRIPT=$(ProjectDir)\$(IntDir)\$(ProjectName)_run_test_units.lua
 echo -- Generated in Post Build Step of project $(ProjectName) &gt; %RUN_TEST_SCRIPT%
 
 echo local fs = require('filesystem'); &gt;&gt; %RUN_TEST_SCRIPT%
@@ -116,11 +121,11 @@ echo local xmlOutputter = testListeners.XmlListenerAlaCppUnitXmlOutputter:new();
 echo xmlOutputter:xmlPath(fs.canonizePath([[$(OutDir)/$(ProjectName).xml]])); &gt;&gt; %RUN_TEST_SCRIPT%
 echo testObserver:addTestListener(xmlOutputter); &gt;&gt; %RUN_TEST_SCRIPT%
 echo testRunner.runAllTestCases(testObserver); &gt;&gt; %RUN_TEST_SCRIPT%
-
-$(ProjectDir)\$(OutDir)lua5.1.exe %RUN_TEST_SCRIPT%
 endlocal</Command>
-      <Message>Run unit tests...</Message>
-    </PostBuildEvent>
+    </PreLinkEvent>
+    <PreLinkEvent>
+      <Message>Generate test runner script ...</Message>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
