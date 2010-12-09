@@ -371,33 +371,39 @@ void functionName##TestCase::test()
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_CASE_(testName, testSuite)\
-	class TestCase##testName;\
-	TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, testSuite);\
-	class TestCase##testName : public TESTUNIT_NS::TestCase\
-	{\
-	public:\
-		TestCase##testName(const char* name, bool isIgnored)\
-		: TESTUNIT_NS::TestCase(name, isIgnored)\
-		{\
-		}\
-		SETUP {}\
-		TEARDOWN {}\
-		virtual void test()\
-		{
+    namespace UNIQUE_TEST_SUITE_NAMESPACE(testName)\
+    {\
+        static TESTUNIT_NS::TestSuite* usingTestSuite = testSuite;\
+	    class TestCase##testName;\
+	    TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, usingTestSuite);\
+	    class TestCase##testName : public TESTUNIT_NS::TestCase\
+	    {\
+	    public:\
+		    TestCase##testName(const char* name, bool isIgnored)\
+		    : TESTUNIT_NS::TestCase(name, isIgnored)\
+		    {\
+		    }\
+		    SETUP {}\
+		    TEARDOWN {}\
+		    virtual void test()\
+		    {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_CASE_EX_(testName, fixtureName, testSuite)\
-	class TestCase##testName;\
-	TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, testSuite);\
-	class TestCase##testName : public TESTUNIT_NS::TestCase, public TEST_FIXTURE_NAME(fixtureName)\
-	{\
-	public:\
-		TestCase##testName(const char* name, bool isIgnored)\
-		: TESTUNIT_NS::TestCase(name, isIgnored)\
-		{\
-		}\
-		virtual void test()\
-		{
+    namespace UNIQUE_TEST_SUITE_NAMESPACE(testName)\
+    {\
+        static TESTUNIT_NS::TestSuite* usingTestSuite = testSuite;\
+	    class TestCase##testName;\
+	    TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, usingTestSuite);\
+	    class TestCase##testName : public TESTUNIT_NS::TestCase, public TEST_FIXTURE_NAME(fixtureName)\
+	    {\
+	    public:\
+		    TestCase##testName(const char* name, bool isIgnored)\
+		    : TESTUNIT_NS::TestCase(name, isIgnored)\
+		    {\
+		    }\
+		    virtual void test()\
+		    {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_CASE(testName)\
@@ -417,15 +423,10 @@ void functionName##TestCase::test()
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_CASE_END   \
-		}\
-	};\
-	TESTUNIT_NS::NotIgnoreTestCaseGuard UNIQUENAME(notIgnore)(localTestSuite);
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_CASE_ALONE_END   \
-		}\
-	};\
-	TESTUNIT_NS::NotIgnoreTestCaseGuard UNIQUENAME(notIgnore)(TESTUNIT_NS::TestRegistry::defaultTestSuite());
+		    }\
+	    };\
+	    TESTUNIT_NS::NotIgnoreTestCaseGuard UNIQUENAME(notIgnore)(usingTestSuite);\
+	};
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool TESTUNIT_API cppunitAssert(const bool condition);

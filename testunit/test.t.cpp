@@ -339,8 +339,8 @@ TEST_SUITE(CppUnitAssertsTests)
 
 TEST_CASE_ALONE(standaloneTestCase)
     ASSERT(true);
-TEST_CASE_ALONE_END
+TEST_CASE_END
 
 TEST_CASE_EX_ALONE(standaloneTestCaseWithSetUpAndTeardown, SetUpCallCheck)
     ASSERT(setUpCall_);
-TEST_CASE_ALONE_END
+TEST_CASE_END
