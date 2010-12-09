@@ -188,7 +188,6 @@ public:
 	static TESTUNIT_API TestRegistry* initialize();
 	static TESTUNIT_API void reinitialize(TestRegistry* newValue);	// for tests
 
-	void TESTUNIT_API addTestCase(TestCase* testCase);
 	void TESTUNIT_API addTestSuite(TestSuite* testSuite);
 
 	TESTUNIT_API TestSuiteIter beginTestSuites();

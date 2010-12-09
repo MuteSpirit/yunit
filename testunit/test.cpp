@@ -262,11 +262,6 @@ TestRegistry::TestSuiteList& TestRegistry::testSuiteList()
     return testSuiteList_;
 }
 
-void TestRegistry::addTestCase(TestCase* testCase)
-{
-	(*testSuiteList().begin())->addTestCase(testCase);
-}
-
 void TestRegistry::addTestSuite(TestSuite* testSuite)
 {
 	testSuiteList().push_back(testSuite);

@@ -50,7 +50,8 @@
       <Optimization>Disabled</Optimization>
       <OmitFramePointers>
       </OmitFramePointers>
-      <PreprocessorDefinitions>TS_TEST</PreprocessorDefinitions>
+      <PreprocessorDefinitions>
+      </PreprocessorDefinitions>
       <MinimalRebuild>
       </MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -133,7 +134,7 @@ endlocal</Command>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>
       </TreatWarningAsError>
-      <PreprocessorDefinitions>NDEBUG;TS_TEST</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG</PreprocessorDefinitions>
       <MinimalRebuild>
       </MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>

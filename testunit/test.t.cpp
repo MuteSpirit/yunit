@@ -30,41 +30,89 @@
 /// \brief Save info about file and line of code situation. Used at macro with variables __FILE__, __LINE__
 
 /// \class TestException
-/// \brief User exception type for throw during checks
+/// \brief User exception type for throw during assert checks
 
 /// \class TestConditionException
-/// \brief User exception type for throw during check of bool condition
+/// \brief User exception type for throw during assert check of bool condition
 
 /// \class TestEqualException
-/// \brief User exception type for throw during check of equaling two integral numbers
+/// \brief User exception type for throw during assert check of equaling two integral numbers
 
 /// \class template<typename T> class TestDoubleEqualException
-/// \brief User exception type for throw during check of equaling two float-point numbers
+/// \brief User exception type for throw during assert check of equaling two float-point numbers
 
-/// \fn ASSERT(condition)
-/// \brief Macro ASSERT check condition for true value, otherwise it throw an exception of
-/// TestException type
+/// \class IgnoreTestCaseGuard
+/// \brief Say 'testSuite', reaching as argument, that next added test cases must be marked as ignored
 
-/// \fn ASSERT_EQUAL(expected, actual)
-/// \brief Macro ASSERT_EQUAL check that expected == actual, otherwise throw an exception of
-/// TestException type
+/// \class NotIgnoreTestCaseGuard
+/// \brief Say 'testSuite', reaching as argument, that next added test cases must not be disabled
+
+/// \def TESTUNIT_SOURCELINE()
+/// \brief Create temporary object of SourceLine type. Need for saving file name and line of assert crash
+
+/// \def TEST_SUITE(testSuiteName)
+/// \brief Declare concrete class 'testSuiteName', derived from TestSuite
+
+/// \def IGNORE_TEST
+/// \brief Mark next test case as 'ignored', and it will not be executed during run tests
+
+/// \def TEST_CASE(testName)
+/// \brief Declare class 'testName', derived from TestCase. This test case will be added into previously test suite,
+/// declared by TEST_SUITE macro
+
+/// \def TEST_CASE_ALONE(testName)
+/// \brief Declare class 'testName', derived from TestCase. This test case will be added into default test suite,
+/// you need not use TEST_SUITE macro before TEST_CASE_ALONE
+
+/// \def TEST_CASE_EX(testName, fixtureName)
+/// \brief Declare class 'testName', derived from TestCase and 'fixtureName', i.e. it will have setUp and tearDown functions.
+/// This test case will be added into previously test suite, declared by TEST_SUITE macro
+
+/// \def TEST_CASE_EX_ALONE(testName, fixtureName)
+/// \brief Declare class 'testName', derived from TestCase and 'fixtureName'. This test case will be added into default test suite,
+/// you need not use TEST_SUITE macro before TEST_CASE_ALONE
+
+/// \def TEST_CASE_END
+/// \brief Close test case, begun with TEST_CASE or TEST_CASE_EX
+
+/// \def TEST_CASE_ALONE_END
+/// \brief Close test case, begun with TEST_CASE_ALONE or TEST_CASE_EX_ALONE
+
+/// \def ASSERT(condition)
+/// \brief Check condition for 'true' value, otherwise it throw an exception of TestException type
+
+/// \def ASSERT_NOT(condition)
+/// \brief Check condition for 'false' value, otherwise it throw an exception of TestException type
+
+/// \def ASSERT_EQUAL(expected, actual)
+/// \brief Check that expected == actual, otherwise throw an exception of TestException type
 /// Use ASSERT_EQUAL only for integral types, such as int, long, etc.
 
-/// \fn ASSERT_DOUBLES_EQUAL(expected, actual, delta)
-/// \brief Macro ASSERT_EQUAL check that expected == actual with tolerance of delta, otherwise throw an exception of
+/// \def ASSERT_NOT_EQUAL(expected, actual)
+/// \brief Check that expected != actual, otherwise throw an exception of TestException type
+/// Use ASSERT_EQUAL only for integral types, such as int, long, etc.
+
+/// \def ASSERT_DOUBLES_EQUAL(expected, actual, delta)
+/// \brief Check that expected == actual with tolerance of delta, otherwise throw an exception of
 /// TestException type
 /// Use ASSERT_DOUBLES_EQUAL only for float point types, such as float, double, long double
 
-/// \fn ASSERT_THROW(expression, exceptionType)
-/// \brief Macro ASSERT_THROW check that exception of exceptionType WILL BE THROWN during expression
-/// execution
+/// \def ASSERT_DOUBLES_NOT_EQUAL(expected, actual, delta)
+/// \brief Check that expected != actual with tolerance of delta, otherwise throw an exception of
+/// TestException type
+/// Use ASSERT_DOUBLES_EQUAL only for float point types, such as float, double, long double
 
-/// \fn ASSERT_NO_THROW(expression)
-/// \brief Macro ASSERT_NO_THROW check that exception of exceptionType WILL NOT BE THROWN during expression
-/// execution
+/// \def ASSERT_THROW(expression, exceptionType)
+/// \brief Check that exception of exceptionType WILL BE THROWN during expression execution
 
-/// \fn TESTUNIT_MSG(message)
-/// \brief Output text message
+/// \def ASSERT_NO_CPP_EXCEPTION(expression, exceptionType)
+/// \brief Check that C++ exception of 'exceptionType' WILL NOT BE THROWN during expression execution
+
+/// \def ASSERT_NO_ANY_CPP_EXCEPTION(expression)
+/// \brief Check that NO ANY C++ exception WILL BE THROWN during expression execution
+
+/// \def ASSERT_NO_SEH_THROW(expression)
+/// \brief Check that NO ANY SEH (Structed Exception Handling) exception WILL BE THROWN during expression execution
 
 /// \fn bool protectTestThunkInvoke(Thunk thunk, char* msgBuf, const unsigned int msgBufSize)
 /// \param[in] thunk Thunk, whitch function invoke() will be called
@@ -75,13 +123,11 @@
 /// \fn int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*))
 /// \brief There is TestCase object on the top of Lua stack. This function call protectTestThunkInvoke
 /// for that Thunk, whitch return function 'getThunkFunc'.
-/// \return 0, or call lua_error in case of unsuccesfull protectTestThunkInvoke
+/// \return 0, or call lua_error in case of unsuccessful protectTestThunkInvoke
 
 /// \fn int luaRegistryTestCases(lua_State *L)
 /// \brief Return collection of objects with TestCase interface ("name_", setUp, test, tearDown).
 /// Names of TestCases contains TestSuite and TestCase name, separated by '::'
-
-#if defined(TS_TEST)
 
 #include "test.h"
 
@@ -298,5 +344,3 @@ TEST_CASE_ALONE_END
 TEST_CASE_EX_ALONE(standaloneTestCaseWithSetUpAndTeardown, SetUpCallCheck)
     ASSERT(setUpCall_);
 TEST_CASE_ALONE_END
-
-#endif // defined(TS_TEST)
