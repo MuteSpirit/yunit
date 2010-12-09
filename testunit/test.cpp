@@ -272,6 +272,11 @@ void TestRegistry::addTestSuite(TestSuite* testSuite)
 	testSuiteList().push_back(testSuite);
 }
 
+TestSuite* TestRegistry::defaultTestSuite()
+{
+    return &defaultTestSuite_;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SourceLine::SourceLine()
 : fileName_(unknownFileName_)

@@ -8,23 +8,22 @@
 
 /// \class Fixture
 /// \brief Interface class for tests, which are using some resources and their initialization and release are moved to
-/// separate functions, whitch must be correct called before and after test excution correspondingly
+/// separate functions, which must be called correctly before and after test execution correspondingly
 
 /// \class TestCase
 /// \brief Interface class for run single test function. We will use this class as fundamental
 
 /// \class TestSuite
-/// \brief Class, containing several TestCase objects. It can't run them, it is only container with name.
-/// There is no polymorphism.
+/// \brief Class, containing several TestCase objects. It can't run them, it is only container for them.
 
 /// \class TestRegistry
-/// \brief Singleton. Contain all C++ TestSuites.
+/// \brief Singleton. Contains all C++ TestSuites, consequently contains all TestCases.
 
 /// \class template<typename TestSuiteClass> class RegisterTestSuite
-/// \brief Create at constructor static object of TestSuiteClass, then register it at TestRegistry
+/// \brief Create at constructor static object of TestSuiteClass type, then register it into TestRegistry
 
 /// \class template<typename TestCaseClass> class RegisterTestCase
-/// \brief Create at constructor static object of TestCaseClass, then add it to TestSuite, whitch pointer is
+/// \brief Create at constructor static object of TestCaseClass type, then add it into TestSuite, whitch pointer is
 /// passed to constructor as second argument
 
 /// \class SourceLine
@@ -136,16 +135,16 @@ TEST_SUITE(CppUnitAssertsTests)
 		ASSERT(1 != -1);
 	TEST_CASE_END
 
-    IGNORE_TEST
 	TEST_CASE(testMustBeFailed)
-		//ASSERT_MESSAGE("Attention! This script must be FAILED, but process must not crash");
-        ASSERT(false);
+        ASSERT_THROW(ASSERT(false), TESTUNIT_NS::TestException);
 	TEST_CASE_END
 
     IGNORE_TEST
 	TEST_CASE(testMustBeIgnored)
+    	//ASSERT_MESSAGE("Attention! This script must be INGNORED, but process must not crash");
         ASSERT(false);
 	TEST_CASE_END
+
 
 	TEST_CASE(testBoolAssertNot)
 		ASSERT_NOT(false);
@@ -291,5 +290,13 @@ TEST_SUITE(CppUnitAssertsTests)
 		ASSERT_EQUAL(std::wstring(L"\n"), std::wstring(L"\n"));
 	TEST_CASE_END
 };
+
+TEST_CASE_ALONE(standaloneTestCase)
+    ASSERT(true);
+TEST_CASE_ALONE_END
+
+TEST_CASE_EX_ALONE(standaloneTestCaseWithSetUpAndTeardown, SetUpCallCheck)
+    ASSERT(setUpCall_);
+TEST_CASE_ALONE_END
 
 #endif // defined(TS_TEST)

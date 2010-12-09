@@ -59,10 +59,6 @@ static const char* getFuncName(Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*))
 	return "[unknown]";
 }
 
-#if defined(_MSC_VER) && defined(_DEBUG)
-#pragma optimize("g", off)
-#endif
-
 static int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*))
 {
 	lua_getfield(L, 1, "this");
@@ -156,9 +152,6 @@ static int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::Te
 
 	return 2;
 }
-#if defined(_MSC_VER) && defined(_DEBUG)
-#pragma optimize("g", on)
-#endif
 
 int luaTestCaseSetUp(lua_State *L)
 {
@@ -189,14 +182,6 @@ int getTestList(lua_State *L)
 		for(; itTc != itTcEnd; ++itTc)
 		{
 			lua_pushnumber(L, i++);	// order number of TestCase
-			// CppUnit mustn't know about TestRunner
-			//lua_getfield(L, LUA_GLOBALSINDEX, "test_runner");
-			//lua_getfield(L, -1, "TestCaseList");
-			//lua_getfield(L, -1, "add");
-			//lua_remove(L, -2);	// {"test_runner", "TestCaseList", "add"}. remove "TestCaseList" table
-			//// we will call 'TestCaseList:add', not 'TestCaseList.add'
-			//lua_getfield(L, -2, "TestCaseList");
-			//lua_remove(L, -3);	// {"test_runner", "add", "TestCaseList"}. remove "test_runner" table
 
 			lua_newtable(L);	// TestCase
 			// t["this"] = *itTc
@@ -218,8 +203,7 @@ int getTestList(lua_State *L)
 			lua_pushboolean(L, (*itTc)->isIgnored());
 			lua_setfield(L, -2, "isIgnored_");
 
-			//lua_call(L, 2, 1);
-			// add tab,le of TestCase into common list
+			// add table of TestCase into common list
 			// t[i] = testcase
 			lua_settable(L, -3);
 		}
@@ -230,17 +214,9 @@ int getTestList(lua_State *L)
 
 TESTUNIT_NS_END
 
-//int luaStub(lua_State*)
-//{
-//	return 0;
-//}
-
-
-//#ifdef TS_TEST
 
 static const struct luaL_Reg cppunitLuaFunctions[] =
 {
-	//{"stub", luaStub},
 	{"getTestList", TESTUNIT_NS::getTestList},
 	{NULL, NULL},
 };
@@ -251,5 +227,3 @@ int TESTUNIT_API luaopen_cppunit(lua_State *L)
 	luaL_register(L, "cppunit", cppunitLuaFunctions);
 	return 0;
 }
-
-//#endif // #ifdef TS_TEST

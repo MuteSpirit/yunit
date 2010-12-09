@@ -196,6 +196,8 @@ public:
 
 	TESTUNIT_API TestSuiteList& testSuiteList();
 
+    static TESTUNIT_API TestSuite* defaultTestSuite();
+
 protected:
 	TestRegistry();
 
@@ -363,17 +365,15 @@ void functionName##TestCase::test()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define CONCAT(a, b) a ## b
 #define CONCAT2(x, y) CONCAT(x, y)
-//#define UNIQUENAME(prefix) CONCAT2(prefix, __LINE__)
 #define UNIQUENAME(prefix) CONCAT2(prefix, __COUNTER__)
 
 #define IGNORE_TEST \
     TESTUNIT_NS::IgnoreTestCaseGuard UNIQUENAME(ignore)(localTestSuite);
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_CASE(testName)\
+#define TEST_CASE_(testName, testSuite)\
 	class TestCase##testName;\
-	TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, localTestSuite);\
+	TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, testSuite);\
 	class TestCase##testName : public TESTUNIT_NS::TestCase\
 	{\
 	public:\
@@ -387,9 +387,9 @@ void functionName##TestCase::test()
 		{
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_CASE_EX(testName, fixtureName)\
+#define TEST_CASE_EX_(testName, fixtureName, testSuite)\
 	class TestCase##testName;\
-	TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, localTestSuite);\
+	TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, testSuite);\
 	class TestCase##testName : public TESTUNIT_NS::TestCase, public TEST_FIXTURE_NAME(fixtureName)\
 	{\
 	public:\
@@ -401,10 +401,32 @@ void functionName##TestCase::test()
 		{
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define TEST_CASE(testName)\
+    TEST_CASE_(testName, localTestSuite)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define TEST_CASE_ALONE(testName)\
+    TEST_CASE_(testName, TESTUNIT_NS::TestRegistry::defaultTestSuite())
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define TEST_CASE_EX(testName, fixtureName)\
+    TEST_CASE_EX_(testName, fixtureName, localTestSuite)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define TEST_CASE_EX_ALONE(testName, fixtureName)\
+    TEST_CASE_EX_(testName, fixtureName, TESTUNIT_NS::TestRegistry::defaultTestSuite())
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_CASE_END   \
 		}\
 	};\
 	TESTUNIT_NS::NotIgnoreTestCaseGuard UNIQUENAME(notIgnore)(localTestSuite);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define TEST_CASE_ALONE_END   \
+		}\
+	};\
+	TESTUNIT_NS::NotIgnoreTestCaseGuard UNIQUENAME(notIgnore)(TESTUNIT_NS::TestRegistry::defaultTestSuite());
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool TESTUNIT_API cppunitAssert(const bool condition);

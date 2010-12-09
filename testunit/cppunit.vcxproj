@@ -47,7 +47,8 @@
       <Optimization>Disabled</Optimization>
       <OmitFramePointers>
       </OmitFramePointers>
-      <PreprocessorDefinitions>TS_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>
+      </PreprocessorDefinitions>
       <MinimalRebuild>
       </MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -102,7 +103,7 @@
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>
       </TreatWarningAsError>
-      <PreprocessorDefinitions>NDEBUG;TS_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG</PreprocessorDefinitions>
       <MinimalRebuild>
       </MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
