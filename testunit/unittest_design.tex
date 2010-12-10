@@ -28,7 +28,30 @@
 {\bfseries } Набор тестов (Test Suite) -- набор тест кейсов \\
 \end{tabulary}
 
+%-------------------------------------------------------------------------------------------------------------
+\section{Анализ предметной области}
 
+Выделим семейство процессов разработки с использованием модульных тестов:
+\begin{itemize}
+\item разработка прикладного кода на C++ 
+\item разработка прикладных кода на Lua
+\item разработка кода С++, выставленного в Lua, и тесты на Lua к нему (гетерогенная разработка)
+\end{itemize}
+
+Общими для семейства являются:
+\begin{itemize}
+\item работаем в среде разработки
+\item пишем тесты на языке разработки
+\item запускаем тесты на выполнение
+\end{itemize}
+
+Разработка в стиле TDD или без него -- не важно, это положительная изменчивость.
+
+Отрицательная изменчивость -- запуск тестов при помощи Hudson, он не разрабатывает, а только запускает тесты (прогон вне среды).
+
+Использование генератора кода (либо чего-то другого) для создания оберток в Lua считаем выходящим за рамки данного анализа, и вообще плохим вариантом.
+
+Разработка скриптов на Lua в рамках и для ГеПарта также выходит за рамки данного семейства, т.е. из разработчиков остаемся только мы, заказчики -- нет.
 
 %-------------------------------------------------------------------------------------------------------------
 \section{Особенности модульного тестирования}
@@ -44,9 +67,9 @@
 \item вывод результата проверки.
 \end{enumerate}
 
-Программирование теста осуществляется в соответствии с образцами xUnit: проверка (Assertion), фикстура (Fixture), тестовый метод (Test Method), тест исключительной ситуации (Exception Test). 
-
 Для написания тестов используется тот же язык, что и для написания тестируемого кода.
+
+Программирование теста осуществляется в соответствии с образцами xUnit: проверка (Assertion), фикстура (Fixture), внешняя фикстура (External Fixture), тестовый метод (Test Method), тест исключительной ситуации (Exception Test). 
 
 Для убедительной проверки соответствия функции ее спецификации требуется выполнить набор тестов (test suite). Задача о выборе набора тестов для проведения модульного тестирования рассматривается в общем документе по тестированию\footnote{см. \path{programmers_guide}}. 
 
@@ -292,173 +315,6 @@ Test Case начинается любым из макросов TEST\_CASE*, но должен завершаться макрос
 \item ASSERT\_NOT\_USERDATA(variable)
 \end{itemize}
 
-%-------------------------------------------------------------------------
-\subsection{Подготовка тестов на уровне компонента}
-
-Прежде чем писать тесты для какого-нибудь компонента необходимо проверить, что текущая конфигурация проектника -- "<test">, в которой определена директива препроцессора TS\_TEST.
-
-Размещать тестовые классы следует в файлах с окончанием \path{*.t.*} в имени. В начале этих файлов нужно размещать документацию по компоненту, к которому они относятся, а затем уже собственно модульные тесты.
-
-Сторожевое условие
-\begin{lstlisting}[style=cpp]
-#if defined(TS_TEST)
-#include "..\afl\test.h"
-// ... content of *.t.cpp file ...
-#endif // defined(TS_TEST)
-\end{lstlisting}
-необходимо для того, чтобы при сборке релиза пакета в него не попало содержимое тестов.
-
-В тестовых функциях можно использовать макросы для проверки соответствия полученных результатов с ожидаемыми.
-
-\begin{lstlisting}[language=lua]
-//////////////////////// C++ tests //////////////////////////////
-// Опредение новой тестовой фикстуры -- класса, производного от TestFixture
-TEST_FIXTURE(SetUpCallCheckFixture)
-{
-    // функция setUp, к-ая будет выполняться ДО каждого из TestCase-ов,
-    // наследующихся от данного класса
-    SETUP
-	{
-		setUpCall_ = true;
-	}
-
-    // функция tearDown, к-ая будет выполняться ПОСЛЕ каждого из TestCase-ов,
-    // наследующихся от данного класса
-    TEARDOWN
-	{
-		setUpCall_ = false;
-	}
-protected:
-	bool setUpCall_;
-};
-
-// Опредение нового "набора тестов" - класса, наследующегося от TestSuite
-TEST_SUITE(SampleTestSuite)
-{
-    // Определение нового простого теста - класса, производного от TestCase
-	TEST_CASE(testEqualAssert)
-		ASSERT_EQUAL(1, 1);
-		ASSERT_EQUAL(0, 0);
-		ASSERT_EQUAL(-1, -1);
-	TEST_CASE_END
-
-    // Определение нового теста - класса, производного от TestCase и фикстуры SampleFixture
-    // Такой тест может использовать данные, содержащиеся в SampleFixture
-	TEST_CASE_EX(testCheckSetUpCall, SetUpCallCheckFixture)
-		ASSERT(setUpCall_);
-	TEST_CASE_END
-};
-\end{lstlisting}
-\clearpage
-\begin{lstlisting}[language=lua]
--------------------- Lua tests ----------------------------
--- Опредение новой тестовой фикстуры - класса, производного от TestFixture
-TEST_FIXTURE("SampleFixture")
-{
-    -- функция setUp, к-ая будет выполняться ДО каждого из TestCase-ов,
-    -- наследующихся от данного класса
-    setUp = function(self)
-        self.q_.initialize();
-    end
-    ;
-    -- функция tearDown, к-ая будет выполняться ПОСЛЕ каждого из TestCase-ов,
-    -- наследующихся от данного класса
-    tearDown = function(self)
-        self.q_.release();
-    end
-    ;
-    -- используемые тестами ресурсы
-    q_ = 
-    {
-        initialize = function() end;
-        release = function() end;
-        add = 
-            function(self, value)
-                table.insert(self.list, value);
-                if self.list[#self.list] then
-                    return true;
-                end
-            end;
-        list = {};
-    };
-};
-
--- Опредение нового "набора тестов" - класса, наследующегося от TestSuite
-TEST_SUITE("SampleTestSuite")
-{
-    -- Определение нового простого теста - класса, производного от TestCase
-    TEST_CASE{"simpleTest", function(self)
-        local q = 2;
-        ASSERT_EQUAL(4, q + 2);
-    end
-    };
-    -- Определение нового теста -- класса, производного от TestCase и фикстуры SampleFixture
-    -- Такой тест может использовать данные, содержащиеся в SampleFixture
-    TEST_CASE_EX{"addTest", "SampleFixture", function(self)
-        ASSERT_TRUE(self.q_:add(""));
-    end
-    };
-};
-\end{lstlisting}
-\clearpage
-
-%-----------------------------------------------------
-\subsection{Скрипты для IDE}
-
-Для SciTe нужно добавить в файл пльзовательских настроек:
-\begin{verbatim}
-file.patterns.tlua=*.t.lua
-
-# Run tests, using TestRunner
-command.build.$(file.patterns.tlua)=lua5.1.exe -e "\
-package.path='./?.lua;./?/init.lua;../?.lua;../?/init.lua;'..package.path;\
-package.cpath='../_bin/?.dll;../_bin/?.so' .. package.cpath;\
-local testRunner = require('afl.test_runner');\
-local dllExt = testRunner.isWin() and 'dll' or 'so';\
-testRunner.loadTestDrivers\
-{\
-	'$(FileNameExt)',\
-};\
-local testObserver = testRunner.TestObserver:new();\
-testObserver:addTestListener(testRunner.SciteTextTestProgressListener:new());\
-testRunner.runAllTestCases(testObserver);"
-\end{verbatim}
-
-А в конфигурацию "<test"> проектника нужно в качестве Post-Build Event поставить команду (прописывать ее одной строкой):
-\begin{verbatim}
-lua5.1.exe -e "package.path='./?.lua;
-./?/init.lua;../?.lua;../?/init.lua;'.. package.path;
-package.cpath='../_bin/?.dll;'.. package.cpath;
-local testRunner = require('afl.test_runner');
-testRunner.loadTestDrivers{'../_bin/$(TargetFileName)'};
-local testObserver = testRunner.TestObserver:new();
-testObserver:addTestListener(testRunner.TextTestProgressListener:new());
-testRunner.runAllTestCases(testObserver);"
-\end{verbatim}
-
-%-------------------------------------------------------------------------
-% \subsection{Выполнение тестов на уровне компонента}
-% \begin{figure}[h !t]
-% \centering
-% \includegraphics[scale=0.7]{cppunit_exception_classes.eps}
-% \caption{Иерархия классов исключений для тестов}
-% \end{figure}
-% \begin{figure}[h !t]
-% \centering
-% \includegraphics[scale=0.7]{cppunit_test_suite_classes.eps}
-% \end{figure}
-% \begin{figure}[h !t]
-% \centering
-% \includegraphics[scale=0.7]{cppunit_test_result_classes.eps}
-% \end{figure}
-% \begin{figure}[h !t]
-% \centering
-% \includegraphics[scale=1.0]{cppunit_seq_diag.eps}
-% \caption{Успешное выполнение одного теста}\label{fig:module_test_successful_execution}
-% \end{figure}    
-% \clearpage
-% \pagebreak
-
 %-----------------------------------------------------
 \subsection{Неразрешенные вопросы}
 
@@ -470,7 +326,7 @@ testRunner.runAllTestCases(testObserver);"
 \fastA \ldots
 
 
-\fastQ Схема фильтрации списка запускаемых тестов пока не продумана, поэтому по ней пока не сделано серьезных наработок. 
+\fastQ Схема фильтрации запускаемых тестов пока не продумана. 
 
 \fastA Основная мысль в том, чтобы выставлять флаги разрешения выполнения в реестре тестов самого test\_runner-а. Однако, надо отметить, что поскольку тесты содержаться в файлах ("<луновые"> в \path{*.t.lua}, "<плюсовые"> в \path{*.t.dll}), то фильтрацией списка запускаемых тестов можно управлять на двух уровнях: физическом (файлами), логическом (списками уже загруженный тестов).
 
