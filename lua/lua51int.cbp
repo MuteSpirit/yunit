@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="lua51int" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="dyn_dynrt_debug Win32">
+				<Option output="..\_bin\lua5.1" prefix_auto="1" extension_auto="1" />
+				<Option object_output="_tmp\lua51int" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-O0" />
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-D_CRT_SECURE_NO_WARNINGS" />
+					<Add option="-DLUA_BUILD_AS_DLL" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-static-libgcc" />
+					<Add library="lua5.1" />
+					<Add directory="..\_lib" />
+					<Add directory="..\_bin" />
+				</Linker>
+			</Target>
+			<Target title="dyn_dynrt_release Win32">
+				<Option output="..\_bin\lua5.1" prefix_auto="1" extension_auto="1" />
+				<Option object_output="_tmp\lua51int" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_CRT_SECURE_NO_WARNINGS" />
+					<Add option="-DLUA_BUILD_AS_DLL" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-static-libgcc" />
+					<Add library="lua5.1" />
+					<Add directory="..\_lib" />
+					<Add directory="..\_bin" />
+				</Linker>
+			</Target>
+		</Build>
+		<Unit filename="lua.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="version_int.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
