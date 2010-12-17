@@ -63,6 +63,24 @@
             <Component Id="LuaBinaries" Guid="FD368DA0-EB2D-4E21-9118-F016B84C0980">
               <File Id="lua5.1.dll" Name="lua5.1.dll" DiskId="1" Source="..\_bin\lua5.1.dll" />
               <File Id="lua5.1.exe" Name="lua5.1.exe" DiskId="1" Source="..\_bin\lua5.1.exe" />
+              <File Id="lua_icon.ico" Name="lua_icon.ico" DiskId="1" Source=".\lua_icon.ico" />
+              <!--ассоциируем иконку-->
+              <RegistryKey Root="HKCR" Key=".lua" Action="createAndRemoveOnUninstall">
+                <RegistryValue Type="string" Value="LuaForDevelopmentEnvironmet"/>
+              </RegistryKey>
+              <RegistryKey Root="HKCR" Key="LuaForDevelopmentEnvironmet" Action="createAndRemoveOnUninstall">
+                <RegistryKey Key="DefaultIcon" Action="createAndRemoveOnUninstall">
+                  <RegistryValue Type="string" Value="[#lua_icon.ico]"/>
+                </RegistryKey>
+                <RegistryValue Type="string" Value="LuaForDevelopmentEnvironmet"/>
+              </RegistryKey>
+              <!--устанавливаем переменные среды-->
+              <Environment Id='UpdatePath00' Name='PATH' Action='set' System='yes'
+                                        Permanent='yes' Part='last' Value="[$LuaBinaries]" />
+              <Environment Id='UpdatePath01' Name='LUA_PATH' Action='set' System='yes'
+                                        Permanent='yes' Part='last' Value=".\?.lua;!\lua\?.lua ;!\lua\?\init.lua;!\?.lua;!\?\init.lua" />
+              <Environment Id='UpdatePath02' Name='LUA_CPATH' Action='set' System='yes'
+                                        Permanent='yes' Part='last' Value=".\?.dll;!\?.dll;!\loadall.dll"/>
             </Component>
 
             <Component Id="LuaFileSystemBinaries" Guid="80511ee5-80c8-4cf6-a96e-d0652e28eb41">
