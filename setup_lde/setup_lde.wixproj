@@ -16,10 +16,13 @@
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <DefineConstants>Debug</DefineConstants>
     <Cultures>ru-RU</Cultures>
+    <VerboseOutput>False</VerboseOutput>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>..\_bin\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <VerboseOutput>False</VerboseOutput>
+    <Cultures>ru-RU</Cultures>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="product.wxs" />
