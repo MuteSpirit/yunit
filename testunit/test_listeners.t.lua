@@ -1,7 +1,7 @@
 --- \class TextTestProgressListener
 --- \brief Derived from TestListener. Output messages to standat output.
 
-local luaUnit = require("testunit.lua_unit");
+local luaUnit = require("testunit.luaunit");
 local testListeners = require("testunit.test_listeners");
 
 require("LuaXML");
