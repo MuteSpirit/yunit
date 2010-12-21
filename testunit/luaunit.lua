@@ -117,6 +117,16 @@ TestRegistry =
     testsuites = {TestSuite:new("Default")};
 };
 -------------------------------------------------------
+function TestRegistry:new()
+    local o = 
+    {
+        testsuites = {TestSuite:new("Default")};
+    };
+    setmetatable(o, self);
+    self.__index = self;
+    return o;
+end
+
 
 function TestRegistry:addTestCase(testcase)
     self.testsuites[1]:addTestCase(testcase);
@@ -155,8 +165,10 @@ function callTestCaseMethod(testcase, testFunc)
 end
 
 -------------------------------------------------------
-function getTestList()
+function getTestList(testRegistry)
 -------------------------------------------------------
+    testRegistry = testRegistry or TestRegistry;
+    
     local function callTestCaseSetUp(testcase)
         return callTestCaseMethod(testcase, testcase.originalSetUp)
     end
@@ -170,7 +182,7 @@ function getTestList()
     end
     
     local testList = {};
-    for _, testsuite in ipairs(TestRegistry.testsuites) do
+    for _, testsuite in ipairs(testRegistry.testsuites) do
         local testsuiteName = testsuite.name_;
         for _, testcase in ipairs(testsuite.testcases) do
             local testcaseName = testcase["name_"];
@@ -225,18 +237,18 @@ end
 function ASSERT_THROW(functionForRun, ...)
     local functype = type(functionForRun);
     if functype ~= "function" then
-        error("ASSERT_THROW: expected a function as last argument but was a %s", functype, 0);
+        error(string.format("ASSERT_THROW: expected a function as last argument but was a %s", functype), 0);
     end
     local ok, errmsg = pcall(functionForRun, ...);
     if ok then
-        error("ASSERT_THROW: no error expected but error was: '%s'", errmsg, 0)
+        error(string.format("ASSERT_THROW: no error expected but error was: '%s'", errmsg), 0)
     end
 end
 
 function ASSERT_NO_THROW(functionForRun, ...)
     local functype = type(functionForRun);
     if functype ~= "function" then
-        error("ASSERT_NO_THROW: expected a function as last argument but was a %s", functype, 0);
+        error(string.format("ASSERT_NO_THROW: expected a function as last argument but was a %s", functype), 0);
     end
     local ok, errmsg = pcall(functionForRun, ...);
     if not ok then
@@ -387,7 +399,7 @@ local typenames = { "nil", "boolean", "number", "string", "table", "function", "
 
 -- ASSERT_TYPENAME functions
 for _, typename in ipairs(typenames) do
-    local assertTypename = "ASSERT_"..string.upper(typename);
+    local assertTypename = "ASSERT_IS_"..string.upper(typename);
     _M[assertTypename] = function(actual)
         local actualType = type(actual);
         if actualType ~= typename then
@@ -398,7 +410,7 @@ end
 
 -- ASSERT_NOT_TYPENAME functions
 for _, typename in ipairs(typenames) do
-    local assertTypename = "ASSERT_NOT_"..string.upper(typename);
+    local assertTypename = "ASSERT_IS_NOT_"..string.upper(typename);
     _M[assertTypename] = function(actual)
         local actualType = type(actual);
         if actualType == typename then
@@ -414,6 +426,14 @@ end
 -- last created TestSuite. It used for correct adding TestCase objects to corresponding TestSuite
 local curSuite;
 
+function currentSuite(value)
+    if value then
+        curSuite = value;
+    else
+        return curSuite;
+    end
+end
+
 -------------------------------------------------------
 function TEST_FIXTURE(name)
 -------------------------------------------------------
@@ -423,10 +443,11 @@ function TEST_FIXTURE(name)
 end
 
 -------------------------------------------------------
-function TEST_SUITE(name)
+function TEST_SUITE(name, testRegistry)
 -------------------------------------------------------
+    testRegistry = testRegistry or TestRegistry;
     local testsuite = TestSuite:new(name)
-    TestRegistry:addTestSuite(testsuite);
+    testRegistry:addTestSuite(testsuite);
     curSuite = testsuite;   -- curSuite is needed for knoledge of testcases about current TestSuite
     return function() end
 end
