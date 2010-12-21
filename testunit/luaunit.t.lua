@@ -74,7 +74,7 @@
 --- \param[in] testFunc 'test', 'setUp' or 'tearDown' function of 'testcase'
 --- \return status code of 'testFunc' execution and ErrorObject with additional info
 
-local luaUnit = require("testunit.lua_unit");
+local luaUnit = require("testunit.luaunit");
 
 --------------------------------------------------------------------------------------------------------------
 -- Sample of test writing sintax
@@ -281,7 +281,7 @@ function protectTestCaseMethodCallTest()
     
     local statusCode, errorObject = luaUnit.callTestCaseMethod(testcase, testcase.test);
     assert_false(statusCode);
-    assert_equal("lua_unit.t.lua", errorObject.source);
+    assert_equal("luaunit.t.lua", errorObject.source);
     assert_equal("testFunc", errorObject.func);
     assert_equal(279, errorObject.line);
     assert_not_nil(errorObject.message);
