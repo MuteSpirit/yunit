@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="72111c62-dc91-4251-8d9e-611192f78be9" Name="Lua For Development Environment" Language="1033" Version="1.0.0.0" Manufacturer="Techsystem" UpgradeCode="92882211-b420-4cf1-8872-da9649f28ff4">
+    <Package InstallerVersion="200" Compressed="yes" />
+
+    <Media Id="1" Cabinet="setup_lde.cab" EmbedCab="yes" />
+
+    <?include ts_install_set.wxi?>
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id='ProgramFilesFolder' Name='PFiles'>
+        <Directory Id="INSTALLLOCATION" Name="lua">
+          <Directory Id="Lua51dir" Name="5.1">
+            <Directory Id="LuaModulesDir" Name="lua">
+              <Component Id="Atd" Guid="84CB1933-CC97-43B7-8FBE-1CAD6D51C6B7">
+                <File Id="atd.lua" Name="atd.lua" DiskId="1" Source="..\ts_modules\atd.lua" />
+                <File Id="clean.lua" Name="clean.lua" DiskId="1" Source="..\ts_modules\clean.lua" />
+                <File Id="lopt.lua" Name="lopt.lua" DiskId="1" Source="..\ts_modules\lopt.lua" />
+              </Component>
+
+              <Component Id="LuaTestEngine" Guid="DD353FCA-EDD1-41CA-90CA-A5FCAF1FBE88">
+                <File Id="lua_unit.lua" Name="lua_unit.lua" DiskId="1" Source="..\testunit\lua_unit.lua" />
+                <File Id="lua_test_sample.t.lua" Name="lua_test_sample.t.lua" DiskId="1" Source="..\testunit\lua_test_sample.t.lua" />
+              </Component>
+
+              <Component Id="TestRunner" Guid="E7DC4B47-1BFB-4CE8-AD5D-C0A9043E3516">
+                <File Id="test_runner.lua" Name="test_runner.lua" DiskId="1" Source="..\testunit\test_runner.lua" />
+                <File Id="test_listeners.lua" Name="test_listeners.lua" DiskId="1" Source="..\testunit\test_listeners.lua" />
+                <File Id="report.xsl" Name="report.xsl" DiskId="1" Source="..\testunit\report.xsl" />
+              </Component>
+            </Directory>
+
+            <Directory Id="IncludeDir" Name="include">
+              <Component Id="LuaIncludes" Guid="8157ACF0-E4BF-4A18-8AFD-16D7851FB87D">
+                <File Id="lua.h" Name="lua.h" DiskId="1" Source="..\lua\lua.h" />
+                <File Id="lualib.h" Name="lualib.h" DiskId="1" Source="..\lua\lualib.h" />
+                <File Id="lauxlib.h" Name="lauxlib.h" DiskId="1" Source="..\lua\lauxlib.h" />
+                <File Id="luaconf.h" Name="luaconf.h" DiskId="1" Source="..\lua\luaconf.h" />
+                <File Id="ldebug.h" Name="ldebug.h" DiskId="1" Source="..\lua\ldebug.h" />
+              </Component>
+
+              <Component Id="CppTestEngineIncludes" Guid="0F9207E5-8382-404D-A006-AE261AF73BB9">
+                <File Id="test.h" Name="test.h" DiskId="1" Source="..\testunit\test.h" />
+                <File Id="thunk.h" Name="thunk.h" DiskId="1" Source="..\testunit\thunk.h" />
+              </Component>
+            </Directory>
+
+            <Directory Id="LibDir" Name="lib">
+              <Component Id="CppTestEngineLibs" Guid="B68DE9BC-C6EF-42E5-914C-7FADA60960A9">
+                <File Id="cppunit.lib" Name="cppunit.lib" DiskId="1" Source="..\_lib\cppunit.lib" />
+                <File Id="cppunit.exp" Name="cppunit.exp" DiskId="1" Source="..\_lib\cppunit.exp" />
+              </Component>
+
+              <Component Id="LuaLibs" Guid="5B423281-8032-4DE4-9300-A0A42A2145D4">
+                <File Id="lua5.1.lib" Name="lua5.1.lib" DiskId="1" Source="..\_lib\lua5.1.lib" />
+                <File Id="lua5.1.exp" Name="lua5.1.exp" DiskId="1" Source="..\_lib\lua5.1.exp" />
+                <File Id="lua51.lib" Name="lua51.lib" DiskId="1" Source="..\_lib\lua51.lib" />
+                <File Id="lua51.exp" Name="lua51.exp" DiskId="1" Source="..\_lib\lua51.exp" />
+              </Component>
+            </Directory>
+
+
+            <Component Id="LuaBinaries" Guid="FD368DA0-EB2D-4E21-9118-F016B84C0980">
+              <File Id="lua5.1.dll" Name="lua5.1.dll" DiskId="1" Source="..\_bin\lua5.1.dll" />
+              <File Id="lua5.1.exe" Name="lua5.1.exe" DiskId="1" Source="..\_bin\lua5.1.exe" />
+              <File Id="lua_icon.ico" Name="lua_icon.ico" DiskId="1" Source=".\lua_icon.ico" />
+              <!--ассоциируем иконку-->
+              <RegistryKey Root="HKCR" Key=".lua" Action="createAndRemoveOnUninstall">
+                <RegistryValue Type="string" Value="LuaForDevelopmentEnvironmet"/>
+              </RegistryKey>
+              <RegistryKey Root="HKCR" Key="LuaForDevelopmentEnvironmet" Action="createAndRemoveOnUninstall">
+                <RegistryKey Key="DefaultIcon" Action="createAndRemoveOnUninstall">
+                  <RegistryValue Type="string" Value="[#lua_icon.ico]"/>
+                </RegistryKey>
+                <RegistryValue Type="string" Value="LuaForDevelopmentEnvironmet"/>
+              </RegistryKey>
+              <!--устанавливаем переменные среды-->
+              <Environment Id='UpdatePath00' Name='PATH' Action='set' System='no'
+                                        Permanent='no' Part='last' Value="[$LuaBinaries]" />
+              <Environment Id='UpdatePath01' Name='LUA_PATH' Action='set' System='no'
+                                        Permanent='no' Part='last' Value=".\?.lua;!\lua\?.lua ;!\lua\?\init.lua;!\?.lua;!\?\init.lua" />
+              <Environment Id='UpdatePath02' Name='LUA_CPATH' Action='set' System='no'
+                                        Permanent='no' Part='last' Value=".\?.dll;!\?.dll;!\loadall.dll"/>
+            </Component>
+
+            <Component Id="LuaFileSystemBinaries" Guid="80511ee5-80c8-4cf6-a96e-d0652e28eb41">
+              <File Id="lfs.dll" Name="lfs.dll" DiskId="1" Source="..\_bin\lfs.dll" />
+            </Component>
+
+            <Component Id="CppTestEngineBinaries" Guid="5C65A91D-FB7C-4ACE-B910-D6ECE5DC1A88">
+              <File Id="cppunit.dll" Name="cppunit.dll" DiskId="1" Source="..\_bin\cppunit.dll" />
+            </Component>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLLOCATION" />
+    <UIRef Id="Ts_InstallSet" />
+
+    <Feature Id="Lua514" Title="Lua 5.1.4" Level="1">
+      <ComponentRef Id="LuaBinaries" />
+      <ComponentRef Id="LuaLibs" />
+      <ComponentRef Id="LuaIncludes" />
+    </Feature>
+
+    <Feature Id="ExternalModules" Title="External Lua Modules" Level="1">
+      <Feature Id="LuaFileSystemFeature" Title="LuaFileSystem" Level="1">
+        <ComponentRef Id="LuaFileSystemBinaries" />
+      </Feature>
+
+      <!-- Note: The following ComponentGroupRef is required to pull in generated authoring from project references. -->
+      <ComponentGroupRef Id="Product.Generated" />
+    </Feature>
+
+    <Feature Id="TechsystemModules" Title="Techsystem Lua Modules" Level="1">
+      <Feature Id="AtdFeature" Title="Active TeX Document" Level="1">
+        <ComponentRef Id="Atd" />
+      </Feature>
+      <Feature Id="TestunitFeature" Title="Unit Test Engine" Level="1">
+        <ComponentRef Id="CppTestEngineBinaries" />
+        <ComponentRef Id="CppTestEngineLibs" />
+        <ComponentRef Id="CppTestEngineIncludes" />
+        <ComponentRef Id="LuaTestEngine" />
+        <ComponentRef Id="TestRunner" />
+      </Feature>
+
+      <!-- Note: The following ComponentGroupRef is required to pull in generated authoring from project references. -->
+      <ComponentGroupRef Id="Product.Generated" />
+    </Feature>
+
+    <!--Правильные картинки-->
+    <WixVariable Id="WixUIDialogBmp" Value="lua-logo.bmp" />
+    <WixVariable Id="WixUIBannerBmp" Value="lua-logo-banner.bmp" />
+   
+  </Product>
+</Wix>
