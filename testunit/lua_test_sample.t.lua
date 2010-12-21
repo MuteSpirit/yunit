@@ -1,4 +1,4 @@
-local luaUnit = require("lua_unit");
+local luaUnit = require("luaunit");
 
 module("lua_test_sample", luaUnit.testmodule, package.seeall);
 

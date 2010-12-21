@@ -249,8 +249,8 @@ function isCppTestDriver(filePath)
 end
 
 function initializeTestUnits()
-    if not package.loaded["testunit.lua_unit"] then
-        luaUnit = require("testunit.lua_unit");
+    if not package.loaded["testunit.luaunit"] then
+        luaUnit = require("testunit.luaunit");
     end
 
     if not package.loaded["cppunit"] then
@@ -292,7 +292,7 @@ local function addTestCaseToGlobalList(name, object)
 end
 
 function copyAllLuaTestCasesToGlobalTestList()
-    local luaUnit = require("testunit.lua_unit");
+    local luaUnit = require("testunit.luaunit");
     local testcases = luaUnit.getTestList();
     for _, testcase in ipairs(testcases) do
         addTestCaseToGlobalList(testcase.name_, testcase);
