@@ -1,4 +1,4 @@
-local luaUnit = require("lua_unit");
+local luaUnit = require("testunit.luaunit");
 
 module("lua_test_sample", luaUnit.testmodule, package.seeall);
 
@@ -30,14 +30,14 @@ TEST_FIXTURE("SampleFixture")
 
 TEST_SUITE("SampleTestSuite")
 {
-    TEST_CASE_EX{"addTest", "SampleFixture", function(self)
-        ASSERT_TRUE(self.q_:add(""));
-    end
-    };
-    
     TEST_CASE{"simpleTest", function(self)
         local q = 2;
         ASSERT_EQUAL(4, q + 2);
+    end
+    };
+
+    TEST_CASE_EX{"addTest", "SampleFixture", function(self)
+        ASSERT_TRUE(self.q_:add(""));
     end
     };
 };

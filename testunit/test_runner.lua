@@ -159,13 +159,13 @@ function runTestCase(testCaseName, testcase, testResult)
 
     if not testcase.isIgnored_ then
         if testcase.setUp and isFunction(testcase.setUp) then
-            _, statusCode, errorObject = pcall(testcase.setUp, testcase);
+            statusCode, errorObject.message = pcall(testcase.setUp, testcase);
         else
             statusCode, errorObject = true, errorObjectDefault;
         end
 
         if statusCode then
-            _, statusCode, errorObject = pcall(testcase.test, testcase);
+            statusCode, errorObject.message = pcall(testcase.test, testcase);
 
             if not statusCode then
                 testResult:addFailure(testCaseName, errorObject or errorObjectDefault);
@@ -174,7 +174,7 @@ function runTestCase(testCaseName, testcase, testResult)
             end
 
             if testcase.tearDown and isFunction(testcase.tearDown) then
-                _, statusCode, errorObject = pcall(testcase.tearDown, testcase);
+                statusCode, errorObject.message = pcall(testcase.tearDown, testcase);
             else
                 statusCode, errorObject = true, errorObjectDefault;
             end
@@ -249,8 +249,8 @@ function isCppTestDriver(filePath)
 end
 
 function initializeTestUnits()
-    if not package.loaded["testunit.lua_unit"] then
-        luaUnit = require("testunit.lua_unit");
+    if not package.loaded["testunit.luaunit"] then
+        luaUnit = require("testunit.luaunit");
     end
 
     if not package.loaded["cppunit"] then
@@ -292,7 +292,7 @@ local function addTestCaseToGlobalList(name, object)
 end
 
 function copyAllLuaTestCasesToGlobalTestList()
-    local luaUnit = require("testunit.lua_unit");
+    local luaUnit = require("testunit.luaunit");
     local testcases = luaUnit.getTestList();
     for _, testcase in ipairs(testcases) do
         addTestCaseToGlobalList(testcase.name_, testcase);
