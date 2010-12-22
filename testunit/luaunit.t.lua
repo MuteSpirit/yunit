@@ -84,11 +84,15 @@ TEST_FIXTURE("LuaUnitSelfTestFixture")
 {
     setUp = function(self)
         self.testRegistry = luaUnit.TestRegistry:new();
+        self.currentTestRegistry = luaUnit.currentTestRegistry();
+        luaUnit.currentTestRegistry(self.testRegistry);
+        
         self.currentSuite = luaUnit.currentSuite();
     end
     ;
     tearDown = function(self)
         luaUnit.currentSuite(self.currentSuite);
+        luaUnit.currentTestRegistry(self.currentTestRegistry);
         self.currentSuite = nil;
         self.testRegistry = nil;
     end
@@ -185,7 +189,7 @@ TEST_SUITE("LuaUnitTestRegistryTest")
     };
 
     TEST_CASE_EX{"getTestListTest", "LuaUnitSelfTestFixture", function(self)
-        local testList = luaUnit.getTestList(self.testRegistry);
+        local testList = luaUnit.getTestList();
         ASSERT_IS_NOT_NIL(testList);
         ASSERT_EQUAL(0, #testList);
         
@@ -197,7 +201,7 @@ TEST_SUITE("LuaUnitTestRegistryTest")
         end
         self.testRegistry:addTestCase(testcase);
 
-        testList = luaUnit.getTestList(self.testRegistry);
+        testList = luaUnit.getTestList();
         ASSERT_IS_NOT_NIL(testList);
         ASSERT_EQUAL(1, #testList);
     end
@@ -210,7 +214,7 @@ TEST_SUITE("LuaUnitTestRegistryTest")
         -- - line number of failed ASSERT
         -- - text message from that ASSERT
         
-        local testcase = luaUnit.TestCase:new("TestCaseForProtectCall", self.testRegistry);
+        local testcase = luaUnit.TestCase:new("TestCaseForProtectCall");
         testcase.test = function()
             -- must except error
             luaUnit.ASSERT_NOT_EQUAL(0, 0);
@@ -232,14 +236,14 @@ TEST_SUITE("LuaUnitTestRegistryTest")
     };
 
     TEST_CASE_EX{"macroTest", "LuaUnitSelfTestFixture", function(self)
-        luaUnit.TEST_SUITE("EmptyMacroTestSuite", self.testRegistry)
+        luaUnit.TEST_SUITE("EmptyMacroTestSuite")
         {
         };
         
         ASSERT_EQUAL(2, #self.testRegistry.testsuites);
         ASSERT_EQUAL(0, #self.testRegistry.testsuites[2].testcases);
 
-        luaUnit.TEST_SUITE("MacroTestSuiteWithOneTestCase", self.testRegistry)
+        luaUnit.TEST_SUITE("MacroTestSuiteWithOneTestCase")
         {
             luaUnit.TEST_CASE{"MacroTestCase", function()
                 luaUnit.ASSERT_EQUAL(0, 0);
@@ -277,7 +281,7 @@ TEST_SUITE("LuaUnitTestRegistryTest")
         
         self.testRegistry:addTestCase(testcase);
 
-        local testList = luaUnit.getTestList(self.testRegistry);
+        local testList = luaUnit.getTestList();
         ASSERT_IS_NOT_NIL(testList);
         ASSERT_EQUAL(1, #testList);
 
@@ -285,7 +289,7 @@ TEST_SUITE("LuaUnitTestRegistryTest")
         ASSERT_FALSE(mockTestListener.error_);
 
         mockTestListener.error_ = false;
-        luaUnit.TEST_SUITE("TestFrameTestSuite", self.testRegistry)
+        luaUnit.TEST_SUITE("TestFrameTestSuite")
         {
             luaUnit.TEST_CASE{"TestFrameTestCase", function()
                 luaUnit.ASSERT_EQUAL(0, 0);
@@ -293,7 +297,7 @@ TEST_SUITE("LuaUnitTestRegistryTest")
             };
         };
         
-        testList = luaUnit.getTestList(self.testRegistry);
+        testList = luaUnit.getTestList();
         ASSERT_IS_NOT_NIL(testList);
         ASSERT_EQUAL(2, #testList);
     end
@@ -319,7 +323,7 @@ TEST_SUITE("LuaUnitTestRegistryTest")
         ASSERT_EQUAL(1, #self.testRegistry.testsuites);
         ASSERT_IS_NOT_NIL(_G["MockTestFixture"]);
 
-        luaUnit.TEST_SUITE("TestFixtureTests", self.testRegistry)
+        luaUnit.TEST_SUITE("TestFixtureTests")
         {
             luaUnit.TEST_CASE_EX{"EmptyTest", "MockTestFixture", function(self)
                 testExecuted = true;
@@ -331,7 +335,7 @@ TEST_SUITE("LuaUnitTestRegistryTest")
         ASSERT_EQUAL(0, #self.testRegistry.testsuites[1].testcases);
         ASSERT_EQUAL(1, #self.testRegistry.testsuites[2].testcases);
         
-        local testList = luaUnit.getTestList(self.testRegistry);
+        local testList = luaUnit.getTestList();
         ASSERT_EQUAL(1, #testList);
         
         local testObserver = testRunner.TestObserver:new();

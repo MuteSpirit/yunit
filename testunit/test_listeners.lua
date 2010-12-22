@@ -140,6 +140,7 @@ function SciteTextTestProgressListener:addFailure(testCaseName, errorObject)
 end
 
 function SciteTextTestProgressListener:addError(testCaseName, errorObject)
+    self.errorTestsNum = self.errorTestsNum + 1;
     self:outputMessage(testCaseName .. ": ERROR\n".."\t" .. self:editorSpecifiedErrorLine(errorObject) .. "\n");
 end
 
