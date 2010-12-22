@@ -26,7 +26,7 @@ local table, io, string, package, os = table, io, string, package, os;
 
 -- for debug
 local print = print;
-
+local type = type;
 --------------------------------------------------------------------------------------------------------------
 module('testunit.test_runner');
 --------------------------------------------------------------------------------------------------------------
@@ -159,13 +159,13 @@ function runTestCase(testCaseName, testcase, testResult)
 
     if not testcase.isIgnored_ then
         if testcase.setUp and isFunction(testcase.setUp) then
-            statusCode, errorObject.message = pcall(testcase.setUp, testcase);
+            statusCode, errorObject = testcase:setUp();
         else
             statusCode, errorObject = true, errorObjectDefault;
         end
 
         if statusCode then
-            statusCode, errorObject.message = pcall(testcase.test, testcase);
+            statusCode, errorObject = testcase:test();
 
             if not statusCode then
                 testResult:addFailure(testCaseName, errorObject or errorObjectDefault);
@@ -174,7 +174,7 @@ function runTestCase(testCaseName, testcase, testResult)
             end
 
             if testcase.tearDown and isFunction(testcase.tearDown) then
-                statusCode, errorObject.message = pcall(testcase.tearDown, testcase);
+                statusCode, errorObject = testcase:tearDown();
             else
                 statusCode, errorObject = true, errorObjectDefault;
             end
