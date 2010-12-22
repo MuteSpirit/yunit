@@ -136,10 +136,10 @@ TEST_FIXTURE("UseTestTmpDirFixture")
 {
     setUp = function(self)
         self.tmpDir = fs.tmpDirName();
-        ASSERT_NOT_NIL(self.tmpDir);
+        ASSERT_IS_NOT_NIL(self.tmpDir);
         local curDir = fs.currentdir();
-        ASSERT_NOT_NIL(curDir);
-        ASSERT_NIL(fs.chdir(self.tmpDir));
+        ASSERT_IS_NOT_NIL(curDir);
+        ASSERT_IS_NIL(fs.chdir(self.tmpDir));
         ASSERT_TRUE(fs.mkdir(self.tmpDir));
         ASSERT_TRUE(fs.chdir(self.tmpDir));
         ASSERT_TRUE(fs.chdir(curDir));
@@ -147,7 +147,7 @@ TEST_FIXTURE("UseTestTmpDirFixture")
     ;
 
     teardown = function(self)
-        ASSERT_NOT_NIL(self.tmpDir);
+        ASSERT_IS_NOT_NIL(self.tmpDir);
         ASSERT_TRUE(fs.chdir(self.tmpDir .. '..'))
         ASSERT_TRUE(fs.rmdir(self.tmpDir));
     end
@@ -178,101 +178,101 @@ end
 TEST_CASE{"filenameTest", function(self)
     local name, ext, dir;
     name, ext = fs.filename('c:/readme.txt');
-    ASSERT_NOT_NIL(name);
-    ASSERT_NOT_NIL(ext);
+    ASSERT_IS_NOT_NIL(name);
+    ASSERT_IS_NOT_NIL(ext);
     ASSERT_EQUAL('txt', ext);
     ASSERT_EQUAL('readme', name);
 
     name, ext = fs.filename('/tmp/readme.txt');
-    ASSERT_NOT_NIL(name);
-    ASSERT_NOT_NIL(ext);
+    ASSERT_IS_NOT_NIL(name);
+    ASSERT_IS_NOT_NIL(ext);
     ASSERT_EQUAL('txt', ext);
     ASSERT_EQUAL('readme', name);
 
     name, ext = fs.filename('./readme.txt');
-    ASSERT_NOT_NIL(name);
-    ASSERT_NOT_NIL(ext);
+    ASSERT_IS_NOT_NIL(name);
+    ASSERT_IS_NOT_NIL(ext);
     ASSERT_EQUAL('txt', ext);
     ASSERT_EQUAL('readme', name);
 
     name, ext = fs.filename('c:/readme.txt.bak');
-    ASSERT_NOT_NIL(name);
-    ASSERT_NOT_NIL(ext);
+    ASSERT_IS_NOT_NIL(name);
+    ASSERT_IS_NOT_NIL(ext);
     ASSERT_EQUAL('bak', ext);
     ASSERT_EQUAL('readme.txt', name);
 
     name, ext = fs.filename('c:/README');
-    ASSERT_NOT_NIL(name);
-    ASSERT_NOT_NIL(ext);
+    ASSERT_IS_NOT_NIL(name);
+    ASSERT_IS_NOT_NIL(ext);
     ASSERT_EQUAL(ext, '');
     ASSERT_EQUAL(name, 'README');
 
     name, ext = fs.filename('c:/');
-    ASSERT_NOT_NIL(name);
-    ASSERT_NOT_NIL(ext);
+    ASSERT_IS_NOT_NIL(name);
+    ASSERT_IS_NOT_NIL(ext);
     ASSERT_EQUAL(ext, '');
     ASSERT_EQUAL(name, '');
 
     name, ext = fs.filename('c:/readme.txt ');
-    ASSERT_NOT_NIL(name);
-    ASSERT_NOT_NIL(ext);
+    ASSERT_IS_NOT_NIL(name);
+    ASSERT_IS_NOT_NIL(ext);
     ASSERT_EQUAL('txt', ext);
     ASSERT_EQUAL('readme', name);
 
     name, ext = fs.filename('c:/readme_again.tx_t');
-    ASSERT_NOT_NIL(name);
-    ASSERT_NOT_NIL(ext);
+    ASSERT_IS_NOT_NIL(name);
+    ASSERT_IS_NOT_NIL(ext);
     ASSERT_EQUAL('tx_t', ext);
     ASSERT_EQUAL('readme_again', name);
 
     name, ext = fs.filename('c:\\path\\to\\dir\\readme_again.tx_t');
-    ASSERT_NOT_NIL(name);
-    ASSERT_NOT_NIL(ext);
+    ASSERT_IS_NOT_NIL(name);
+    ASSERT_IS_NOT_NIL(ext);
     ASSERT_EQUAL('tx_t', ext);
     ASSERT_EQUAL('readme_again', name);
 
     name, ext = fs.filename('d:/svn_wv_rpo_trunk/.svn/dir-prop-base');
-    ASSERT_NOT_NIL(name);
-    ASSERT_NOT_NIL(ext);
+    ASSERT_IS_NOT_NIL(name);
+    ASSERT_IS_NOT_NIL(ext);
     ASSERT_EQUAL('', ext);
     ASSERT_EQUAL('dir-prop-base', name);
 
     name, ext = fs.filename('d:/svn_wv_rpo_trunk/.svn/dir-prop-base');
-    ASSERT_NOT_NIL(name);
-    ASSERT_NOT_NIL(ext);
+    ASSERT_IS_NOT_NIL(name);
+    ASSERT_IS_NOT_NIL(ext);
     ASSERT_EQUAL('', ext);
     ASSERT_EQUAL('dir-prop-base', name);
 
     name, ext, dir = fs.filename('d:/svn_wv_rpo_trunk/dir-prop-base/.svn/dir-prop-base');
-    ASSERT_NOT_NIL(name);
-    ASSERT_NOT_NIL(ext);
+    ASSERT_IS_NOT_NIL(name);
+    ASSERT_IS_NOT_NIL(ext);
     ASSERT_EQUAL('', ext);
     ASSERT_EQUAL('dir-prop-base', name);
     ASSERT_EQUAL('d:/svn_wv_rpo_trunk/dir-prop-base/.svn/', dir);
 
     name, ext = fs.filename('d:/svn_wv_rpo_trunk/.svn');
-    ASSERT_NOT_NIL(name);
-    ASSERT_NOT_NIL(ext);
+    ASSERT_IS_NOT_NIL(name);
+    ASSERT_IS_NOT_NIL(ext);
     ASSERT_EQUAL('svn', ext);
     ASSERT_EQUAL('', name);
 
     name, ext, dir = fs.filename('d:/svn_wv_rpo_trunk/.svn/.svn');
-    ASSERT_NOT_NIL(name);
-    ASSERT_NOT_NIL(ext);
+    ASSERT_IS_NOT_NIL(name);
+    ASSERT_IS_NOT_NIL(ext);
     ASSERT_EQUAL('svn', ext);
     ASSERT_EQUAL('', name);
     ASSERT_EQUAL('d:/svn_wv_rpo_trunk/.svn/', dir);
 
     name, ext, dir = fs.filename('gepart_ac.ini');
-    ASSERT_NOT_NIL(name);
-    ASSERT_NOT_NIL(ext);
+    ASSERT_IS_NOT_NIL(name);
+    ASSERT_IS_NOT_NIL(ext);
     ASSERT_EQUAL('gepart_ac', name);
     ASSERT_EQUAL('ini', ext);
     ASSERT_EQUAL('', dir);
 
     name, ext, dir = fs.filename('test spaces.ini');
-    ASSERT_NOT_NIL(name);
-    ASSERT_NOT_NIL(ext);
+    ASSERT_IS_NOT_NIL(name);
+    ASSERT_IS_NOT_NIL(ext);
     ASSERT_EQUAL('test spaces', name);
     ASSERT_EQUAL('ini', ext);
     ASSERT_EQUAL('', dir);
@@ -446,12 +446,12 @@ TEST_CASE_EX{"mkAndRmDirTest", "UseTestTmpDirFixture", function(self)
     -- delete directory with empty text file
     do
         local tmpSubdir = self.tmpDir .. os.tmpname() .. fs.slash();
-        ASSERT_NIL(fs.chdir(tmpSubdir))
+        ASSERT_IS_NIL(fs.chdir(tmpSubdir))
         ASSERT_TRUE(fs.mkdir(tmpSubdir))
         ASSERT_TRUE(fs.chdir(tmpSubdir))
         local tmpFilePath = tmpSubdir .. 'tmp.file'
         local tmpFile = io.open(tmpFilePath, 'w')
-        ASSERT_NOT_NIL(tmpFile)
+        ASSERT_IS_NOT_NIL(tmpFile)
         tmpFile:close()
         ASSERT_TRUE(fs.chdir(self.tmpDir))
         ASSERT_TRUE(fs.rmdir(tmpSubdir))
@@ -459,13 +459,13 @@ TEST_CASE_EX{"mkAndRmDirTest", "UseTestTmpDirFixture", function(self)
     -- delete directory with NOT empty text file
     do
         local tmpSubdir = self.tmpDir .. os.tmpname() .. fs.slash();
-        ASSERT_NIL(fs.chdir(tmpSubdir))
+        ASSERT_IS_NIL(fs.chdir(tmpSubdir))
         ASSERT_TRUE(fs.mkdir(tmpSubdir))
         ASSERT_TRUE(fs.chdir(tmpSubdir))
 
         local tmpFilePath = tmpSubdir .. 'tmp.file'
         local tmpFile = io.open(tmpFilePath, 'w')
-        ASSERT_NOT_NIL(tmpFile)
+        ASSERT_IS_NOT_NIL(tmpFile)
         tmpFile:write('some\nsimple\ntext\n')
         tmpFile:close()
 
@@ -475,12 +475,12 @@ TEST_CASE_EX{"mkAndRmDirTest", "UseTestTmpDirFixture", function(self)
     -- delete directory with empty subdirectory
     do
         local tmpSubdir = self.tmpDir .. os.tmpname() .. fs.slash();
-        ASSERT_NIL(fs.chdir(tmpSubdir))
+        ASSERT_IS_NIL(fs.chdir(tmpSubdir))
         ASSERT_TRUE(fs.mkdir(tmpSubdir))
         ASSERT_TRUE(fs.chdir(tmpSubdir))
 
         local tmpSubSubdir = tmpSubdir .. 'subdir' .. fs.slash();
-        ASSERT_NIL(fs.chdir(tmpSubSubdir));
+        ASSERT_IS_NIL(fs.chdir(tmpSubSubdir));
         ASSERT_TRUE(fs.mkdir(tmpSubSubdir));
         ASSERT_TRUE(fs.chdir(tmpSubSubdir));
         ASSERT_TRUE(fs.chdir(self.tmpDir));
@@ -490,18 +490,18 @@ TEST_CASE_EX{"mkAndRmDirTest", "UseTestTmpDirFixture", function(self)
     -- delete directory with subdirectory with NOT empty text file
     do
         local tmpSubdir = self.tmpDir .. os.tmpname() .. fs.slash();
-        ASSERT_NIL(fs.chdir(tmpSubdir))
+        ASSERT_IS_NIL(fs.chdir(tmpSubdir))
         ASSERT_TRUE(fs.mkdir(tmpSubdir))
         ASSERT_TRUE(fs.chdir(tmpSubdir))
 
         local tmpSubSubdir = tmpSubdir .. 'subdir' .. fs.slash();
-        ASSERT_NIL(fs.chdir(tmpSubSubdir));
+        ASSERT_IS_NIL(fs.chdir(tmpSubSubdir));
         ASSERT_TRUE(fs.mkdir(tmpSubSubdir));
         ASSERT_TRUE(fs.chdir(tmpSubSubdir));
 
         local tmpFilePath = tmpSubSubdir .. 'tmp.file'
         local tmpFile = io.open(tmpFilePath, 'w')
-        ASSERT_NOT_NIL(tmpFile)
+        ASSERT_IS_NOT_NIL(tmpFile)
         tmpFile:write('some\nsimple\ntext\n')
         tmpFile:close()
 
@@ -518,7 +518,7 @@ TEST_CASE_EX{"createTextFileWithContentTest", "UseTestTmpDirFixture", function(s
     ASSERT_TRUE(fs.createTextFileWithContent(tmpFilePath, text));
 
     local tmpFile = io.open(tmpFilePath, 'r');
-    ASSERT_NOT_NIL(tmpFile);
+    ASSERT_IS_NOT_NIL(tmpFile);
     ASSERT_EQUAL(text, tmpFile:read("*a"));
     tmpFile:close();
 end
