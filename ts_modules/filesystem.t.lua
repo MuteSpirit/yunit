@@ -1,7 +1,7 @@
  -- -*- coding: utf-8 -*-
---------------------------------------------------------------------------------------------------------------
+
 -- Documentation
---------------------------------------------------------------------------------------------------------------
+
 
 --- \fn whatOs()
 --- \brief Define operative system, on which script is runned
@@ -120,470 +120,500 @@
 --- \param[in] path Full or relative local file or folder path
 --- \return true if 'path' is path of file or folder on local disk location
 
-
-local lunit = require("lunit")
-
---------------------------------------------------------------------------------------------------------------
-module("filesystem_test_common", lunit.testcase, package.seeall)
---------------------------------------------------------------------------------------------------------------
-
 local fs = require("filesystem")
 local luaExt = require('lua_ext')
 
-function whatOsTest()
-    assert_equal('win', fs.whatOs())
+local luaUnit = require('testunit.luaunit');
+module('filesystem.t', luaUnit.testmodule, package.seeall);
+
+
+local function trace()
+    -- empty for disable output
 end
 
---------------------------------------------------------------------------------------------------------------
-function canonizePathTest()
+
+TEST_FIXTURE("UseTestTmpDirFixture")
+{
+    setUp = function(self)
+        self.tmpDir = fs.tmpDirName();
+        ASSERT_NOT_NIL(self.tmpDir);
+        local curDir = fs.currentdir();
+        ASSERT_NOT_NIL(curDir);
+        ASSERT_NIL(fs.chdir(self.tmpDir));
+        ASSERT_TRUE(fs.mkdir(self.tmpDir));
+        ASSERT_TRUE(fs.chdir(self.tmpDir));
+        ASSERT_TRUE(fs.chdir(curDir));
+    end
+    ;
+
+    teardown = function(self)
+        ASSERT_NOT_NIL(self.tmpDir);
+        ASSERT_TRUE(fs.chdir(self.tmpDir .. '..'))
+        ASSERT_TRUE(fs.rmdir(self.tmpDir));
+    end
+    ;
+};
+
+TEST_SUITE("filesystem_test_common")
+{
+
+
+TEST_CASE{"whatOsTest", function(self)
+    ASSERT_EQUAL('win', fs.whatOs())
+end
+};
+
+
+TEST_CASE{"canonizePathTest", function(self)
     local slash = '/';
-    assert_equal('c:/path/to/dir/', fs.canonizePath('c:/path/to/dir/', slash))
-    assert_equal('c:/path/to/dir/', fs.canonizePath('c:\\path\\to\\dir\\', slash))
-    assert_equal('c:/path/to/dir/subdir', fs.canonizePath('c:\\path/to//dir\\\\subdir', slash))
-    assert_equal('\\\\host1/path/to/dir/subdir', fs.canonizePath('\\\\host1\\path/to//dir\\\\subdir'))
-    assert_equal('//host2/path/to/dir/subdir', fs.canonizePath('//host2\\path/to//dir\\\\subdir'))
+    ASSERT_EQUAL('c:/path/to/dir/', fs.canonizePath('c:/path/to/dir/', slash))
+    ASSERT_EQUAL('c:/path/to/dir/', fs.canonizePath('c:\\path\\to\\dir\\', slash))
+    ASSERT_EQUAL('c:/path/to/dir/subdir', fs.canonizePath('c:\\path/to//dir\\\\subdir', slash))
+    ASSERT_EQUAL('\\\\host1/path/to/dir/subdir', fs.canonizePath('\\\\host1\\path/to//dir\\\\subdir'))
+    ASSERT_EQUAL('//host2/path/to/dir/subdir', fs.canonizePath('//host2\\path/to//dir\\\\subdir'))
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function filenameTest()
+
+TEST_CASE{"filenameTest", function(self)
     local name, ext, dir;
     name, ext = fs.filename('c:/readme.txt');
-    assert_not_nil(name);
-    assert_not_nil(ext);
-    assert_equal('txt', ext);
-    assert_equal('readme', name);
+    ASSERT_NOT_NIL(name);
+    ASSERT_NOT_NIL(ext);
+    ASSERT_EQUAL('txt', ext);
+    ASSERT_EQUAL('readme', name);
 
     name, ext = fs.filename('/tmp/readme.txt');
-    assert_not_nil(name);
-    assert_not_nil(ext);
-    assert_equal('txt', ext);
-    assert_equal('readme', name);
+    ASSERT_NOT_NIL(name);
+    ASSERT_NOT_NIL(ext);
+    ASSERT_EQUAL('txt', ext);
+    ASSERT_EQUAL('readme', name);
 
     name, ext = fs.filename('./readme.txt');
-    assert_not_nil(name);
-    assert_not_nil(ext);
-    assert_equal('txt', ext);
-    assert_equal('readme', name);
+    ASSERT_NOT_NIL(name);
+    ASSERT_NOT_NIL(ext);
+    ASSERT_EQUAL('txt', ext);
+    ASSERT_EQUAL('readme', name);
 
     name, ext = fs.filename('c:/readme.txt.bak');
-    assert_not_nil(name);
-    assert_not_nil(ext);
-    assert_equal('bak', ext);
-    assert_equal('readme.txt', name);
+    ASSERT_NOT_NIL(name);
+    ASSERT_NOT_NIL(ext);
+    ASSERT_EQUAL('bak', ext);
+    ASSERT_EQUAL('readme.txt', name);
 
     name, ext = fs.filename('c:/README');
-    assert_not_nil(name);
-    assert_not_nil(ext);
-    assert_equal(ext, '');
-    assert_equal(name, 'README');
+    ASSERT_NOT_NIL(name);
+    ASSERT_NOT_NIL(ext);
+    ASSERT_EQUAL(ext, '');
+    ASSERT_EQUAL(name, 'README');
 
     name, ext = fs.filename('c:/');
-    assert_not_nil(name);
-    assert_not_nil(ext);
-    assert_equal(ext, '');
-    assert_equal(name, '');
+    ASSERT_NOT_NIL(name);
+    ASSERT_NOT_NIL(ext);
+    ASSERT_EQUAL(ext, '');
+    ASSERT_EQUAL(name, '');
 
     name, ext = fs.filename('c:/readme.txt ');
-    assert_not_nil(name);
-    assert_not_nil(ext);
-    assert_equal('txt', ext);
-    assert_equal('readme', name);
+    ASSERT_NOT_NIL(name);
+    ASSERT_NOT_NIL(ext);
+    ASSERT_EQUAL('txt', ext);
+    ASSERT_EQUAL('readme', name);
 
     name, ext = fs.filename('c:/readme_again.tx_t');
-    assert_not_nil(name);
-    assert_not_nil(ext);
-    assert_equal('tx_t', ext);
-    assert_equal('readme_again', name);
+    ASSERT_NOT_NIL(name);
+    ASSERT_NOT_NIL(ext);
+    ASSERT_EQUAL('tx_t', ext);
+    ASSERT_EQUAL('readme_again', name);
 
     name, ext = fs.filename('c:\\path\\to\\dir\\readme_again.tx_t');
-    assert_not_nil(name);
-    assert_not_nil(ext);
-    assert_equal('tx_t', ext);
-    assert_equal('readme_again', name);
+    ASSERT_NOT_NIL(name);
+    ASSERT_NOT_NIL(ext);
+    ASSERT_EQUAL('tx_t', ext);
+    ASSERT_EQUAL('readme_again', name);
 
     name, ext = fs.filename('d:/svn_wv_rpo_trunk/.svn/dir-prop-base');
-    assert_not_nil(name);
-    assert_not_nil(ext);
-    assert_equal('', ext);
-    assert_equal('dir-prop-base', name);
+    ASSERT_NOT_NIL(name);
+    ASSERT_NOT_NIL(ext);
+    ASSERT_EQUAL('', ext);
+    ASSERT_EQUAL('dir-prop-base', name);
 
     name, ext = fs.filename('d:/svn_wv_rpo_trunk/.svn/dir-prop-base');
-    assert_not_nil(name);
-    assert_not_nil(ext);
-    assert_equal('', ext);
-    assert_equal('dir-prop-base', name);
+    ASSERT_NOT_NIL(name);
+    ASSERT_NOT_NIL(ext);
+    ASSERT_EQUAL('', ext);
+    ASSERT_EQUAL('dir-prop-base', name);
 
     name, ext, dir = fs.filename('d:/svn_wv_rpo_trunk/dir-prop-base/.svn/dir-prop-base');
-    assert_not_nil(name);
-    assert_not_nil(ext);
-    assert_equal('', ext);
-    assert_equal('dir-prop-base', name);
-    assert_equal('d:/svn_wv_rpo_trunk/dir-prop-base/.svn/', dir);
+    ASSERT_NOT_NIL(name);
+    ASSERT_NOT_NIL(ext);
+    ASSERT_EQUAL('', ext);
+    ASSERT_EQUAL('dir-prop-base', name);
+    ASSERT_EQUAL('d:/svn_wv_rpo_trunk/dir-prop-base/.svn/', dir);
 
     name, ext = fs.filename('d:/svn_wv_rpo_trunk/.svn');
-    assert_not_nil(name);
-    assert_not_nil(ext);
-    assert_equal('svn', ext);
-    assert_equal('', name);
+    ASSERT_NOT_NIL(name);
+    ASSERT_NOT_NIL(ext);
+    ASSERT_EQUAL('svn', ext);
+    ASSERT_EQUAL('', name);
 
     name, ext, dir = fs.filename('d:/svn_wv_rpo_trunk/.svn/.svn');
-    assert_not_nil(name);
-    assert_not_nil(ext);
-    assert_equal('svn', ext);
-    assert_equal('', name);
-    assert_equal('d:/svn_wv_rpo_trunk/.svn/', dir);
+    ASSERT_NOT_NIL(name);
+    ASSERT_NOT_NIL(ext);
+    ASSERT_EQUAL('svn', ext);
+    ASSERT_EQUAL('', name);
+    ASSERT_EQUAL('d:/svn_wv_rpo_trunk/.svn/', dir);
 
     name, ext, dir = fs.filename('gepart_ac.ini');
-    assert_not_nil(name);
-    assert_not_nil(ext);
-    assert_equal('gepart_ac', name);
-    assert_equal('ini', ext);
-    assert_equal('', dir);
+    ASSERT_NOT_NIL(name);
+    ASSERT_NOT_NIL(ext);
+    ASSERT_EQUAL('gepart_ac', name);
+    ASSERT_EQUAL('ini', ext);
+    ASSERT_EQUAL('', dir);
 
     name, ext, dir = fs.filename('test spaces.ini');
-    assert_not_nil(name);
-    assert_not_nil(ext);
-    assert_equal('test spaces', name);
-    assert_equal('ini', ext);
-    assert_equal('', dir);
+    ASSERT_NOT_NIL(name);
+    ASSERT_NOT_NIL(ext);
+    ASSERT_EQUAL('test spaces', name);
+    ASSERT_EQUAL('ini', ext);
+    ASSERT_EQUAL('', dir);
 
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function isExistTest()
-    assert_true(fs.isExist(fs.currentdir()), fs.currentdir() .. ' is not exist');
-    assert_true(fs.isExist('c:/'));
-    assert_true(fs.isExist('c:'));
+
+TEST_CASE{"isExistTest", function(self)
+    ASSERT_TRUE(fs.isExist(fs.currentdir()), fs.currentdir() .. ' is not exist');
+    ASSERT_TRUE(fs.isExist('c:/'));
+    ASSERT_TRUE(fs.isExist('c:'));
 end
+};
 
-function isDirTest()
-    assert_true(fs.isDir(fs.currentdir()), fs.currentdir() .. ' is not exist');
-    assert_true(fs.isDir('c:/'));
-    assert_true(fs.isDir('c:'));
+TEST_CASE{"isDirTest", function(self)
+    ASSERT_TRUE(fs.isDir(fs.currentdir()), fs.currentdir() .. ' is not exist');
+    ASSERT_TRUE(fs.isDir('c:/'));
+    ASSERT_TRUE(fs.isDir('c:'));
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function dirnameTest()
-    assert_equal('c:/', fs.dirname('c:/'));
-    assert_equal('c:/path/to/dir/', fs.dirname('c:/path/to/dir/file.ext'));
-    assert_equal('c:/', fs.dirname('c:/file'));
-    assert_equal('c:/dir/', fs.dirname('c:/dir/'));
+
+TEST_CASE{"dirnameTest", function(self)
+    ASSERT_EQUAL('c:/', fs.dirname('c:/'));
+    ASSERT_EQUAL('c:/path/to/dir/', fs.dirname('c:/path/to/dir/file.ext'));
+    ASSERT_EQUAL('c:/', fs.dirname('c:/file'));
+    ASSERT_EQUAL('c:/dir/', fs.dirname('c:/dir/'));
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function isFullPathTest()
+
+TEST_CASE{"isFullPathTest", function(self)
     local OS = fs.whatOs();
     if 'win' == OS then
-        assert_true(fs.isFullPath('c:/dir'));
-        assert_true(fs.isFullPath('C:/dir'));
-        assert_true(fs.isFullPath('\\\\host/dir'));
-        assert_false(fs.isFullPath('../dir'));
-        assert_false(fs.isFullPath('1:/dir'));
-        assert_false(fs.isFullPath('abc:/dir'));
-        assert_false(fs.isFullPath('д:/dir'));
-        assert_true(fs.isFullPath('/etc/fstab'));
+        ASSERT_TRUE(fs.isFullPath('c:/dir'));
+        ASSERT_TRUE(fs.isFullPath('C:/dir'));
+        ASSERT_TRUE(fs.isFullPath('\\\\host/dir'));
+        ASSERT_FALSE(fs.isFullPath('../dir'));
+        ASSERT_FALSE(fs.isFullPath('1:/dir'));
+        ASSERT_FALSE(fs.isFullPath('abc:/dir'));
+        ASSERT_FALSE(fs.isFullPath('д:/dir'));
+        ASSERT_TRUE(fs.isFullPath('/etc/fstab'));
     elseif 'unix' == OS then
-        assert_true(fs.isFullPath('/etc/fstab'));
-        assert_true(fs.isFullPath('~/dir'));
-        assert_false(fs.isFullPath('./configure'));
+        ASSERT_TRUE(fs.isFullPath('/etc/fstab'));
+        ASSERT_TRUE(fs.isFullPath('~/dir'));
+        ASSERT_FALSE(fs.isFullPath('./configure'));
     else
-        assert_true(false, "Unknown operative system");
+        ASSERT_TRUE(false, "Unknown operative system");
     end
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function isRelativePathTest()
+
+TEST_CASE{"isRelativePathTest", function(self)
     local OS = fs.whatOs();
     if 'win' == OS then
-        assert_true(fs.isRelativePath('./dir'));
-        assert_true(fs.isRelativePath('../dir'));
+        ASSERT_TRUE(fs.isRelativePath('./dir'));
+        ASSERT_TRUE(fs.isRelativePath('../dir'));
 
-        assert_false(fs.isRelativePath('.../dir'));
-        assert_false(fs.isRelativePath('c:/dir'));
-        assert_false(fs.isRelativePath('\\\\host/dir'));
+        ASSERT_FALSE(fs.isRelativePath('.../dir'));
+        ASSERT_FALSE(fs.isRelativePath('c:/dir'));
+        ASSERT_FALSE(fs.isRelativePath('\\\\host/dir'));
     elseif 'unix' == OS then
-        assert_true(fs.isRelativePath('./configure'));
-        assert_true(fs.isRelativePath('../dir'));
+        ASSERT_TRUE(fs.isRelativePath('./configure'));
+        ASSERT_TRUE(fs.isRelativePath('../dir'));
 
-        assert_false(fs.isRelativePath('.../dir'));
-        assert_false(fs.isRelativePath('/etc/fstab'));
-        assert_false(fs.isRelativePath('~/dir'));
+        ASSERT_FALSE(fs.isRelativePath('.../dir'));
+        ASSERT_FALSE(fs.isRelativePath('/etc/fstab'));
+        ASSERT_FALSE(fs.isRelativePath('~/dir'));
     else
-        assert_true(false, "Unknown operative system");
+        ASSERT_TRUE(false, "Unknown operative system");
     end
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function filePathTemplatesToRePatternsTest()
-    assert_equal('[^/\\]*$', fs.fileTemplToRe('*'));
-    assert_equal('[^/\\]?$', fs.fileTemplToRe('?'));
-    assert_equal('[^/\\]?[^/\\]?$', fs.fileTemplToRe('??'));
-    assert_equal('[^/\\]*%.lua$', fs.fileTemplToRe('*.lua'));
-    assert_equal('[^/\\]?[^/\\]*$', fs.fileTemplToRe('?*'));
-    assert_equal('[^/\\]*[^/\\]?$', fs.fileTemplToRe('*?'));
-    assert_equal('/dir/%([^/\\]?[^/\\]?[^/\\]?[^/\\]*%.[^/\\]*%)%)$', fs.fileTemplToRe('/dir/(???*.*))'));
+
+TEST_CASE{"filePathTemplatesToRePatternsTest", function(self)
+    ASSERT_EQUAL('[^/\\]*$', fs.fileTemplToRe('*'));
+    ASSERT_EQUAL('[^/\\]?$', fs.fileTemplToRe('?'));
+    ASSERT_EQUAL('[^/\\]?[^/\\]?$', fs.fileTemplToRe('??'));
+    ASSERT_EQUAL('[^/\\]*%.lua$', fs.fileTemplToRe('*.lua'));
+    ASSERT_EQUAL('[^/\\]?[^/\\]*$', fs.fileTemplToRe('?*'));
+    ASSERT_EQUAL('[^/\\]*[^/\\]?$', fs.fileTemplToRe('*?'));
+    ASSERT_EQUAL('/dir/%([^/\\]?[^/\\]?[^/\\]?[^/\\]*%.[^/\\]*%)%)$', fs.fileTemplToRe('/dir/(???*.*))'));
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function selectFilesByTemplatesTest()
+
+TEST_CASE{"selectFilesByTemplatesTest", function(self)
     local fileNames =
     {
         'file.cpp', 'file.h', 'file.t.cpp',
         'file.lua', 'file.t.lua', 'file.luac',
         'file.cxx', 'file.c', 'file.hpp',
         'file.txt', 'file', 'FILE',
-    };
+   };
 
     local actual, expected;
 
     expected = {'file.cpp', 'file.t.cpp',};
     actual = fs.includeFiles(fileNames, '*.cpp');
     for i = 1, #expected do
-        assert_equal(expected[i], actual[i]);
+        ASSERT_EQUAL(expected[i], actual[i]);
     end
     actual = fs.excludeFiles(expected, '*.t.cpp');
     expected = {'file.cpp'};
     for i = 1, #expected do
-        assert_equal(expected[i], actual[i]);
+        ASSERT_EQUAL(expected[i], actual[i]);
     end
 
     expected = {'file.luac', 'file.lua', 'file.t.lua', };
     actual = fs.includeFiles(fileNames, '*.lua?');
     for _, path in pairs(expected) do
-        assert_true(luaExt.findValue(actual, path));
+        ASSERT_TRUE(luaExt.findValue(actual, path));
     end
     actual = fs.excludeFiles(fileNames, '*c');
     expected = {'file.lua', 'file.t.lua', };
     for _, path in pairs(expected) do
-        assert_true(luaExt.findValue(actual, path));
+        ASSERT_TRUE(luaExt.findValue(actual, path));
     end
 
     expected = {'file.c', 'file.cpp', 'file.cxx', };
     actual = fs.includeFiles(fileNames, '*.c*');
     for _, path in pairs(expected) do
-        assert_true(luaExt.findValue(actual, path));
+        ASSERT_TRUE(luaExt.findValue(actual, path));
     end
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function filePathByTemplateTest()
-    assert_true(fs.includeFile('main.h', '*.h'));
-    assert_true(fs.includeFile('main.cpp', '*.cpp'));
-    assert_false(fs.includeFile('main.h ', '*.h'));
 
-    assert_true(fs.includeFile('main.h', '*.?'));
-    assert_true(fs.includeFile('main.c', '*.?'));
-    assert_true(fs.includeFile('main.c', '*.??'));
+TEST_CASE{"filePathByTemplateTest", function(self)
+    ASSERT_TRUE(fs.includeFile('main.h', '*.h'));
+    ASSERT_TRUE(fs.includeFile('main.cpp', '*.cpp'));
+    ASSERT_FALSE(fs.includeFile('main.h ', '*.h'));
 
-    assert_true(fs.includeFile('main.t.cpp', '*.cpp'));
-    assert_true(fs.includeFile('main.h.cpp', '*.cpp'));
-    assert_false(fs.includeFile('main.h.cpp', '*.h'));
+    ASSERT_TRUE(fs.includeFile('main.h', '*.?'));
+    ASSERT_TRUE(fs.includeFile('main.c', '*.?'));
+    ASSERT_TRUE(fs.includeFile('main.c', '*.??'));
 
-    assert_true(fs.includeFile('./main.h', '*.h'));
-    assert_true(fs.includeFile('../main.h', '*.h'));
-    assert_true(fs.includeFile('d:/main.cpp/main.h', '*.h'));
-    assert_false(fs.includeFile('d:/main.cpp/main.h', '*.cpp'));
+    ASSERT_TRUE(fs.includeFile('main.t.cpp', '*.cpp'));
+    ASSERT_TRUE(fs.includeFile('main.h.cpp', '*.cpp'));
+    ASSERT_FALSE(fs.includeFile('main.h.cpp', '*.h'));
+
+    ASSERT_TRUE(fs.includeFile('./main.h', '*.h'));
+    ASSERT_TRUE(fs.includeFile('../main.h', '*.h'));
+    ASSERT_TRUE(fs.includeFile('d:/main.cpp/main.h', '*.h'));
+    ASSERT_FALSE(fs.includeFile('d:/main.cpp/main.h', '*.cpp'));
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-module("filesystem_test_files", lunit.testcase, package.seeall)
---------------------------------------------------------------------------------------------------------------
 
-local tmpDir;
+};
 
-function setup()
-    tmpDir = fs.tmpDirName();
-    assert_not_nil(tmpDir);
-    local curDir = fs.currentdir();
-    assert_not_nil(curDir);
-    assert_nil(fs.chdir(tmpDir));
-    assert_true(fs.mkdir(tmpDir));
-    assert_true(fs.chdir(tmpDir));
-    assert_true(fs.chdir(curDir));
-end
+TEST_SUITE("filesystem_test_files")
+{
 
-function teardown()
-    assert_not_nil(tmpDir);
-    assert_true(fs.chdir(tmpDir .. '..'))
-    assert_true(fs.rmdir(tmpDir));
-end
 
---------------------------------------------------------------------------------------------------------------
-function mkAndRmDirTest()
-    assert_true(fs.chdir(tmpDir));
+
+
+TEST_CASE_EX{"mkAndRmDirTest", "UseTestTmpDirFixture", function(self)
+    ASSERT_TRUE(fs.chdir(self.tmpDir));
     -- delete empty directory
     do
-        local tmpSubdir = tmpDir .. os.tmpname();
-        assert_true(fs.mkdir(tmpSubdir));
-        assert_true(fs.chdir(tmpSubdir));
-        assert_true(fs.chdir(tmpDir));
-        assert_true(fs.rmdir(tmpSubdir));
+        local tmpSubdir = self.tmpDir .. os.tmpname();
+        ASSERT_TRUE(fs.mkdir(tmpSubdir));
+        ASSERT_TRUE(fs.chdir(tmpSubdir));
+        ASSERT_TRUE(fs.chdir(self.tmpDir));
+        ASSERT_TRUE(fs.rmdir(tmpSubdir));
     end
     -- delete directory with empty text file
     do
-        local tmpSubdir = tmpDir .. os.tmpname() .. fs.slash();
-        assert_nil(fs.chdir(tmpSubdir))
-        assert_true(fs.mkdir(tmpSubdir))
-        assert_true(fs.chdir(tmpSubdir))
+        local tmpSubdir = self.tmpDir .. os.tmpname() .. fs.slash();
+        ASSERT_NIL(fs.chdir(tmpSubdir))
+        ASSERT_TRUE(fs.mkdir(tmpSubdir))
+        ASSERT_TRUE(fs.chdir(tmpSubdir))
         local tmpFilePath = tmpSubdir .. 'tmp.file'
         local tmpFile = io.open(tmpFilePath, 'w')
-        assert_not_nil(tmpFile)
+        ASSERT_NOT_NIL(tmpFile)
         tmpFile:close()
-        assert_true(fs.chdir(tmpDir))
-        assert_true(fs.rmdir(tmpSubdir))
+        ASSERT_TRUE(fs.chdir(self.tmpDir))
+        ASSERT_TRUE(fs.rmdir(tmpSubdir))
     end
     -- delete directory with NOT empty text file
     do
-        local tmpSubdir = tmpDir .. os.tmpname() .. fs.slash();
-        assert_nil(fs.chdir(tmpSubdir))
-        assert_true(fs.mkdir(tmpSubdir))
-        assert_true(fs.chdir(tmpSubdir))
+        local tmpSubdir = self.tmpDir .. os.tmpname() .. fs.slash();
+        ASSERT_NIL(fs.chdir(tmpSubdir))
+        ASSERT_TRUE(fs.mkdir(tmpSubdir))
+        ASSERT_TRUE(fs.chdir(tmpSubdir))
 
         local tmpFilePath = tmpSubdir .. 'tmp.file'
         local tmpFile = io.open(tmpFilePath, 'w')
-        assert_not_nil(tmpFile)
+        ASSERT_NOT_NIL(tmpFile)
         tmpFile:write('some\nsimple\ntext\n')
         tmpFile:close()
 
-        assert_true(fs.chdir(tmpDir))
-        assert_true(fs.rmdir(tmpSubdir))
+        ASSERT_TRUE(fs.chdir(self.tmpDir))
+        ASSERT_TRUE(fs.rmdir(tmpSubdir))
     end
     -- delete directory with empty subdirectory
     do
-        local tmpSubdir = tmpDir .. os.tmpname() .. fs.slash();
-        assert_nil(fs.chdir(tmpSubdir))
-        assert_true(fs.mkdir(tmpSubdir))
-        assert_true(fs.chdir(tmpSubdir))
+        local tmpSubdir = self.tmpDir .. os.tmpname() .. fs.slash();
+        ASSERT_NIL(fs.chdir(tmpSubdir))
+        ASSERT_TRUE(fs.mkdir(tmpSubdir))
+        ASSERT_TRUE(fs.chdir(tmpSubdir))
 
         local tmpSubSubdir = tmpSubdir .. 'subdir' .. fs.slash();
-        assert_nil(fs.chdir(tmpSubSubdir));
-        assert_true(fs.mkdir(tmpSubSubdir));
-        assert_true(fs.chdir(tmpSubSubdir));
-        assert_true(fs.chdir(tmpDir));
+        ASSERT_NIL(fs.chdir(tmpSubSubdir));
+        ASSERT_TRUE(fs.mkdir(tmpSubSubdir));
+        ASSERT_TRUE(fs.chdir(tmpSubSubdir));
+        ASSERT_TRUE(fs.chdir(self.tmpDir));
 
-        assert_true(fs.rmdir(tmpSubdir));
+        ASSERT_TRUE(fs.rmdir(tmpSubdir));
     end
     -- delete directory with subdirectory with NOT empty text file
     do
-        local tmpSubdir = tmpDir .. os.tmpname() .. fs.slash();
-        assert_nil(fs.chdir(tmpSubdir))
-        assert_true(fs.mkdir(tmpSubdir))
-        assert_true(fs.chdir(tmpSubdir))
+        local tmpSubdir = self.tmpDir .. os.tmpname() .. fs.slash();
+        ASSERT_NIL(fs.chdir(tmpSubdir))
+        ASSERT_TRUE(fs.mkdir(tmpSubdir))
+        ASSERT_TRUE(fs.chdir(tmpSubdir))
 
         local tmpSubSubdir = tmpSubdir .. 'subdir' .. fs.slash();
-        assert_nil(fs.chdir(tmpSubSubdir));
-        assert_true(fs.mkdir(tmpSubSubdir));
-        assert_true(fs.chdir(tmpSubSubdir));
+        ASSERT_NIL(fs.chdir(tmpSubSubdir));
+        ASSERT_TRUE(fs.mkdir(tmpSubSubdir));
+        ASSERT_TRUE(fs.chdir(tmpSubSubdir));
 
         local tmpFilePath = tmpSubSubdir .. 'tmp.file'
         local tmpFile = io.open(tmpFilePath, 'w')
-        assert_not_nil(tmpFile)
+        ASSERT_NOT_NIL(tmpFile)
         tmpFile:write('some\nsimple\ntext\n')
         tmpFile:close()
 
-        assert_true(fs.chdir(tmpDir));
-        assert_true(fs.rmdir(tmpSubdir));
+        ASSERT_TRUE(fs.chdir(self.tmpDir));
+        ASSERT_TRUE(fs.rmdir(tmpSubdir));
     end
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function createTextFileWithContentTest()
-    local tmpFilePath = tmpDir .. 'tmp.file';
+
+TEST_CASE_EX{"createTextFileWithContentTest", "UseTestTmpDirFixture", function(self)
+    local tmpFilePath = self.tmpDir .. 'tmp.file';
     local text = 'some\nsimple\ntext\n';
-    assert_true(fs.createTextFileWithContent(tmpFilePath, text));
+    ASSERT_TRUE(fs.createTextFileWithContent(tmpFilePath, text));
 
     local tmpFile = io.open(tmpFilePath, 'r');
-    assert_not_nil(tmpFile);
-    assert_equal(text, tmpFile:read("*a"));
+    ASSERT_NOT_NIL(tmpFile);
+    ASSERT_EQUAL(text, tmpFile:read("*a"));
     tmpFile:close();
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function isNetworkPathTest()
-    assert_true(fs.isNetworkPath([[\\172.22.3.20\folder\]]));
-    assert_true(fs.isNetworkPath([[\\alias\folder\]]));
 
-    assert_false(fs.isNetworkPath('c:/'));
-    assert_false(fs.isNetworkPath('../'));
-    assert_false(fs.isNetworkPath('./'));
-    assert_false(fs.isNetworkPath('/'));
-    assert_false(fs.isNetworkPath('\\'));
+TEST_CASE_EX{"isNetworkPathTest", "UseTestTmpDirFixture", function(self)
+    ASSERT_TRUE(fs.isNetworkPath([[\\172.22.3.20\folder\]]));
+    ASSERT_TRUE(fs.isNetworkPath([[\\alias\folder\]]));
 
-    assert_true(fs.isNetworkPath([[\\172.22.3.20\folder\file.ext]]));
-    assert_true(fs.isNetworkPath([[\\alias\folder\file.ext]]));
+    ASSERT_FALSE(fs.isNetworkPath('c:/'));
+    ASSERT_FALSE(fs.isNetworkPath('../'));
+    ASSERT_FALSE(fs.isNetworkPath('./'));
+    ASSERT_FALSE(fs.isNetworkPath('/'));
+    ASSERT_FALSE(fs.isNetworkPath('\\'));
+
+    ASSERT_TRUE(fs.isNetworkPath([[\\172.22.3.20\folder\file.ext]]));
+    ASSERT_TRUE(fs.isNetworkPath([[\\alias\folder\file.ext]]));
     
-    assert_false(fs.isNetworkPath('c:/file.ext'));
-    assert_false(fs.isNetworkPath('../file.ext'));
-    assert_false(fs.isNetworkPath('./file.ext'));
-    assert_false(fs.isNetworkPath('/file.ext'));
-    assert_false(fs.isNetworkPath('\\file.ext'));
+    ASSERT_FALSE(fs.isNetworkPath('c:/file.ext'));
+    ASSERT_FALSE(fs.isNetworkPath('../file.ext'));
+    ASSERT_FALSE(fs.isNetworkPath('./file.ext'));
+    ASSERT_FALSE(fs.isNetworkPath('/file.ext'));
+    ASSERT_FALSE(fs.isNetworkPath('\\file.ext'));
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function isLocalFullPathTest()
-    assert_true(fs.isLocalFullPath('c:/'));
-    assert_true(fs.isLocalFullPath('/'));
-    assert_true(fs.isLocalFullPath('\\'));
 
-    assert_true(fs.isLocalFullPath('c:/file.ext'));
-    assert_true(fs.isLocalFullPath('/file.ext'));
-    assert_true(fs.isLocalFullPath('\\file.ext'));
+TEST_CASE_EX{"isLocalFullPathTest", "UseTestTmpDirFixture", function(self)
+    ASSERT_TRUE(fs.isLocalFullPath('c:/'));
+    ASSERT_TRUE(fs.isLocalFullPath('/'));
+    ASSERT_TRUE(fs.isLocalFullPath('\\'));
 
-    assert_false(fs.isLocalFullPath([[\\172.22.3.20\folder\]]));
-    assert_false(fs.isLocalFullPath([[\\alias\folder\]]));
+    ASSERT_TRUE(fs.isLocalFullPath('c:/file.ext'));
+    ASSERT_TRUE(fs.isLocalFullPath('/file.ext'));
+    ASSERT_TRUE(fs.isLocalFullPath('\\file.ext'));
+
+    ASSERT_FALSE(fs.isLocalFullPath([[\\172.22.3.20\folder\]]));
+    ASSERT_FALSE(fs.isLocalFullPath([[\\alias\folder\]]));
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function isLocalPathTest()
-    assert_true(fs.isLocalPath('c:/'));
-    assert_true(fs.isLocalPath('../'));
-    assert_true(fs.isLocalPath('./'));
-    assert_true(fs.isLocalPath('/'));
-    assert_true(fs.isLocalPath('\\'));
 
-    assert_true(fs.isLocalPath('c:/file.ext'));
-    assert_true(fs.isLocalPath('../file.ext'));
-    assert_true(fs.isLocalPath('./file.ext'));
-    assert_true(fs.isLocalPath('/file.ext'));
-    assert_true(fs.isLocalPath('\\file.ext'));
+TEST_CASE_EX{"isLocalPathTest", "UseTestTmpDirFixture", function(self)
+    ASSERT_TRUE(fs.isLocalPath('c:/'));
+    ASSERT_TRUE(fs.isLocalPath('../'));
+    ASSERT_TRUE(fs.isLocalPath('./'));
+    ASSERT_TRUE(fs.isLocalPath('/'));
+    ASSERT_TRUE(fs.isLocalPath('\\'));
+
+    ASSERT_TRUE(fs.isLocalPath('c:/file.ext'));
+    ASSERT_TRUE(fs.isLocalPath('../file.ext'));
+    ASSERT_TRUE(fs.isLocalPath('./file.ext'));
+    ASSERT_TRUE(fs.isLocalPath('/file.ext'));
+    ASSERT_TRUE(fs.isLocalPath('\\file.ext'));
     
-    assert_false(fs.isLocalPath([[\\172.22.3.20\folder\]]));
-    assert_false(fs.isLocalPath([[\\alias\folder\]]));
+    ASSERT_FALSE(fs.isLocalPath([[\\172.22.3.20\folder\]]));
+    ASSERT_FALSE(fs.isLocalPath([[\\alias\folder\]]));
     
-    assert_false(fs.isLocalPath([[\\172.22.3.20\folder\file.ext]]));
-    assert_false(fs.isLocalPath([[\\alias\folder\file.ext]]));
+    ASSERT_FALSE(fs.isLocalPath([[\\172.22.3.20\folder\file.ext]]));
+    ASSERT_FALSE(fs.isLocalPath([[\\alias\folder\file.ext]]));
 end
+};
 
 
---------------------------------------------------------------------------------------------------------------
-function dirBypassTest()
+
+TEST_CASE_EX{"dirBypassTest", "UseTestTmpDirFixture", function(self)
 --     local fileNames =
 --     {
 --         'file.cpp', 'file.h', 'file.t.cpp',
 --         'file.lua', 'file.t.lua', 'file.luac',
 --         'file.cxx', 'file.c', 'file.hpp',
 --         'file.txt', 'file', 'FILE',
---     };
+--     end
+--~     };
     local slash = fs.slash();
     -- Test defining if it is directory or not
-    assert_true(fs.isDir(tmpDir));
-    local tmpFilePath = tmpDir .. 'tmp.file';
-    assert_true(fs.createTextFileWithContent(tmpFilePath));
-    assert_false(fs.isDir(tmpFilePath))
+    ASSERT_TRUE(fs.isDir(self.tmpDir));
+    local tmpFilePath = self.tmpDir .. 'tmp.file';
+    ASSERT_TRUE(fs.createTextFileWithContent(tmpFilePath));
+    ASSERT_FALSE(fs.isDir(tmpFilePath))
 
-    local dirname = tmpDir;
+    local dirname = self.tmpDir;
     local pathes = {};
 
     table.insert(pathes, tmpFilePath);
 
     dirname = dirname..'dir'..slash;
-    assert_true(fs.mkdir(dirname));
-    assert_true(fs.createTextFileWithContent(dirname .. 'file.1'));
+    ASSERT_TRUE(fs.mkdir(dirname));
+    ASSERT_TRUE(fs.createTextFileWithContent(dirname .. 'file.1'));
     table.insert(pathes, dirname .. 'file.1');
 
     dirname = dirname..'subdir'..slash;
-    assert_true(fs.mkdir(dirname));
-    assert_true(fs.createTextFileWithContent(dirname .. 'file.2'));
+    ASSERT_TRUE(fs.mkdir(dirname));
+    ASSERT_TRUE(fs.createTextFileWithContent(dirname .. 'file.2'));
     table.insert(pathes, dirname .. 'file.2');
 --[=[
     tmp.file
@@ -591,115 +621,115 @@ function dirBypassTest()
     dir/subdir/file.2
 --]=]
     --[[
-    local files = fs.ls(tmpDir, {recursive = true, fullPath = true, onlyFiles = true});
+    local files = fs.ls(self.tmpDir, {recursive = true, fullPath = true, onlyFiles = true});
     --]]
-    local files = fs.ls(tmpDir, {recursive = true, fullPath = true, showDirs = false, showFiles = true});
-    assert_equal(#pathes, #files);
+    local files = fs.ls(self.tmpDir, {recursive = true, fullPath = true, showDirs = false, showFiles = true});
+    ASSERT_EQUAL(#pathes, #files);
 
     for _, file in ipairs(pathes) do
-        assert_true(luaExt.findValue(files, file));
+        ASSERT_TRUE(luaExt.findValue(files, file));
     end
 -- test by Gorokhov
-    files = fs.ls(tmpDir, {recursive = false, fullPath = true, showDirs = true, showFiles = true});
-    assert_equal(2, #files);
+    files = fs.ls(self.tmpDir, {recursive = false, fullPath = true, showDirs = true, showFiles = true});
+    ASSERT_EQUAL(2, #files);
 
-    files = fs.ls(tmpDir, {recursive = true, fullPath = true, showDirs = true, showFiles = false});
-    assert_equal(2, #files);
+    files = fs.ls(self.tmpDir, {recursive = true, fullPath = true, showDirs = true, showFiles = false});
+    ASSERT_EQUAL(2, #files);
 
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function absPathOnFullFilePathsTest()
-    assert_equal('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/./dir2/file.txt'));
-    assert_equal('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/./dir2/./file.txt'));
-    assert_equal('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/././dir2/file.txt'));
-    assert_equal('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/../file.txt'));
-    assert_equal('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/./dir3/../file.txt'));
-    assert_equal('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/.././file.txt'));
-    assert_equal('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/./../file.txt'));
-    assert_equal('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/./.././file.txt'));
-    assert_equal('d:/dir1/file.txt', fs.absPath('d:/dir1/dir2/../dir3/../file.txt'));
 
-    assert_equal('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\dir2\\file.txt'));
-    assert_equal('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\dir2\\.\\file.txt'));
-    assert_equal('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\.\\dir2\\file.txt'));
-    assert_equal('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\..\\file.txt'));
-    assert_equal('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\.\\dir3\\..\\file.txt'));
-    assert_equal('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\..\\.\\file.txt'));
-    assert_equal('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\.\\..\\file.txt'));
-    assert_equal('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\.\\..\\.\\file.txt'));
-    assert_equal('d:/dir1/file.txt', fs.absPath('d:\\dir1\\dir2\\..\\dir3\\..\\file.txt'));
+TEST_CASE_EX{"absPathOnFullFilePathsTest", "UseTestTmpDirFixture", function(self)
+    ASSERT_EQUAL('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/./dir2/file.txt'));
+    ASSERT_EQUAL('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/./dir2/./file.txt'));
+    ASSERT_EQUAL('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/././dir2/file.txt'));
+    ASSERT_EQUAL('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/../file.txt'));
+    ASSERT_EQUAL('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/./dir3/../file.txt'));
+    ASSERT_EQUAL('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/.././file.txt'));
+    ASSERT_EQUAL('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/./../file.txt'));
+    ASSERT_EQUAL('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/./.././file.txt'));
+    ASSERT_EQUAL('d:/dir1/file.txt', fs.absPath('d:/dir1/dir2/../dir3/../file.txt'));
+
+    ASSERT_EQUAL('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\dir2\\file.txt'));
+    ASSERT_EQUAL('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\dir2\\.\\file.txt'));
+    ASSERT_EQUAL('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\.\\dir2\\file.txt'));
+    ASSERT_EQUAL('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\..\\file.txt'));
+    ASSERT_EQUAL('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\.\\dir3\\..\\file.txt'));
+    ASSERT_EQUAL('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\..\\.\\file.txt'));
+    ASSERT_EQUAL('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\.\\..\\file.txt'));
+    ASSERT_EQUAL('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\.\\..\\.\\file.txt'));
+    ASSERT_EQUAL('d:/dir1/file.txt', fs.absPath('d:\\dir1\\dir2\\..\\dir3\\..\\file.txt'));
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function absPathOnRelativePathsTest()
-    assert_equal(fs.currentdir() .. 'dir1/', fs.absPath('./dir1/'));
+
+TEST_CASE_EX{"absPathOnRelativePathsTest", "UseTestTmpDirFixture", function(self)
+    ASSERT_EQUAL(fs.currentdir() .. 'dir1/', fs.absPath('./dir1/'));
 end
+};
 
-local function trace()
-    -- empty for disable output
-end
-
---------------------------------------------------------------------------------------------------------------
-function copyTest()
+TEST_CASE_EX{"copyTest", "UseTestTmpDirFixture", function(self)
     local text = 'some\nsimple\ntext\n';
-    local srcFilePath = tmpDir .. 'tmp.txt.1';
-    local dstFilePath = tmpDir .. 'tmp.txt.2';
+    local srcFilePath = self.tmpDir .. 'tmp.txt.1';
+    local dstFilePath = self.tmpDir .. 'tmp.txt.2';
     fs.createTextFileWithContent(srcFilePath, text);
-    assert_not_equal(srcFilePath, dstFilePath);
+    ASSERT_NOT_EQUAL(srcFilePath, dstFilePath);
     -- copy text file
-    assert_true(fs.copy(srcFilePath, dstFilePath));
+    ASSERT_TRUE(fs.copy(srcFilePath, dstFilePath));
 
-    assert_true(fs.isExist(srcFilePath));
-    assert_true(fs.isExist(dstFilePath));
+    ASSERT_TRUE(fs.isExist(srcFilePath));
+    ASSERT_TRUE(fs.isExist(dstFilePath));
 
-    assert_true(fs.isFile(srcFilePath));
-    assert_true(fs.isFile(dstFilePath));
+    ASSERT_TRUE(fs.isFile(srcFilePath));
+    ASSERT_TRUE(fs.isFile(dstFilePath));
 end
+};
 
---------------------------------------------------------------------------------------------------------------
---~ function copyDirTest()
---~     fs.mkdir(tmpDir .. '1/');
---~     fs.mkdir(tmpDir .. '2/');
+
+--~ TEST_CASE_EX{"copyDirTest", "UseTestTmpDirFixture", function(self)
+--~     fs.mkdir(self.tmpDir .. '1/');
+--~     fs.mkdir(self.tmpDir .. '2/');
 
 --~     local text = 'some\nsimple\ntext\n';
---~     fs.createTextFileWithContent(tmpDir .. '1/' .. 'tmp.txt', text);
+--~     fs.createTextFileWithContent(self.tmpDir .. '1/' .. 'tmp.txt', text);
 
---~     assert_true(fs.copyDir(tmpDir .. '1/', tmpDir .. '2/'));
+--~     ASSERT_TRUE(fs.copyDir(self.tmpDir .. '1/', self.tmpDir .. '2/'));
 
---~     assert_true(fs.isExist(tmpDir .. '1/2/'));
---~     assert_true(fs.isDir(tmpDir .. '1/2/'));
+--~     ASSERT_TRUE(fs.isExist(self.tmpDir .. '1/2/'));
+--~     ASSERT_TRUE(fs.isDir(self.tmpDir .. '1/2/'));
 
---~     assert_true(fs.isExist(tmpDir .. '1/2/' .. 'tmp.txt'));
---~     assert_true(fs.isFile(tmpDir .. '1/2/' .. 'tmp.txt'));
+--~     ASSERT_TRUE(fs.isExist(self.tmpDir .. '1/2/' .. 'tmp.txt'));
+--~     ASSERT_TRUE(fs.isFile(self.tmpDir .. '1/2/' .. 'tmp.txt'));
 --~ end
 
---------------------------------------------------------------------------------------------------------------
-function relativePathTest()
-    assert_equal('subdir/', fs.relativePath('c:/path/to/dir/subdir/', 'c:/path/to/dir/'));
-    assert_equal('subdir\\', fs.relativePath('c:\\path\\to\\dir\\subdir\\', 'c:\\path\\to\\dir\\'));
-end
 
---------------------------------------------------------------------------------------------------------------
-function applyOnFilesTest()
+TEST_CASE_EX{"relativePathTest", "UseTestTmpDirFixture", function(self)
+    ASSERT_EQUAL('subdir/', fs.relativePath('c:/path/to/dir/subdir/', 'c:/path/to/dir/'));
+    ASSERT_EQUAL('subdir\\', fs.relativePath('c:\\path\\to\\dir\\subdir\\', 'c:\\path\\to\\dir\\'));
+end
+};
+
+
+TEST_CASE_EX{"applyOnFilesTest", "UseTestTmpDirFixture", function(self)
     local slash = fs.slash();
     -- Test defining if it is directory or not
-    assert_true(fs.isDir(tmpDir));
-    local tmpFilePath = tmpDir .. 'tmp.file';
-    assert_true(fs.createTextFileWithContent(tmpFilePath));
-    assert_false(fs.isDir(tmpFilePath))
+    ASSERT_TRUE(fs.isDir(self.tmpDir));
+    local tmpFilePath = self.tmpDir .. 'tmp.file';
+    ASSERT_TRUE(fs.createTextFileWithContent(tmpFilePath));
+    ASSERT_FALSE(fs.isDir(tmpFilePath))
 
-    local dirname = tmpDir;
+    local dirname = self.tmpDir;
     local pathes = {};
 
     dirname = dirname..'dir'..slash;
-    assert_true(fs.mkdir(dirname));
-    assert_true(fs.createTextFileWithContent(dirname .. 'file.1'));
+    ASSERT_TRUE(fs.mkdir(dirname));
+    ASSERT_TRUE(fs.createTextFileWithContent(dirname .. 'file.1'));
     table.insert(pathes, dirname .. 'file.1');
 
     dirname = dirname..'subdir'..slash;
-    assert_true(fs.mkdir(dirname));
-    assert_true(fs.createTextFileWithContent(dirname .. 'file.2'));
+    ASSERT_TRUE(fs.mkdir(dirname));
+    ASSERT_TRUE(fs.createTextFileWithContent(dirname .. 'file.2'));
     table.insert(pathes, dirname .. 'file.2');
     
     table.insert(pathes, tmpFilePath);
@@ -718,10 +748,10 @@ function applyOnFilesTest()
             end
         end
         
-        fs.applyOnFiles(tmpDir, {handler = savePath, state = files, recursive = true});
+        fs.applyOnFiles(self.tmpDir, {handler = savePath, state = files, recursive = true});
         
-        assert_equal(#pathes, #files);
-        assert_true(table.isEqual(pathes, files));
+        ASSERT_EQUAL(#pathes, #files);
+        ASSERT_TRUE(table.isEqual(pathes, files));
     end
     do
         local function fileFilter(path)
@@ -734,57 +764,65 @@ function applyOnFilesTest()
 
         local files = {};
         
-        fs.applyOnFiles(tmpDir, {handler = savePath, filter = fileFilter, state = files, recursive = true});
-        assert_equal(#pathes, #files);
-        assert_true(table.isEqual(pathes, files));
+        fs.applyOnFiles(self.tmpDir, {handler = savePath, filter = fileFilter, state = files, recursive = true});
+        ASSERT_EQUAL(#pathes, #files);
+        ASSERT_TRUE(table.isEqual(pathes, files));
     end
 end
+};
 
-function bytesToTest()
-    assert_equal(1, fs.bytesTo(1024, 'k'));
-    assert_equal(1, fs.bytesTo(1024, 'K'));
-    assert_equal(1, fs.bytesTo(1024 * 1024, 'M'));
-    assert_equal(1024 * 1024, fs.bytesTo(1024 * 1024, 'm'));
+TEST_CASE_EX{"bytesToTest", "UseTestTmpDirFixture", function(self)
+    ASSERT_EQUAL(1, fs.bytesTo(1024, 'k'));
+    ASSERT_EQUAL(1, fs.bytesTo(1024, 'K'));
+    ASSERT_EQUAL(1, fs.bytesTo(1024 * 1024, 'M'));
+    ASSERT_EQUAL(1024 * 1024, fs.bytesTo(1024 * 1024, 'm'));
 end
+};
 
-function fileLastModTimeTest()
+TEST_CASE_EX{"fileLastModTimeTest", "UseTestTmpDirFixture", function(self)
     local filetime = fs.fileLastModTime('c:/windows/system32/cmd.exe');
     local curTime = os.time();
-    assert_true(os.time(filetime) < os.time());
-    assert_true(os.difftime(curTime, os.time(filetime)) > 0);
+    ASSERT_TRUE(os.time(filetime) < os.time());
+    ASSERT_TRUE(os.difftime(curTime, os.time(filetime)) > 0);
 end
+};
 
-function rmfileTest()
-    local tmpFilePath = tmpDir .. 'file.tmp';
-    assert_true(fs.createTextFileWithContent(tmpFilePath));
-    assert_true(fs.isFile(tmpFilePath));
-    assert_true(fs.rmfile(tmpFilePath));
-    assert_false(fs.isExist(tmpFilePath));
+TEST_CASE_EX{"rmfileTest", "UseTestTmpDirFixture", function(self)
+    local tmpFilePath = self.tmpDir .. 'file.tmp';
+    ASSERT_TRUE(fs.createTextFileWithContent(tmpFilePath));
+    ASSERT_TRUE(fs.isFile(tmpFilePath));
+    ASSERT_TRUE(fs.rmfile(tmpFilePath));
+    ASSERT_FALSE(fs.isExist(tmpFilePath));
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function localPathToFormatOfNetworkPathTest()
+
+TEST_CASE_EX{"localPathToFormatOfNetworkPathTest", "UseTestTmpDirFixture", function(self)
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function fileContentAsStringTest()
-    local path = tmpDir .. 'file.txt';
+
+TEST_CASE_EX{"fileContentAsStringTest", "UseTestTmpDirFixture", function(self)
+    local path = self.tmpDir .. 'file.txt';
     local content = '1st line\r\n2nd line\n  ';
-    assert_true(fs.createTextFileWithContent(path, content));
-    assert_equal(content, fs.fileContentAsString(path));
+    ASSERT_TRUE(fs.createTextFileWithContent(path, content));
+    ASSERT_EQUAL(content, fs.fileContentAsString(path));
 end
+};
 
---------------------------------------------------------------------------------------------------------------
-function fileContentAsLinesTest()
-    local path = tmpDir .. 'file.txt';
+
+TEST_CASE_EX{"fileContentAsLinesTest", "UseTestTmpDirFixture", function(self)
+    local path = self.tmpDir .. 'file.txt';
     do
         local content = {'1st line', '2nd line', '  '};
-        assert_true(fs.createTextFileWithContent(path, table.concat(content, '\n')));
-        assert_true(table.isEqual(content, fs.fileContentAsLines(path)));
+        ASSERT_TRUE(fs.createTextFileWithContent(path, table.concat(content, '\n')));
+        ASSERT_TRUE(table.isEqual(content, fs.fileContentAsLines(path)));
     end
     do
         local content = {'1st line\r', '2nd line\r', '  '};
-        assert_true(fs.createTextFileWithContent(path, table.concat(content, '\n')));
-        assert_true(table.isEqual(content, fs.fileContentAsLines(path)));
+        ASSERT_TRUE(fs.createTextFileWithContent(path, table.concat(content, '\n')));
+        ASSERT_TRUE(table.isEqual(content, fs.fileContentAsLines(path)));
     end
 end
+};
+};
