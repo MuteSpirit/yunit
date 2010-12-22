@@ -1,135 +1,113 @@
 --- \class TextTestProgressListener
 --- \brief Derived from TestListener. Output messages to standat output.
 
-local luaUnit = require("testunit.luaunit");
-local testListeners = require("testunit.test_listeners");
+local luaUnit = require('testunit.luaunit');
+local testListeners = require('testunit.test_listeners');
 
-require("LuaXML");
+module('test_listeners.t', luaUnit.testmodule, package.seeall);
+
+--~ require('LuaXML');
 
 local _G = _G;
 local print = print;
 
-local testModuleName = "TestListenerTest";
+local testModuleName = 'TestListenerTest';
 
---------------------------------------------------------------------------------------------------------------
-module(testModuleName, lunit.testcase)
---------------------------------------------------------------------------------------------------------------
+TEST_FIXTURE("ErrorObjectFixture")
+{
+    setUp = function(self)
+        self.fakeTestCaseName = testModuleName;
+        self.fakeTestName = 'testObserverTest';
+        self.fakeFailureMessage = "This is test message. It hasn't usefull information";
+        self.fakeErrorObject = 
+        {
+            source = 'test_runner.t.lua';
+            func = 'testTextTestProgressListenerCallAllFunctions';
+            line = 113;
+            message = self.fakeFailureMessage;
+        }
+    end
+    ;
+    
+    tearDown = function(self)
+        self.fakeTestCaseName = nil;
+        self.fakeTestName = nil;
+        self.fakeFailureMessage = nil;
+        self.fakeErrorObject = nil;
+    end
+    ;
+};
 
-local fakeTestCaseName;
-local fakeTestName;
-local fakeFailureMessage;
-local fakeErrorObject;
-
-------------------------------------------------------
-function setUp()
-    fakeTestCaseName = testModuleName;
-    fakeTestName = "testObserverTest";
-    fakeFailureMessage = "This is test message. It hasn't usefull information";
-    fakeErrorObject = 
-    {
-        source = "test_runner.t.lua";
-        func = "testTextTestProgressListenerCallAllFunctions";
-        line = 113;
-        message = fakeFailureMessage;
+TEST_SUITE(testModuleName)
+{
+    TEST_CASE{"testTextTestProgressListenerCreation", function(self)
+        ASSERT_IS_NOT_NIL(testListeners.TextTestProgressListener:new());
+    end
     };
-end
 
-------------------------------------------------------
-function tearDown()
-    fakeTestCaseName = nil;
-    fakeTestName = nil;
-    fakeFailureMessage = nil;
-    fakeErrorObject = nil;
-end
+    TEST_CASE_EX{"testTextTestProgressListenerCallAllFunctions", "ErrorObjectFixture", function(self)
+        local ttpl = testListeners.TextTestProgressListener:new();
+        
+        function ttpl:outputMessage(message)
+        end
 
-------------------------------------------------------
-function testTextTestProgressListenerCreation()
-    assert_not_nil(testListeners.TextTestProgressListener:new());
-end
+        ttpl:startTests();
 
-------------------------------------------------------
-function testTextTestProgressListenerCallAllFunctions()
-    local ttpl = testListeners.TextTestProgressListener:new();
-    
-    function ttpl:outputMessage(message)
+        ttpl:startTest(self.fakeTestCaseName, self.fakeTestName);
+        ttpl:addSuccessful(self.fakeTestCaseName, self.fakeTestName);
+        ttpl:endTest(self.fakeTestCaseName, self.fakeTestName);
+
+        ttpl:startTest(self.fakeTestCaseName, self.fakeTestName);
+        ttpl:addFailure(self.fakeTestCaseName, self.fakeErrorObject);
+        ttpl:endTest(self.fakeTestCaseName, self.fakeTestName);
+
+        ttpl:startTest(self.fakeTestCaseName, self.fakeTestName);
+        ttpl:addError(self.fakeTestCaseName, self.fakeErrorObject);
+        ttpl:endTest(self.fakeTestCaseName, self.fakeTestName);
+
+        ttpl:startTest(self.fakeTestCaseName, self.fakeTestName);
+        ttpl:addIgnore(self.fakeTestCaseName);
+        ttpl:endTest(self.fakeTestCaseName, self.fakeTestName);
+        
+        ttpl:endTests();
     end
+    };
 
-    ttpl:startTests();
 
-    ttpl:startTest(fakeTestCaseName, fakeTestName);
-    ttpl:addSuccessful(fakeTestCaseName, fakeTestName);
-    ttpl:endTest(fakeTestCaseName, fakeTestName);
+    --~ TEST_CASE_EX{"testXmlListenerSimulateTestRunning", "ErrorObjectFixture", function(self)
+    --~     local ttpl = testListeners.XmlListenerAlaCppUnitXmlOutputter:new();
+    --~     
+    --~     function ttpl:outputMessage(message)
+    --~     end
 
-    ttpl:startTest(fakeTestCaseName, fakeTestName);
-    ttpl:addFailure(fakeTestCaseName, fakeErrorObject);
-    ttpl:endTest(fakeTestCaseName, fakeTestName);
+    --~     ttpl:startTests();
 
-    ttpl:startTest(fakeTestCaseName, fakeTestName);
-    ttpl:addError(fakeTestCaseName, fakeErrorObject);
-    ttpl:endTest(fakeTestCaseName, fakeTestName);
+    --~     ASSERT_EQUAL(0, #ttpl.reportContent.FailedTests);
+    --~     ttpl:startTest(self.fakeTestCaseName, self.fakeTestName);
+    --~     ttpl:addSuccessful(self.fakeTestCaseName, self.fakeTestName);
+    --~     ttpl:endTest(self.fakeTestCaseName, self.fakeTestName);
+    --~     ASSERT_EQUAL(0, #ttpl.reportContent.FailedTests);
+    --~     
+    --~     ASSERT_EQUAL(0, #ttpl.reportContent.FailedTests);
+    --~     ttpl:startTest(self.fakeTestCaseName, self.fakeTestName);
+    --~     ttpl:addFailure(self.fakeTestCaseName, self.fakeErrorObject);
+    --~     ttpl:endTest(self.fakeTestCaseName, self.fakeTestName);
+    --~     ASSERT_EQUAL(1, #ttpl.reportContent.FailedTests);
 
-    ttpl:startTest(fakeTestCaseName, fakeTestName);
-    ttpl:addIgnore(fakeTestCaseName);
-    ttpl:endTest(fakeTestCaseName, fakeTestName);
-    
-    ttpl:endTests();
-end
+    --~     ttpl:startTest(self.fakeTestCaseName, self.fakeTestName);
+    --~     ttpl:addError(self.fakeTestCaseName, self.fakeErrorObject);
+    --~     ttpl:endTest(self.fakeTestCaseName, self.fakeTestName);
 
-------------------------------------------------------
-function testXmlListenerSimulateTestRunning()
-    local ttpl = testListeners.XmlListenerAlaCppUnitXmlOutputter:new();
-    
-    function ttpl:outputMessage(message)
-    end
-
-    ttpl:startTests();
-
-    assert_equal(0, #ttpl.reportContent.FailedTests);
-    ttpl:startTest(fakeTestCaseName, fakeTestName);
-    ttpl:addSuccessful(fakeTestCaseName, fakeTestName);
-    ttpl:endTest(fakeTestCaseName, fakeTestName);
-    assert_equal(0, #ttpl.reportContent.FailedTests);
-    
-    assert_equal(0, #ttpl.reportContent.FailedTests);
-    ttpl:startTest(fakeTestCaseName, fakeTestName);
-    ttpl:addFailure(fakeTestCaseName, fakeErrorObject);
-    ttpl:endTest(fakeTestCaseName, fakeTestName);
-    assert_equal(1, #ttpl.reportContent.FailedTests);
-
-    ttpl:startTest(fakeTestCaseName, fakeTestName);
-    ttpl:addError(fakeTestCaseName, fakeErrorObject);
-    ttpl:endTest(fakeTestCaseName, fakeTestName);
-
-   ttpl:startTest(fakeTestCaseName, fakeTestName);
-    ttpl:addIgnore(fakeTestCaseName);
-    ttpl:endTest(fakeTestCaseName, fakeTestName);
- 
-    assert_equal(1, #ttpl.reportContent.SuccessfulTests);
-    assert_equal(1, #ttpl.reportContent.ErrorTests);
-    assert_equal(1, #ttpl.reportContent.IgnoredTests);
-    
-    ttpl:endTests();
-    
-end
-
--- function testLuaXml()
---     local resInfo = 
---     {
---         Location = 
---         {
---             a = '123', --
---             File = {'main.cpp'},
---         },
---         Test = 
---         {
---             id = 1,
---             Name = {'Test1'},
---         },
---         Test = 
---         {
---             id = 2,
---             Name = {'Test2'},
---         },
---     };
---     print(_G.xml.str(resInfo, 0, ''));
--- end
+    --~    ttpl:startTest(self.fakeTestCaseName, self.fakeTestName);
+    --~     ttpl:addIgnore(self.fakeTestCaseName);
+    --~     ttpl:endTest(self.fakeTestCaseName, self.fakeTestName);
+    --~  
+    --~     ASSERT_EQUAL(1, #ttpl.reportContent.SuccessfulTests);
+    --~     ASSERT_EQUAL(1, #ttpl.reportContent.ErrorTests);
+    --~     ASSERT_EQUAL(1, #ttpl.reportContent.IgnoredTests);
+    --~     
+    --~     ttpl:endTests();
+    --~     
+    --~ end
+    --~ };
+};
