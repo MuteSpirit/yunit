@@ -86,204 +86,253 @@ local luaUnit = require("testunit.luaunit");
 local _G = _G;
 
 local testModuleName = "TestRunnerTest";
---------------------------------------------------------------------------------------------------------------
-module(testModuleName, lunit.testcase)
---------------------------------------------------------------------------------------------------------------
 
-------------------------------------------------------
-function testTestListenerCreation()
-    assert_not_nil(testRunner.TestListener:new());
-end
+module('test_runner.t', luaUnit.testmodule, package.seeall);
 
-------------------------------------------------------
-function testObserverCreationTest()
-    assert_not_nil(testRunner.TestObserver:new());
-end
-
-------------------------------------------------------
-function testObserverTestAddFailureFunctionTest()
-    local ttpl1 = testListeners.TextTestProgressListener:new();
-    local ttpl2 = testListeners.TextTestProgressListener:new();
-    local tr = testRunner.TestObserver:new();
-    local fakeTestCaseName = testModuleName;
-    local fakeTestName = "testTestObserver";
-    local fakeFailureMessage = "This is test message. It hasn't usefull information";
-    
-    function ttpl1:addFailure(testCaseName, failureMessage)
-        assert_equal(fakeTestCaseName, testCaseName);
-        assert_equal(fakeFailureMessage, failureMessage);
+-- This fixture save (at setUp) and restore (at tearDown) currentSuite variable at luaunit module for possibility TEST_* macro testing
+TEST_FIXTURE("LuaUnitSelfTestFixture")
+{
+    setUp = function(self)
+        self.testRegistry = luaUnit.TestRegistry:new();
+        self.currentTestRegistry = luaUnit.currentTestRegistry();
+        luaUnit.currentTestRegistry(self.testRegistry);
+        
+        self.currentSuite = luaUnit.currentSuite();
     end
-    
-    function ttpl2:addFailure(testCaseName, failureMessage)
-        assert_equal(fakeTestCaseName, testCaseName);
-        assert_equal(fakeFailureMessage, failureMessage);
+    ;
+    tearDown = function(self)
+        luaUnit.currentSuite(self.currentSuite);
+        luaUnit.currentTestRegistry(self.currentTestRegistry);
+        self.currentSuite = nil;
+        self.testRegistry = nil;
     end
-    
-    tr:addTestListener(ttpl1);
-    tr:addTestListener(ttpl2);
-    assert_equal(2, #tr.testListeners);
-    
-    tr:addFailure(fakeTestCaseName, fakeFailureMessage);
-end
+    ;
+};
 
-------------------------------------------------------
-function testObserverStartTestsFunctionTest()
-    local ttpl1 = testListeners.TextTestProgressListener:new();
-    local ttpl2 = testListeners.SciteTextTestProgressListener:new();
-    local tr = testRunner.TestObserver:new();
-    
-    function ttpl1:startTests()
-        self.startTestsCall = true;
+TEST_FIXTURE("GlobalTestCaseListFixture")
+{
+    setUp = function(self)
+        self.testRegistry = luaUnit.TestRegistry:new();
+        self.currentTestRegistry = luaUnit.currentTestRegistry();
+        luaUnit.currentTestRegistry(self.testRegistry);
+        
+        self.currentSuite = luaUnit.currentSuite();
+
+        self.globalTestCaseList = luaUnit.copyTable(testRunner.GlobalTestCaseList);
+        testRunner.GlobalTestCaseList = {};
     end
-    
-    function ttpl2:startTests()
-        self.startTestsCall = true;
+    ;
+    tearDown = function(self)
+        luaUnit.currentSuite(self.currentSuite);
+        luaUnit.currentTestRegistry(self.currentTestRegistry);
+        self.currentSuite = nil;
+        self.testRegistry = nil;
+
+        testRunner.GlobalTestCaseList = luaUnit.copyTable(self.globalTestCaseList);
     end
-    
-    tr:addTestListener(ttpl1);
-    tr:addTestListener(ttpl2);
-    
-    tr:startTests();
-     
-    assert_true(ttpl1.startTestsCall);
-    assert_true(ttpl2.startTestsCall);
-end
+    ;
+};
 
-function runTestCaseTest()
-    -- clear lists of tests
-    luaUnit.TestRegistry:reset();
-    testRunner.GlobalTestCaseList = {};
-
-    local TEST_FIXTURE = luaUnit.TEST_FIXTURE;
-    local TEST_SUITE = luaUnit.TEST_SUITE;
-    local TEST_CASE_EX = luaUnit.TEST_CASE_EX;
-
-    setUpCalled_ = false;
-    tearDownCalled_ = false;
-    
-    TEST_FIXTURE('CallSetUpAndTearDownTestFixture')
-    {
-        setUp = function(self)
-            setUpCalled_ = true;
-        end;
-        tearDown = function(self)
-            tearDownCalled_ = true;
-        end;
+TEST_SUITE("testModuleName")
+{
+    TEST_CASE{"testTestListenerCreation", function(self)
+        ASSERT_IS_NOT_NIL(testRunner.TestListener:new());
+    end
     };
 
-    assert_not_nil(_G["CallSetUpAndTearDownTestFixture"]);
-    
-    TEST_SUITE("CallSetUpAndTearDownTestSuite")
-    {
-        TEST_CASE_EX{"CallSetUpAndTearDownTestCase", "CallSetUpAndTearDownTestFixture", function(self)
-            
+
+    TEST_CASE{"testObserverCreationTest", function(self)
+        ASSERT_IS_NOT_NIL(testRunner.TestObserver:new());
+    end
+    };
+
+
+    TEST_CASE{"testObserverTestAddFailureFunctionTest", function(self)
+        local ttpl1 = testListeners.TextTestProgressListener:new();
+        local ttpl2 = testListeners.TextTestProgressListener:new();
+        local tr = testRunner.TestObserver:new();
+        local fakeTestCaseName = testModuleName;
+        local fakeTestName = "testTestObserver";
+        local fakeFailureMessage = "This is test message. It hasn't usefull information";
+        
+        function ttpl1:addFailure(testCaseName, failureMessage)
+            ASSERT_EQUAL(fakeTestCaseName, testCaseName);
+            ASSERT_EQUAL(fakeFailureMessage, failureMessage);
         end
+        
+        function ttpl2:addFailure(testCaseName, failureMessage)
+            ASSERT_EQUAL(fakeTestCaseName, testCaseName);
+            ASSERT_EQUAL(fakeFailureMessage, failureMessage);
+        end
+        
+        tr:addTestListener(ttpl1);
+        tr:addTestListener(ttpl2);
+        ASSERT_EQUAL(2, #tr.testListeners);
+        
+        tr:addFailure(fakeTestCaseName, fakeFailureMessage);
+    end
+    };
+
+
+    TEST_CASE{"testObserverStartTestsFunctionTest", function(self)
+        local ttpl1 = testListeners.TextTestProgressListener:new();
+        local ttpl2 = testListeners.SciteTextTestProgressListener:new();
+        local tr = testRunner.TestObserver:new();
+        
+        function ttpl1:startTests()
+            self.startTestsCall = true;
+        end
+        
+        function ttpl2:startTests()
+            self.startTestsCall = true;
+        end
+        
+        tr:addTestListener(ttpl1);
+        tr:addTestListener(ttpl2);
+        
+        tr:startTests();
+         
+        ASSERT_TRUE(ttpl1.startTestsCall);
+        ASSERT_TRUE(ttpl2.startTestsCall);
+    end
+    };
+
+    TEST_CASE_EX{"runTestCaseTest", "GlobalTestCaseListFixture", function(self)
+
+        local TEST_FIXTURE = luaUnit.TEST_FIXTURE;
+        local TEST_SUITE = luaUnit.TEST_SUITE;
+        local TEST_CASE_EX = luaUnit.TEST_CASE_EX;
+
+        setUpCalled_ = false;
+        tearDownCalled_ = false;
+        
+        TEST_FIXTURE('CallSetUpAndTearDownTestFixture')
+        {
+            setUp = function(self)
+                setUpCalled_ = true;
+            end;
+            tearDown = function(self)
+                tearDownCalled_ = true;
+            end;
         };
-    };
-    
-    assert_equal(2, #luaUnit.TestRegistry.testsuites);
-    assert_equal(1, #luaUnit.TestRegistry.testsuites[2].testcases);
-    
-    testRunner.copyAllLuaTestCasesToGlobalTestList();
-    assert_equal(1, #testRunner.GlobalTestCaseList);
-    
-    testRunner.runAllTestCases();
-    
-    assert_true(setUpCalled_);
-    assert_true(tearDownCalled_);
-    
-    -- clear lists of tests
-    luaUnit.TestRegistry:reset();
-    testRunner.GlobalTestCaseList = {};
-end
 
-function runAllTestCasesTest()
-    local TEST_SUITE = luaUnit.TEST_SUITE;
-    local TEST_CASE = luaUnit.TEST_CASE;
-    local ASSERT_TRUE = luaUnit.ASSERT_TRUE;
-    
-    TEST_SUITE("RunTestCaseTestSuite")
-    {
-        TEST_CASE{"successfullTest", function()
-            ASSERT_TRUE(true);
-        end
+        ASSERT_IS_NOT_NIL(_G["CallSetUpAndTearDownTestFixture"]);
+        
+        TEST_SUITE("CallSetUpAndTearDownTestSuite")
+        {
+            TEST_CASE_EX{"CallSetUpAndTearDownTestCase", "CallSetUpAndTearDownTestFixture", function(self)
+                
+            end
+            };
         };
         
-        TEST_CASE{"failureTest", function()
-            ASSERT_TRUE(false);
-        end;
-        };
+        ASSERT_EQUAL(2, #self.testRegistry.testsuites);
+        ASSERT_EQUAL(1, #self.testRegistry.testsuites[2].testcases);
+        ASSERT_EQUAL("CallSetUpAndTearDownTestCase", self.testRegistry.testsuites[2].testcases[1].name_);
+        
+        testRunner.copyAllLuaTestCasesToGlobalTestList();
+        ASSERT_EQUAL(1, #testRunner.GlobalTestCaseList);
+        ASSERT_EQUAL("CallSetUpAndTearDownTestSuite::CallSetUpAndTearDownTestCase", testRunner.GlobalTestCaseList[1].name_);
+        
+        testRunner.runAllTestCases();
+        
+        ASSERT_TRUE(setUpCalled_);
+        ASSERT_TRUE(tearDownCalled_);
+    end
     };
-    
-    local ttpl1 = testListeners.TextTestProgressListener:new();
-    local ttpl2 = testListeners.SciteTextTestProgressListener:new();
-    local tr = testRunner.TestObserver:new();
-    
-    function ttpl1:startTests()
-        self.startTestsCall = true;
-    end
-    function ttpl1:endTests()
-        self.endTestsCall = true;
-    end
-    function ttpl1:outputMessage(message)
-    end
-    
-    function ttpl2:startTests()
-        self.startTestsCall = true;
-    end
-    function ttpl2:endTests()
-        self.endTestsCall = true;
-    end
-    function ttpl2:outputMessage(message)
-    end
-    
-    tr:addTestListener(ttpl1);
-    tr:addTestListener(ttpl2);
 
-    testRunner.copyAllLuaTestCasesToGlobalTestList();
-    testRunner.runAllTestCases(tr);
-    
-    assert_true(ttpl1.startTestsCall);
-    assert_true(ttpl1.endTestsCall);
-    
-    assert_true(ttpl2.startTestsCall);
-    assert_true(ttpl2.endTestsCall);
-end
+    TEST_CASE_EX{"runAllTestCasesTest", "GlobalTestCaseListFixture", function(self)
+        local TEST_SUITE = luaUnit.TEST_SUITE;
+        local TEST_CASE = luaUnit.TEST_CASE;
+        local ASSERT_TRUE = luaUnit.ASSERT_TRUE;
+        
+        TEST_SUITE("RunTestCaseTestSuite")
+        {
+            TEST_CASE{"successfullTest", function()
+                ASSERT_TRUE(true);
+            end
+            };
+            
+            TEST_CASE{"failureTest", function()
+                ASSERT_TRUE(false);
+            end;
+            };
+        };
+        
+        local ttpl1 = testListeners.TextTestProgressListener:new();
+        local ttpl2 = testListeners.SciteTextTestProgressListener:new();
+        local tr = testRunner.TestObserver:new();
+        
+        function ttpl1:startTests()
+            self.startTestsCall = true;
+        end
+        function ttpl1:endTests()
+            self.endTestsCall = true;
+        end
+        function ttpl1:outputMessage(message)
+        end
+        
+        function ttpl2:startTests()
+            self.startTestsCall = true;
+        end
+        function ttpl2:endTests()
+            self.endTestsCall = true;
+        end
+        function ttpl2:outputMessage(message)
+        end
+        
+        tr:addTestListener(ttpl1);
+        tr:addTestListener(ttpl2);
 
-------------------------------------------------------
-function isTestFunctionTest()
-    local isTestFunction = testRunner.isTestFunction;
-    assert_true(isTestFunction("test"));
-    assert_true(isTestFunction("Test"));
-    assert_true(isTestFunction("test1"));
-    assert_true(isTestFunction("Test1"));
-    assert_true(isTestFunction("sometest"));
-    assert_true(isTestFunction("SomeTest"));
+        testRunner.copyAllLuaTestCasesToGlobalTestList();
+        testRunner.runAllTestCases(tr);
+        
+        ASSERT_TRUE(ttpl1.startTestsCall);
+        ASSERT_TRUE(ttpl1.endTestsCall);
+        
+        ASSERT_TRUE(ttpl2.startTestsCall);
+        ASSERT_TRUE(ttpl2.endTestsCall);
+    end
+    };
 
-    assert_false(isTestFunction("TEST_FIXTURE"));
-    assert_false(isTestFunction("TEST_SUITE"));
-    assert_false(isTestFunction("TEST_CASE"));
-    assert_false(isTestFunction("TEST_CASE_EX"));
 
-    assert_true(isTestFunction("test_fixture"));
-    assert_true(isTestFunction("test_suite"));
-    assert_true(isTestFunction("test_case"));
-    assert_true(isTestFunction("test_case_ex"));
-end
+    TEST_CASE{"isTestFunctionTest", function(self)
+        local isTestFunction = testRunner.isTestFunction;
+        ASSERT_TRUE(isTestFunction("test"));
+        ASSERT_TRUE(isTestFunction("Test"));
+        ASSERT_TRUE(isTestFunction("test1"));
+        ASSERT_TRUE(isTestFunction("Test1"));
+        ASSERT_TRUE(isTestFunction("sometest"));
+        ASSERT_TRUE(isTestFunction("SomeTest"));
 
-function isLuaTestDriverTest()
-    assert_true(testRunner.isLuaTestDriver("unit.t.lua"));
-    assert_true(testRunner.isLuaTestDriver(" .t.lua"));
-    assert_false(testRunner.isLuaTestDriver("unit_t.lua"));
-    assert_false(testRunner.isLuaTestDriver("unit.test.lua"));
-    assert_false(testRunner.isLuaTestDriver("unit.lua.t"));
-end
+        ASSERT_FALSE(isTestFunction("TEST_FIXTURE"));
+        ASSERT_FALSE(isTestFunction("TEST_SUITE"));
+        ASSERT_FALSE(isTestFunction("TEST_CASE"));
+        ASSERT_FALSE(isTestFunction("TEST_CASE_EX"));
 
-function isCppTestDriverTest()
-    assert_true(testRunner.isCppTestDriver("unit.t.dll"));
-    assert_true(testRunner.isCppTestDriver(" .t.dll"));
-    assert_false(testRunner.isCppTestDriver("unit_t.dll"));
-    assert_false(testRunner.isCppTestDriver("unit.test.dll"));
-    assert_false(testRunner.isCppTestDriver("unit.dll.t"));
-    assert_false(testRunner.isCppTestDriver("unit.t.cpp"));
-end
+        ASSERT_TRUE(isTestFunction("test_fixture"));
+        ASSERT_TRUE(isTestFunction("test_suite"));
+        ASSERT_TRUE(isTestFunction("test_case"));
+        ASSERT_TRUE(isTestFunction("test_case_ex"));
+    end
+    };
+
+    TEST_CASE{"isLuaTestDriverTest", function(self)
+        ASSERT_TRUE(testRunner.isLuaTestDriver("unit.t.lua"));
+        ASSERT_TRUE(testRunner.isLuaTestDriver(" .t.lua"));
+        ASSERT_FALSE(testRunner.isLuaTestDriver("unit_t.lua"));
+        ASSERT_FALSE(testRunner.isLuaTestDriver("unit.test.lua"));
+        ASSERT_FALSE(testRunner.isLuaTestDriver("unit.lua.t"));
+    end
+    };
+
+    TEST_CASE{"isCppTestDriverTest", function(self)
+        ASSERT_TRUE(testRunner.isCppTestDriver("unit.t.dll"));
+        ASSERT_TRUE(testRunner.isCppTestDriver(" .t.dll"));
+        ASSERT_FALSE(testRunner.isCppTestDriver("unit_t.dll"));
+        ASSERT_FALSE(testRunner.isCppTestDriver("unit.test.dll"));
+        ASSERT_FALSE(testRunner.isCppTestDriver("unit.dll.t"));
+        ASSERT_FALSE(testRunner.isCppTestDriver("unit.t.cpp"));
+    end
+    };
+};
