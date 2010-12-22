@@ -1,13 +1,15 @@
 local file = arg[1];
 --~ file = 'lua_ext.t.lua';
-file = 'filesystem.t.lua';
+--~ file = 'filesystem.t.lua';
+--~ file = '..\\testunit\\test_listeners.t.lua';
+file = '..\\testunit\\test_runner.t.lua';
 if not file then
     error('Use filename as 1st arg');
 end
 
 local reStr = 
 {
-    ['module%(%"([^%"]+)%".-%)'] = '};\n\nTEST_SUITE("%1")\n{',
+    ['module%(%"?([^%"]+)%"?,.-%)'] = '};\n\nTEST_SUITE("%1")\n{',
     ['^end%s*$'] = 'end\n};',
     ['function (%w+)%(%)'] = 'TEST_CASE{"%1", function(self)',
     ['assert_pass%(function%(%) (.+) end%);'] = '%1;',
