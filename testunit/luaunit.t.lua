@@ -331,8 +331,11 @@ TEST_SUITE("LuaUnitTestRegistryTest")
         ASSERT_EQUAL(0, #self.testRegistry.testsuites[1].testcases);
         ASSERT_EQUAL(1, #self.testRegistry.testsuites[2].testcases);
         
+        local testList = luaUnit.getTestList(self.testRegistry);
+        ASSERT_EQUAL(1, #testList);
+        
         local testObserver = testRunner.TestObserver:new();
-        testRunner.runTestCase("TestFixtureTests::EmptyTest", self.testRegistry.testsuites[2].testcases[1], testObserver);
+        testRunner.runTestCase("TestFixtureTests::EmptyTest", testList[1], testObserver);
         
         ASSERT_TRUE(setUpExecuted);
         ASSERT_TRUE(testExecuted);

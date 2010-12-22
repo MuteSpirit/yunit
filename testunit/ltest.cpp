@@ -61,7 +61,7 @@ static const char* getFuncName(Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*))
 
 static int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*))
 {
-	lua_getfield(L, 1, "this");
+	lua_getfield(L, -1, "this");
 	TESTUNIT_NS::TestCase* testCase = static_cast<TESTUNIT_NS::TestCase*>(lua_touserdata(L, -1));
     try
     {
