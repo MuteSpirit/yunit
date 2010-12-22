@@ -127,6 +127,18 @@ function TestRegistry:new()
     return o;
 end
 
+-------------------------------------------------------
+-- current TestRegistry. Possibility to set test registry in unit test, i.e. you may replace singleton object
+local curTestRegistry = TestRegistry:new();
+-------------------------------------------------------
+
+function currentTestRegistry(value)
+    if value then
+        curTestRegistry = value;
+    else
+        return curTestRegistry;
+    end
+end
 
 function TestRegistry:addTestCase(testcase)
     self.testsuites[1]:addTestCase(testcase);
@@ -165,10 +177,8 @@ function callTestCaseMethod(testcase, testFunc)
 end
 
 -------------------------------------------------------
-function getTestList(testRegistry)
+function getTestList()
 -------------------------------------------------------
-    testRegistry = testRegistry or TestRegistry;
-    
     local function callTestCaseSetUp(testcase)
         return callTestCaseMethod(testcase, testcase.originalSetUp)
     end
@@ -182,7 +192,7 @@ function getTestList(testRegistry)
     end
     
     local testList = {};
-    for _, testsuite in ipairs(testRegistry.testsuites) do
+    for _, testsuite in ipairs(curTestRegistry.testsuites) do
         local testsuiteName = testsuite.name_;
         for _, testcase in ipairs(testsuite.testcases) do
             local testcaseName = testcase["name_"];
@@ -443,11 +453,10 @@ function TEST_FIXTURE(name)
 end
 
 -------------------------------------------------------
-function TEST_SUITE(name, testRegistry)
+function TEST_SUITE(name)
 -------------------------------------------------------
-    testRegistry = testRegistry or TestRegistry;
     local testsuite = TestSuite:new(name)
-    testRegistry:addTestSuite(testsuite);
+    curTestRegistry:addTestSuite(testsuite);
     curSuite = testsuite;   -- curSuite is needed for knoledge of testcases about current TestSuite
     return function() end
 end
