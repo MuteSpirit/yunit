@@ -2,33 +2,42 @@
 module(..., package.seeall);
 
 --------------------------------------------------------------------------------------------------------------
-function printTable(inTable, indent, retInsteadPrint)
+function table.toLuaCode(inTable, indent, resultHandler)
 --------------------------------------------------------------------------------------------------------------
-    indent = indent or '';
-    retInsteadPrint = retInsteadPrint or false;
-    endLine = '\n';
-    local out = endLine .. indent .. '{' .. endLine;
+    indent = indent or ''
+    endLine = '\n'
+    local out = '{'
+    if not table.isEmpty(inTable) then
+        out = out .. endLine
+    end
     
     for key, value in pairs(inTable) do
-        out = out .. indent .. '  ["'..key..'"] = ';
-        
+        local keyStr;
+        if 'table' == type(key) then
+            keyStr = indent .. '[' .. table.toLuaCode(key, nil, nil) .. '] = '
+        elseif 'string' == type(key) then
+            keyStr = indent .. '[' .. '\'' .. key .. '\'' .. '] = ';
+        else
+            keyStr = indent .. '[' .. key .. '] = ';
+        end
+        out = out .. keyStr
+       
         if 'table' == type(value) then
-            addIndent = string.rep(' ', string.len('["'..key..'"] = ') + 1)
-            out = out .. printTable(value, indent .. addIndent, true);
+            out = out .. table.toLuaCode(value, nil, nil);
         else
             if 'string' == type(value) then 
                 out = out .. '[=['..value..']=]';
             else
                 out = out .. tostring(value);
             end
-            out = out .. ',' .. endLine 
         end
+        out = out .. ',' .. endLine 
     end
-    out = out..indent..'},'..endLine;
-    if retInsteadPrint then
+    out = out .. '}';
+    if not resultHandler then
         return out;
     else
-        print(out);
+        resultHandler(out);
     end
 end
 
@@ -56,15 +65,8 @@ function findValue(inTable, inValue)
     return false;
 end
 
-
 --------------------------------------------------------------------------------------------------------------
-function notFindValue(inTable, inValue)
---------------------------------------------------------------------------------------------------------------
-    return not findValue(inTable, inValue);
-end
-
---------------------------------------------------------------------------------------------------------------
-function tableKeys(inTable)
+function table.keys(inTable)
 --------------------------------------------------------------------------------------------------------------
     local keys = {};
     for key in pairs(inTable) do
@@ -73,7 +75,9 @@ function tableKeys(inTable)
     return keys;
 end
 
-function table.empty(tableValue)
+--------------------------------------------------------------------------------------------------------------
+function table.isEmpty(tableValue)
+--------------------------------------------------------------------------------------------------------------
     return not next(tableValue);
 end
 
@@ -149,5 +153,5 @@ end
 
 --------------------------------------------------------------------------------------------------------------
 function sleep(milliseconds)
-    return os.execute('ping -4 -n ' .. milliseconds .. ' -w 1 127.0.0.1 > nul');
+    return os.execute('ping -4 -n 1 -w ' .. milliseconds .. ' 169.254.255.254 > nul');
 end

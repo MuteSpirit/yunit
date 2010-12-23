@@ -2,6 +2,11 @@
 
 -- Documentation
 
+--- \fn table.toLuaCode(inTable, indent, resultHandler)
+--- \brief Преобразует объект типа таблица в строку лунового кода, создающего такую таблицу
+--- \param[in] inTable таблица для обработки
+--- \param[in] indent отступ от начала строки для элементов таблицы
+--- \param[in] resultHandler указатель на функцию-обработчик результата, если nil, то функция просто вернет результирующую строку
 
 --- \fn findKey(inTable, inKey)
 --- \brief Определяет наличие в таблице ключа с заданным значением (без рекурсивного обхода всей таблицы)
@@ -13,11 +18,12 @@
 --- \brief Аналогична findKey, только ищется значение в таблице, а не ключ
 --- \see findKey
 
---- \fn notFindValue(inTable, inValue)
---- \brief Функция подтверждает, что данного занчения в таблице нет
---- \param[in] inTable таблица для поиска
---- \param[in] inValue значение, который не должно быть найдено в таблице
---- \return true если искомое значения не было найдено, иначе false
+--- \fn table.keys(inTable)
+--- \brief Return list of keys in 'inTable' 
+--- \param[in] inTable table for processing
+
+--- \fn table.isEmpty(tableValue)
+--- \return true if table does not contain any elements
 
 --- \fn convertTextToRePattern(text)
 --- \brief Replace magic chars  ( ) . % + - [ ] ^ $ ? *  at 'text' with used at re patterns
@@ -48,6 +54,24 @@ TEST_CASE{"testFindInTable", function(self)
 end
 };
 
+TEST_CASE{"toLuaCode", function(self)
+    local t = 
+    {
+        [1] = 1,
+        ['a'] = [=[a]=],
+        [{}] = {},
+    }
+    local spaceAsTab = string.rep(' ', 4);
+    local str = table.toLuaCode(t, spaceAsTab .. spaceAsTab);
+    local designedStr = 
+    [[{
+        [1] = 1,
+        [{}] = {},
+        ['a'] = [=[a]=],
+}]]    
+    ASSERT_EQUAL(designedStr, str)
+end
+};
 
 TEST_CASE{"testStringSplit", function(self)
     local parts = {};
@@ -78,18 +102,24 @@ end
 };
 
 TEST_CASE{"tableKeysTest", function(self)
-    local keys = luaExt.tableKeys({[10] = 1, [11] = 1, [12] = 1, [13] = 1});
-    table.sort(keys);
-    ASSERT_EQUAL(10, keys[1]);
-    ASSERT_EQUAL(11, keys[2]);
-    ASSERT_EQUAL(12, keys[3]);
-    ASSERT_EQUAL(13, keys[4]);
+    local keyList = table.keys({[10] = 1, [11] = 1, [12] = 1, [13] = 1});
+    table.sort(keyList);
+    ASSERT_EQUAL(10, keyList[1]);
+    ASSERT_EQUAL(11, keyList[2]);
+    ASSERT_EQUAL(12, keyList[3]);
+    ASSERT_EQUAL(13, keyList[4]);
 end
 };
 
 TEST_CASE{"tableEmptyTest", function(self)
-    ASSERT_TRUE(table.empty{});
-    ASSERT_FALSE(table.empty{''});
+    ASSERT_TRUE(table.isEmpty{});
+    ASSERT_FALSE(table.isEmpty{''});
+end
+};
+
+TEST_CASE{"convertTextToRePattern", function(self)
+    ASSERT_EQUAL('exportDg %.cpp', luaExt.convertTextToRePattern('exportDg .cpp'));
+    
 end
 };
 
@@ -115,4 +145,13 @@ TEST_CASE{"tableCompareTest", function(self)
     ASSERT_TRUE(table.isEqual( { [{1}] = 1}, { [{1}] = 1} ));
 end
 };
+
+TEST_CASE{"sleepTest", function(self)
+    local start = os.time()
+    luaExt.sleep(1000)
+    local stop = os.time()
+    ASSERT_EQUAL(1, os.difftime(stop, start))
+end
+};
+
 };
