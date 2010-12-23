@@ -44,35 +44,121 @@ TEST_SUITE(testModuleName)
         ASSERT_IS_NOT_NIL(testListeners.TextTestProgressListener:new());
     end
     };
+};
 
-    TEST_CASE_EX{"testTextTestProgressListenerCallAllFunctions", "ErrorObjectFixture", function(self)
-        local ttpl = testListeners.TextTestProgressListener:new();
+TEST_SUITE("SciteTextTestProgressListenerTestSuite")
+{
+    TEST_CASE_EX{"testSciteErrorFormatterString", "ErrorObjectFixture", function(self)
+        local ttpl = testListeners.SciteTextTestProgressListener:new();
+      
+        local desiredString = self.fakeErrorObject.source .. ":" .. tostring(self.fakeErrorObject.line) .. ": " .. self.fakeErrorObject.message
+        ASSERT_EQUAL(desiredString, ttpl:sciteErrorLine(self.fakeErrorObject))
+    end
+    };
+
+    TEST_CASE_EX{"testErrorString", "ErrorObjectFixture", function(self)
+        local ttpl = testListeners.SciteTextTestProgressListener:new();
+
+        ttpl.outputMessage = function(self, msg) end
+        ttpl:addError(self.fakeTestCaseName .. '2', self.fakeErrorObject)
+        ttpl:addError(self.fakeTestCaseName .. '1', self.fakeErrorObject)
         
-        function ttpl:outputMessage(message)
-        end
+        local desiredString = self.fakeTestCaseName .. "2\n\t" .. ttpl:sciteErrorLine(self.fakeErrorObject) .. 
+                                       "\n------------------------------------------------------------------------------------------------------\n" .. 
+                                       self.fakeTestCaseName .. "1\n\t" .. ttpl:sciteErrorLine(self.fakeErrorObject)
+        ASSERT_EQUAL(desiredString, ttpl:totalErrorStr())
+    end
+    };
 
+    TEST_CASE_EX{"testFailureString", "ErrorObjectFixture", function(self)
+        local ttpl = testListeners.SciteTextTestProgressListener:new();
+
+        ttpl.outputMessage = function(self, msg) end
+        ttpl:addFailure(self.fakeTestCaseName .. '2', self.fakeErrorObject)
+        ttpl:addFailure(self.fakeTestCaseName .. '1', self.fakeErrorObject)
+        
+        local desiredString = self.fakeTestCaseName .. "2\n\t" .. ttpl:sciteErrorLine(self.fakeErrorObject) .. 
+                                       "\n------------------------------------------------------------------------------------------------------\n" .. 
+                                       self.fakeTestCaseName .. "1\n\t" .. ttpl:sciteErrorLine(self.fakeErrorObject)
+        
+        ASSERT_EQUAL(desiredString, ttpl:totalFailureStr())
+    end
+    };
+
+    TEST_CASE_EX{"testOutput", "ErrorObjectFixture", function(self)
+        local ttpl = testListeners.SciteTextTestProgressListener:new();
+
+        local function successfullOutput(self, msg) ASSERT_EQUAL('.', msg) end
+        local function failedOutput(self, msg)        ASSERT_EQUAL('F', msg) end
+        local function errorOutput(self, msg)         ASSERT_EQUAL('E', msg) end
+        local function ignoredOutput(self, msg)      ASSERT_EQUAL('I', msg) end
+        
+        ttpl.outputMessage = function(self, msg) ASSERT_EQUAL('[', msg) end
         ttpl:startTests();
 
+        ttpl.outputMessage = function(self, msg) ASSERT_EQUAL('Must not any output message', msg) end;
         ttpl:startTest(self.fakeTestCaseName, self.fakeTestName);
+        
+        ttpl.outputMessage = successfullOutput;
         ttpl:addSuccessful(self.fakeTestCaseName, self.fakeTestName);
+        
+        ttpl.outputMessage = function(self, msg) ASSERT_EQUAL('Must not any output message', msg) end;
         ttpl:endTest(self.fakeTestCaseName, self.fakeTestName);
 
+        ttpl.outputMessage = function(self, msg) ASSERT_EQUAL('Must not any output message', msg) end;
         ttpl:startTest(self.fakeTestCaseName, self.fakeTestName);
+        
+        ttpl.outputMessage = failedOutput;
         ttpl:addFailure(self.fakeTestCaseName, self.fakeErrorObject);
+        
+        ttpl.outputMessage = function(self, msg) ASSERT_EQUAL('Must not any output message', msg) end;
         ttpl:endTest(self.fakeTestCaseName, self.fakeTestName);
 
+        ttpl.outputMessage = function(self, msg) ASSERT_EQUAL('Must not any output message', msg) end;
         ttpl:startTest(self.fakeTestCaseName, self.fakeTestName);
+        
+        ttpl.outputMessage = errorOutput;
         ttpl:addError(self.fakeTestCaseName, self.fakeErrorObject);
+        
+        ttpl.outputMessage = function(self, msg) ASSERT_EQUAL('Must not any output message', msg) end;
         ttpl:endTest(self.fakeTestCaseName, self.fakeTestName);
 
+        ttpl.outputMessage = function(self, msg) ASSERT_EQUAL('Must not any output message', msg) end;
         ttpl:startTest(self.fakeTestCaseName, self.fakeTestName);
+        
+        ttpl.outputMessage = ignoredOutput;
         ttpl:addIgnore(self.fakeTestCaseName);
+        
+        ttpl.outputMessage = function(self, msg) ASSERT_EQUAL('Must not any output message', msg) end;
         ttpl:endTest(self.fakeTestCaseName, self.fakeTestName);
         
+        ttpl.outputMessage = function(self, msg) end;
         ttpl:endTests();
     end
     };
 
+    TEST_CASE_EX{"emptyEndTestsTest", "ErrorObjectFixture", function(self)
+        local ttpl = testListeners.SciteTextTestProgressListener:new();
+        function ttpl:outputMessage(msg) 
+            ASSERT_EQUAL(']\n' .. self:totalResultsStr(), msg);
+        end
+        ttpl:endTests();
+    end
+    };
+
+    TEST_CASE_EX{"filledEndTestsTest", "ErrorObjectFixture", function(self)
+        local ttpl = testListeners.SciteTextTestProgressListener:new();
+        
+        ttpl.outputMessage = function(self, msg) end;
+        ttpl:addFailure(self.fakeTestCaseName, self.fakeErrorObject);
+        ttpl:addError(self.fakeTestCaseName, self.fakeErrorObject);
+        
+        function ttpl:outputMessage(msg) 
+            ASSERT_EQUAL(']\n' .. self:totalResultsStr() .. '\n' .. self:totalFailureStr() .. '\n' .. self:totalErrorStr(), msg);
+        end
+        ttpl:endTests();
+    end
+    };
 
     --~ TEST_CASE_EX{"testXmlListenerSimulateTestRunning", "ErrorObjectFixture", function(self)
     --~     local ttpl = testListeners.XmlListenerAlaCppUnitXmlOutputter:new();
