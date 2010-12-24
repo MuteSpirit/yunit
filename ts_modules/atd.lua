@@ -1,4 +1,4 @@
-local fs = require("lfs");
+local lfs = require("lfs");
 
 --[[ Active TeX Document (ATD) module ]]
 -- special case of module defenition
@@ -397,7 +397,7 @@ local function convertTexTemplateIfNeeded(name)
         inform("File is LaTeX document, using template and macro. Begin parsing.");
         parseLineWithOpts(texFileOptions, line);
         -- add some options, with can't be founded from 1st line of TeX file
-        texFileOptions.dir = fs.currentdir();
+        texFileOptions.dir = lfs.currentdir() .. '/';
         texFileOptions.macro['FILE_NAME'] = filename;
 
         expandTemplate(texFileOptions, name, intermediateFileExt)
