@@ -405,28 +405,40 @@ function copyFile(src, dst)
 end
 
 --------------------------------------------------------------------------------------------------------------
-function copyDir(srcDirPath, dstDirPath)
+function copyDir(src, dst)
 --------------------------------------------------------------------------------------------------------------
---~     local dirs = string.split(srcDirPath, '[/\\]+');
---~
---~     local copiedDir = dirs[#dirs];
---~     if not copiedDir or 0 == string.len(copiedDir) then
---~         copiedDir = dirs[#dirs - 1];
---~     end
---~
---~     local status, errMsg = true, '';
---~     status, errMsg = fs.mkdir(dstDirPath);
---~     if not status then
---~         return status, errMsg;
---~     end
---~
---~     local files = fs.ls(srcDirPath, {recursive = false, fullPath = true, showFiles = true});
---~     for _, filePath in ipairs(files) do
---~         copyFile
---~     end
---~
---~     return true;
-    return false;
+    if isFile(src) then
+        return nil, 'Can\'t copy something other than directory'
+    end
+    if isFile(dst) then
+        return nil, 'Can\'t copy dir into file'
+    end
+    
+    local status, errMsg;
+    local baseSrcPath = split(src)
+    
+    local function processDir(dirPath)
+        status, errMsg = lfs.mkdir(string.gsub(dirPath, luaExt.convertTextToRePattern(baseSrcPath), dst))
+        if not status then
+            return status, errMsg
+        end
+    end
+    
+    processDir(src)
+    local dirs = ls(src, {recursive = true, fullPath = true, showDirs = true})
+    for i = 1, #dirs do
+        processDir(dirs[i])
+    end
+    
+    local files = ls(src, {recursive = true, fullPath = true, showFiles = true})
+    for i = 1, #files do
+        status, errMsg = copyFile(files[i], string.gsub(files[i], luaExt.convertTextToRePattern(baseSrcPath), dst))
+        if not status then
+            return status, errMsg
+        end
+    end
+    
+    return true;
 end
 
 --------------------------------------------------------------------------------------------------------------

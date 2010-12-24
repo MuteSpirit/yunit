@@ -832,26 +832,82 @@ TEST_CASE_EX{"copyDirWithCopyFileFuncTest", "UseTestTmpDirFixture", function(sel
 end
 };
 
---~ TEST_CASE_EX{"copyDirTest", "UseTestTmpDirFixture", function(self)
---~     local src = self.tmpDir .. fs.osSlash() .. '1'
---~     local dst = self.tmpDir .. fs.osSlash() .. '2'
---~     lfs.mkdir(src);
---~     lfs.mkdir(dst);
+TEST_CASE_EX{"copyDirWithFileTest", "UseTestTmpDirFixture", function(self)
+    local src = self.tmpDir .. fs.osSlash() .. '1'
+    local dst = self.tmpDir .. fs.osSlash() .. '2'
+    lfs.mkdir(src);
+    lfs.mkdir(dst);
 
---~     local text = 'some\nsimple\ntext\n';
---~     atf.createTextFileWithContent(src .. fs.osSlash() .. 'tmp.txt', text);
+    local text = 'some\nsimple\ntext\n';
+    atf.createTextFileWithContent(src .. fs.osSlash() .. 'tmp.txt', text);
 
---~     ASSERT_TRUE(fs.copyDir(src, dst));
+    local status, errMsg = fs.copyDir(src, dst)
+    ASSERT_EQUAL(nil, errMsg)
+    ASSERT_TRUE(status);
 
---~     local dstSubDir = dst .. fs.osSlash() .. '1'
+    local dstSubDir = dst .. fs.osSlash() .. '1'
 
---~     ASSERT_TRUE(fs.isExist(dstSubDir));
---~     ASSERT_TRUE(fs.isDir(dstSubDir));
+    ASSERT_TRUE(fs.isExist(dstSubDir));
+    ASSERT_TRUE(fs.isDir(dstSubDir));
 
---~     ASSERT_TRUE(fs.isExist(dstSubDir .. fs.osSlash() .. 'tmp.txt'));
---~     ASSERT_TRUE(fs.isFile(dstSubDir .. fs.osSlash() .. 'tmp.txt'));
---~ end
---~ };
+    ASSERT_TRUE(fs.isExist(dstSubDir .. fs.osSlash() .. 'tmp.txt'));
+    ASSERT_TRUE(fs.isFile(dstSubDir .. fs.osSlash() .. 'tmp.txt'));
+end
+};
+
+TEST_CASE_EX{"copyDirWithSubdirWithFileTest", "UseTestTmpDirFixture", function(self)
+    local src = self.tmpDir .. fs.osSlash() .. '1'
+    local srcFile = src .. fs.osSlash() .. 'src.txt'
+    local srcSubdir = src .. fs.osSlash() .. 'subdir'
+    local srcFileInSubdir = srcSubdir .. fs.osSlash() .. 'tmp.txt'
+    
+    local dst = self.tmpDir .. fs.osSlash() .. '2'
+    local srcDirInDstDir = dst .. fs.osSlash() .. '1'
+    local dstFile = srcDirInDstDir .. fs.osSlash() .. 'src.txt'
+    local dstSubdir = srcDirInDstDir .. fs.osSlash() .. 'subdir'
+    local srcFileInDstSubdir = dstSubdir .. fs.osSlash() .. 'tmp.txt'
+    
+    lfs.mkdir(src);
+    lfs.mkdir(srcSubdir);
+    lfs.mkdir(dst);
+
+    local text = 'some\nsimple\ntext\n';
+    atf.createTextFileWithContent(srcFile, text);
+    atf.createTextFileWithContent(srcFileInSubdir, text);
+
+    local status, errMsg = fs.copyDir(src, dst)
+    ASSERT_EQUAL(nil, errMsg)
+    ASSERT_TRUE(status);
+
+    ASSERT_TRUE(fs.isExist(srcDirInDstDir));
+    ASSERT_TRUE(fs.isDir(srcDirInDstDir));
+
+    ASSERT_TRUE(fs.isExist(dstSubdir));
+    ASSERT_TRUE(fs.isDir(dstSubdir));
+
+    ASSERT_TRUE(fs.isExist(dstFile));
+    ASSERT_TRUE(fs.isFile(dstFile));
+
+    ASSERT_TRUE(fs.isExist(srcFileInDstSubdir));
+    ASSERT_TRUE(fs.isFile(srcFileInDstSubdir));
+end
+};
+
+TEST_CASE_EX{"copyFilesWithCopyDirFuncTest", "UseTestTmpDirFixture", function(self)
+    local srcDir = self.tmpDir .. fs.osSlash() .. '1';
+    local srcFile = srcDir .. fs.osSlash() .. 'tmp.txt';
+    local dstDir = self.tmpDir .. fs.osSlash() .. '2';
+    local dstFile = dstDir .. fs.osSlash() .. 'tmp.txt';
+
+    lfs.mkdir(srcDir);
+    lfs.mkdir(dstDir);
+    local text = 'some\nsimple\ntext\n';
+    atf.createTextFileWithContent(srcFile, text);
+    
+    ASSERT_IS_NIL(fs.copyDir(srcFile, dstDir))
+    ASSERT_IS_NIL(fs.copyDir(srcDir, dstFile))
+end
+};
 
 TEST_CASE_EX{"copyTest", "UseTestTmpDirFixture", function(self)
 end
