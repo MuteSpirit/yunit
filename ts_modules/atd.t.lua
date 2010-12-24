@@ -549,7 +549,7 @@ function testExpandTemplate()
     assert_true(fs.isExist(opt.dir .. opt.name..'.tex'));
     assert_true(fs.createTextFileWithContent(tmpDir .. opt.template, texTemplateFileContent));
     assert_true(fs.isExist(tmpDir .. opt.template));
-    assert_true(fs.chdir(tmpDir));
+    assert_true(lfs.chdir(tmpDir));
 
     expandTemplate(opt, 'temp', 'src');
     assert_true(fs.isExist(opt.dir .. opt.name..'.src'));

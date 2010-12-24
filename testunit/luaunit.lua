@@ -434,7 +434,7 @@ end
 -------------------------------------------------------
 
 -- last created TestSuite. It used for correct adding TestCase objects to corresponding TestSuite
-local curSuite;
+local curSuite = curTestRegistry.testsuites[1];
 
 function currentSuite(value)
     if value then

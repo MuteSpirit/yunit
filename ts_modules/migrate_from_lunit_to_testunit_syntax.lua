@@ -2,7 +2,7 @@ local file = arg[1];
 --~ file = 'lua_ext.t.lua';
 --~ file = 'filesystem.t.lua';
 --~ file = '..\\testunit\\test_listeners.t.lua';
-file = '..\\testunit\\test_runner.t.lua';
+file = '..\\testunit\\cppunit.t.lua';
 if not file then
     error('Use filename as 1st arg');
 end

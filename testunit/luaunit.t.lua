@@ -79,6 +79,28 @@ local testRunner = require("testunit.test_runner");
 
 module("luaunit.t", luaUnit.testmodule, package.seeall);
 
+TEST_FIXTURE("assertsAtSetUpFixture")
+{
+    setUp = function(self)
+        ASSERT_TRUE(true)
+    end
+    ;
+    tearDown = function(self)
+    end
+    ;
+};
+
+TEST_FIXTURE("assertsAtTearDownFixture")
+{
+    setUp = function(self)
+    end
+    ;
+    tearDown = function(self)
+        ASSERT_TRUE(true)
+    end
+    ;
+};
+
 -- This fixture save (at setUp) and restore (at tearDown) currentSuite variable at luaunit module for possibility TEST_* macro testing
 TEST_FIXTURE("LuaUnitSelfTestFixture")
 {
@@ -223,7 +245,7 @@ TEST_SUITE("LuaUnitTestRegistryTest")
         local statusCode, errorObject = luaUnit.callTestCaseMethod(testcase, testcase.test);
         ASSERT_FALSE(statusCode);
         
-        ASSERT_EQUAL("luaunit.t.lua", errorObject.source);
+        ASSERT_IS_NOT_NIL(string.find(errorObject.source, 'luaunit%.t%.lua$'))
         ASSERT_EQUAL("testFunc", errorObject.func);
         
         ASSERT_IS_NOT_NIL(errorObject.line);
@@ -487,4 +509,13 @@ TEST_SUITE("LuaUnitAssertMacroTest")
             'a\nC\n1\n2\n-\n=\n+\n[\n]\n(\n)\n{\n}\n:\n;\n,\n.\n/\n?\n*\n') end);
     end
     };
+    
+    TEST_CASE_EX{"assertsAtSetUp", "assertsAtSetUpFixture", function(self)
+    end
+    };
+    
+    TEST_CASE_EX{"assertsAtTearDown", "assertsAtTearDownFixture", function(self)
+    end
+    };
+    
 };
