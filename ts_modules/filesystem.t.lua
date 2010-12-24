@@ -784,6 +784,21 @@ TEST_CASE_EX{"absPathOnRelativePaths", "UseUnixPathDelimiterFixture", function(s
 end
 };
 
+TEST_CASE_EX{"copyDirWithFileTest", "UseTestTmpDirFixture", function(self)
+    local total = 0
+    local path
+
+    for n = 0, 10 do
+        path = self.tmpDir .. fs.osSlash() .. n .. '.txt'
+        atf.createTextFileWithContent(path, string.rep(' ', n));
+        ASSERT_EQUAL(n, fs.du(path))
+        total = total + n
+    end
+    ASSERT_EQUAL(total, fs.du(self.tmpDir))
+end
+};
+
+
 TEST_CASE_EX{"copyFileToAnotherPlaceTest", "UseTestTmpDirFixture", function(self)
     local text = 'some\nsimple\ntext\n';
     local src = self.tmpDir .. fs.osSlash() .. 'src.txt';

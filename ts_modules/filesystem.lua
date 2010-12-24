@@ -302,14 +302,30 @@ function isDir(path)
 end
 
 --------------------------------------------------------------------------------------------------------------
+-- Filters for function applyOnFiles
+--------------------------------------------------------------------------------------------------------------
+
+function noFilter(path, state)
+    return true
+end
+
+function fileFilter(path, state)
+    return isFile(path)
+end
+
+function dirFilter(path, state)
+    return isDir(path)
+end
+
+--------------------------------------------------------------------------------------------------------------
 function applyOnFiles(dirPath, namedArgs)
 --------------------------------------------------------------------------------------------------------------
-    namedArgs = namedArgs or {};
-    if not dirPath or not namedArgs.handler or not isDir(dirPath) then
+    if not namedArgs and not dirPath or not namedArgs.handler or not isDir(dirPath) then
         return;
     end
     
-    local filter = namedArgs.filter or function(path, state) return true; end
+    local filter = namedArgs.filter or noFilter
+    local handler = namedArgs.handler
     
     local slash = osSlash();
     local path;
@@ -318,7 +334,7 @@ function applyOnFiles(dirPath, namedArgs)
         if '.' ~= file and '..' ~= file then
             path = dirPath .. slash .. file;
             if filter(path, namedArgs.state) then
-                namedArgs.handler(path, namedArgs.state);
+                handler(path, namedArgs.state);
             end
 
             if isDir(path) and namedArgs.recursive then
@@ -364,12 +380,10 @@ function du(path)
     end
 
     local function calculateSize(path, state)
-        if isFile(path) then
-            state.size = state.size + lfs.attributes(path, 'size');
-        end
+        state.size = state.size + lfs.attributes(path, 'size');
     end
     
-    local adtArg = {handler = calculateSize, state = {size = 0}, recursive = true};
+    local adtArg = {filter = fileFilter, handler = calculateSize, state = {size = 0}, recursive = true};
     applyOnFiles(path, adtArg);
     
     return adtArg.state.size;
