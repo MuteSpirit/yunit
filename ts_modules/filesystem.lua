@@ -1,9 +1,12 @@
 -- -*- coding: utf-8 -*-
+local _G = _G
+
+--------------------------------------------------------------------------------------------------------------
+module(...)
+_G.setmetatable(_M, {__index = _G})
+--------------------------------------------------------------------------------------------------------------
 
 local luaExt = require('lua_ext');
-
-module(..., package.seeall)
-
 local lfs = require("lfs")
 
 --- \brief Define on what operating system script is run

@@ -75,9 +75,11 @@
 --- \return status code of 'testFunc' execution and ErrorObject with additional info
 
 local luaUnit = require("testunit.luaunit");
-local testRunner = require("testunit.test_runner");
 
 module("luaunit.t", luaUnit.testmodule, package.seeall);
+
+local testRunner = require("testunit.test_runner");
+
 
 TEST_FIXTURE("assertsAtSetUpFixture")
 {

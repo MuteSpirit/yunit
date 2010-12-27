@@ -36,8 +36,8 @@
 --- \param[in] delimiter It is pattern for delimiter substring. I.e. string.len(delimiter) maybe > 1. Attention with special simbols, whith need % before them.
 --- \return Array (i.e. {'a', 'b',}) of string parts
 
-local luaUnit = require("testunit.luaunit");
-module("lua_ext.t", luaUnit.testmodule, package.seeall);
+local luaUnit = require("testunit.luaunit")
+module("lua_ext.t", luaUnit.testmodule, package.seeall)
 local luaExt = require('lua_ext')
 
 
@@ -143,14 +143,6 @@ TEST_CASE{"tableCompareTest", function(self)
     ASSERT_FALSE(table.isEqual({{}}, {}));
 
     ASSERT_TRUE(table.isEqual( { [{1}] = 1}, { [{1}] = 1} ));
-end
-};
-
-TEST_CASE{"sleepTest", function(self)
-    local start = os.time()
-    luaExt.sleep(1000)
-    local stop = os.time()
-    ASSERT_EQUAL(1, os.difftime(stop, start))
 end
 };
 
