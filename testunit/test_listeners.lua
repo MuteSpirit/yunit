@@ -13,33 +13,24 @@ module('testunit.test_listeners');
 
 ------------------------------------------------------
 TextTestProgressListener = testRunner.TestListener:new{
-        successfulTestsNum = 0,
-        failedTestsNum = 0,
-        errorTestsNum = 0,
-        ignoredTestsNum = 0,
+        tableWithSuccesses = {},
+        tableWithIgnores = {},
+        tableWithErrors = {},
+        tableWithFailures = {},
     };
 ------------------------------------------------------
 
-function TextTestProgressListener:new(o)
-    o = o or {
-        successfulTestsNum = 0,
-        failedTestsNum = 0,
-        errorTestsNum = 0,
-        ignoredTestsNum = 0,
+function TextTestProgressListener:new()
+    local o =
+    {
+        tableWithSuccesses = {},
+        tableWithIgnores = {},
+        tableWithErrors = {},
+        tableWithFailures = {},
     };
     setmetatable(o, self);
     self.__index = self;
     return o;
-end
-
-function TextTestProgressListener:addSuccessful(testCaseName)
-    self.successfulTestsNum = self.successfulTestsNum + 1;
-    self:outputMessage("OK");
-end
-
-function TextTestProgressListener:addIgnore(testCaseName)
-    self.ignoredTestsNum = self.ignoredTestsNum + 1;
-    self:outputMessage("IGNORED");
 end
 
 function TextTestProgressListener:sciteErrorLine(errorObject)
@@ -60,69 +51,43 @@ end
 
 TextTestProgressListener.editorSpecifiedErrorLine = TextTestProgressListener.msvcErrorLine;
 
-function TextTestProgressListener:addFailure(testCaseName, errorObject)
-    self.failedTestsNum = self.failedTestsNum + 1;
-    self:outputMessage("FAILURE\n\t" .. self:editorSpecifiedErrorLine(errorObject));
-end
-
-function TextTestProgressListener:addError(testCaseName, errorObject)
-    self.errorTestsNum = self.errorTestsNum + 1;
-    self:outputMessage("ERROR\n\t" .. self:editorSpecifiedErrorLine(errorObject));
-end
-
-function TextTestProgressListener:startTest(testCaseName)
-    self:outputMessage(testCaseName..": ");
-end
-
-function TextTestProgressListener:endTest(testCaseName)
-    self:outputMessage("\n");
-end
-
 function TextTestProgressListener:resetCounters()
-    self.successfulTestsNum = 0;
-    self.failedTestsNum = 0;
-    self.errorTestsNum = 0;
-    self.ignoredTestsNum = 0;
-end
-
-function TextTestProgressListener:startTests()
-    self:resetCounters();
+    self.tableWithSuccesses = {}
+    self.tableWithIgnores = {}
+    self.tableWithErrors = {}
+    self.tableWithFailures = {}
 end
 
 function TextTestProgressListener:totalTestNum()
-    return self.failedTestsNum + self.errorTestsNum + self.ignoredTestsNum + self.successfulTestsNum;
+    return #self.tableWithSuccesses + #self.tableWithIgnores + #self.tableWithErrors + #self.tableWithFailures;
 end
 
 function TextTestProgressListener:totalResultsStr()
     local message = "Execution of tests has been completed:\n";
 
-    message = message.."\t\t\tFailed:      "..tostring(self.failedTestsNum);
-    if self.failedTestsNum > 0 then
+    message = message.."\t\t\tFailed:      "..tostring(#self.tableWithFailures);
+    if #self.tableWithFailures > 0 then
         message = message.."\t(0_-) BUGS !!!";
     end
     message = message.."\n";
 
-    message = message.."\t\t\tErrors:       "..tostring(self.errorTestsNum);
-    if self.errorTestsNum > 0 then
+    message = message.."\t\t\tErrors:       "..tostring(#self.tableWithErrors);
+    if #self.tableWithErrors > 0 then
         message = message.."\t(0_0) ???";
     end
     message = message.."\n";
 
-    message = message.."\t\t\tIgnored:     "..tostring(self.ignoredTestsNum);
-    if self.ignoredTestsNum > 0 then
+    message = message.."\t\t\tIgnored:     "..tostring(#self.tableWithIgnores);
+    if #self.tableWithIgnores > 0 then
         message = message.."\to(^_^)o ?";
     end
     message = message.."\n";
 
-    message = message.."\t\t\tSuccessful:  "..tostring(self.successfulTestsNum).."\n";
+    message = message.."\t\t\tSuccessful:  "..tostring(#self.tableWithSuccesses).."\n";
 
     message = message.."\t\t\tTotal:       "..tostring(self:totalTestNum()).."\n";
 
     return message;
-end
-
-function TextTestProgressListener:endTests()
-    self:outputMessage(self:totalResultsStr());
 end
 
 function TextTestProgressListener:outputMessage(message)
@@ -130,71 +95,38 @@ function TextTestProgressListener:outputMessage(message)
     io.output():flush();
 end
 
-
-------------------------------------------------------
-SciteTextTestProgressListener = TextTestProgressListener:new{
-        successfulTestsNum = 0,
-        failedTestsNum = 0,
-        errorTestsNum = 0,
-        ignoredTestsNum = 0,
-        tableWithErrors = {},
-        tableWithFailures = {},
-    };
-------------------------------------------------------
-
-function SciteTextTestProgressListener:new(o)
-    o = o or {
-        successfulTestsNum = 0,
-        failedTestsNum = 0,
-        errorTestsNum = 0,
-        ignoredTestsNum = 0,
-        tableWithErrors = {},
-        tableWithFailures = {},
-    };
-    setmetatable(o, self);
-    self.__index = self;
-    return o;
-end
-
-
-SciteTextTestProgressListener.editorSpecifiedErrorLine = TextTestProgressListener.sciteErrorLine
-
-function SciteTextTestProgressListener:addSuccessful(testCaseName)
-    self.successfulTestsNum = self.successfulTestsNum + 1;
+function TextTestProgressListener:addSuccessful(testCaseName)
+    table.insert(self.tableWithSuccesses, {testCaseName});
     self:outputMessage('.');
 end
 
-function SciteTextTestProgressListener:addFailure(testCaseName, errorObject)
+function TextTestProgressListener:addFailure(testCaseName, errorObject)
     table.insert(self.tableWithFailures, {testCaseName, errorObject});
-
-    self.failedTestsNum = self.failedTestsNum + 1;
     self:outputMessage('F');
 end
 
-function SciteTextTestProgressListener:addError(testCaseName, errorObject)
+function TextTestProgressListener:addError(testCaseName, errorObject)
     table.insert(self.tableWithErrors, {testCaseName, errorObject});
-
-    self.errorTestsNum = self.errorTestsNum + 1;
     self:outputMessage('E');
 end
 
 function TextTestProgressListener:addIgnore(testCaseName)
-    self.ignoredTestsNum = self.ignoredTestsNum + 1;
+    table.insert(self.tableWithIgnores, {testCaseName});
     self:outputMessage("I");
 end
 
-function SciteTextTestProgressListener:startTest(testCaseName)
+function TextTestProgressListener:startTest(testCaseName)
 end
 
-function SciteTextTestProgressListener:endTest(testCaseName)
+function TextTestProgressListener:endTest(testCaseName)
 end
 
-function SciteTextTestProgressListener:startTests()
+function TextTestProgressListener:startTests()
     self:resetCounters();
     self:outputMessage('[');
 end
 
-function SciteTextTestProgressListener:endTests()
+function TextTestProgressListener:endTests()
     local res = {']', self:totalResultsStr()}
     
     local str = self:totalFailureStr()
@@ -210,7 +142,7 @@ function SciteTextTestProgressListener:endTests()
     self:outputMessage(table.concat(res, '\n'));
 end
 
-function SciteTextTestProgressListener:totalErrorStr()
+function TextTestProgressListener:totalErrorStr()
     local res = {}
     local testName, errorObject
     for _, record in pairs(self.tableWithErrors) do
@@ -221,7 +153,7 @@ function SciteTextTestProgressListener:totalErrorStr()
     return table.concat(res, '\n------------------------------------------------------------------------------------------------------\n')
 end
 
-function SciteTextTestProgressListener:totalFailureStr()
+function TextTestProgressListener:totalFailureStr()
     local res = {}
     local testName, errorObject
     for _, record in pairs(self.tableWithFailures) do
@@ -232,7 +164,13 @@ function SciteTextTestProgressListener:totalFailureStr()
     return table.concat(res, '\n------------------------------------------------------------------------------------------------------\n')
 end
 
---~ local defaultXmlReportPath = 'report.xml';
+
+
+------------------------------------------------------
+SciteTextTestProgressListener = TextTestProgressListener:new()
+------------------------------------------------------
+
+SciteTextTestProgressListener.editorSpecifiedErrorLine = TextTestProgressListener.sciteErrorLine--~ local defaultXmlReportPath = 'report.xml';
 
 --~ ------------------------------------------------------
 --~ XmlListenerAlaCppUnitXmlOutputter = testRunner.TestListener:new{

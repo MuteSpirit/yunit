@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="72111c62-dc91-4251-8d9e-611192f78be9" Name="Lua For Development Environment" Language="1033" Version="1.0.0.0" Manufacturer="Techsystem" UpgradeCode="92882211-b420-4cf1-8872-da9649f28ff4">
+  <Product Id="72111c62-dc91-4251-8d9e-611192f78be9" Name="Lua For Development Environment" Language="1033" Version="0.1.0.0" Manufacturer="Techsystem" UpgradeCode="92882211-b420-4cf1-8872-da9649f28ff4">
     <Package InstallerVersion="200" Compressed="yes" />
 
     <Media Id="1" Cabinet="setup_lde.cab" EmbedCab="yes" />
@@ -77,10 +77,6 @@
               <!--устанавливаем переменные среды-->
               <Environment Id='UpdatePath00' Name='PATH' Action='set' System='yes'
                                         Permanent='no' Part='last' Value="[$LuaBinaries]" />
-              <Environment Id='UpdatePath01' Name='LUA_PATH' Action='set' System='yes'
-                                        Permanent='no' Part='last' Value=".\?.lua;!\lua\?.lua ;!\lua\?\init.lua;!\?.lua;!\?\init.lua" />
-              <Environment Id='UpdatePath02' Name='LUA_CPATH' Action='set' System='yes'
-                                        Permanent='no' Part='last' Value=".\?.dll;!\?.dll;!\loadall.dll"/>
             </Component>
 
             <Component Id="LuaFileSystemBinaries" Guid="80511ee5-80c8-4cf6-a96e-d0652e28eb41">

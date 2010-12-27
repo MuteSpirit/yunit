@@ -38,6 +38,21 @@ TEST_FIXTURE("ErrorObjectFixture")
     ;
 };
 
+TEST_FIXTURE("SciteTextTestProgressListenerFixture")
+{
+    setUp = function(self)
+        function testListeners.SciteTextTestProgressListener:unusedTestFunction()
+        end
+    end
+    ;
+    
+    tearDown = function(self)
+        testListeners.SciteTextTestProgressListener.unusedTestFunction = nil
+    end
+    ;
+};
+
+
 TEST_SUITE(testModuleName)
 {
     TEST_CASE{"testTextTestProgressListenerCreation", function(self)
@@ -160,6 +175,16 @@ TEST_SUITE("SciteTextTestProgressListenerTestSuite")
     end
     };
 
+    TEST_CASE_EX{"derivationTextTestListenerTest", "SciteTextTestProgressListenerFixture", function(self)
+        local ttpl = testListeners.TextTestProgressListener:new();
+        ASSERT_IS_NIL(ttpl.unusedTestFunction)
+        ASSERT_IS_NOT_NIL(ttpl.outputMessage)
+        local sttpl = testListeners.SciteTextTestProgressListener:new();
+        ASSERT_IS_NOT_NIL(sttpl.unusedTestFunction)
+        ASSERT_IS_NOT_NIL(sttpl.outputMessage)
+    end
+    };
+    
     --~ TEST_CASE_EX{"testXmlListenerSimulateTestRunning", "ErrorObjectFixture", function(self)
     --~     local ttpl = testListeners.XmlListenerAlaCppUnitXmlOutputter:new();
     --~     
