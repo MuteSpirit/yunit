@@ -117,19 +117,22 @@ function table.isEqual(lhs, rhs)
     if #lhs ~= #rhs then
         return false;
     end
+    local status, msg;
+    
     for kLhs, vLhs in pairs(lhs) do
         if 'table' ~= type(kLhs) then
-            if not rhs[kLhs] then
-                return false;
+            if nil == rhs[kLhs] then
+                return false, 'rhs[' .. kLhs .. '] is not exist';
             end
             
             if 'table' ~= type(vLhs) then
                 if vLhs ~= rhs[kLhs] then
-                    return false;
+                    return false, 'vLhs not equal to rhs[kLhs] (' .. tostring(vLhs) .. ' ~= ' .. tostring(rhs[kLhs]) .. ')';
                 end
             else
-                if not table.isEqual(vLhs, rhs[kLhs]) then
-                    return false;
+                status, msg = table.isEqual(vLhs, rhs[kLhs]);
+                if not status then
+                    return status, msg;
                 end
             end
         else
@@ -137,13 +140,14 @@ function table.isEqual(lhs, rhs)
                 if table.isEqual(kLhs, kRhs) then
                     if 'table' ~= type(vLhs) then
                         if vLhs ~= vRhs then
-                            return false;
+                            return false, 'vLhs ~= vRhs (' .. tostring(vLhs) .. ' ~= ' .. tostring(vRhs) .. ')';
                         else
                             break;
                         end
                     else
-                        if not table.isEqual(vLhs, vRhs) then
-                            return false;
+                        status, msg = table.isEqual(vLhs, vRhs);
+                        if not status then
+                            return status, msg;
                         else
                             break;
                         end

@@ -79,6 +79,8 @@ local luaUnit = require("testunit.luaunit");
 module("luaunit.t", luaUnit.testmodule, package.seeall);
 
 local testRunner = require("testunit.test_runner");
+local luaExt = require("lua_ext")
+
 
 
 TEST_FIXTURE("assertsAtSetUpFixture")
@@ -519,5 +521,147 @@ TEST_SUITE("LuaUnitAssertMacroTest")
     TEST_CASE_EX{"assertsAtTearDown", "assertsAtTearDownFixture", function(self)
     end
     };
+};
+
+
+TEST_SUITE("NewSyntaxTests")
+{
+    TEST_CASE{"getTestEnvTest", function(self)
+        local testContainerName = 'testunit.luaunit'
+        local testChunk = luaUnit.getTestEnv(testContainerName)
+        
+        local mt = getmetatable(testChunk)
+        ASSERT_IS_NOT_NIL(mt)
+        ASSERT_IS_NOT_NIL(mt.__index)
+        ASSERT_IS_NOT_NIL(testChunk._G)
+        
+        ASSERT_IS_NOT_NIL(testChunk._M)
+        ASSERT_EQUAL(testChunk, testChunk._M)
+        
+        ASSERT_EQUAL(testContainerName, testChunk._NAME)
+        
+        ASSERT_IS_NOT_NIL(testChunk.isTrue)
+        ASSERT_IS_NOT_NIL(testChunk.isFalse)
+        ASSERT_IS_NOT_NIL(testChunk.areEq)
+        ASSERT_IS_NOT_NIL(testChunk.areNotEq)
+        ASSERT_IS_NOT_NIL(testChunk.noThrow)
+        ASSERT_IS_NOT_NIL(testChunk.willThrow)
+
+        ASSERT_IS_NOT_NIL(testChunk.isFunction)
+        ASSERT_IS_NOT_NIL(testChunk.isTable)
+        ASSERT_IS_NOT_NIL(testChunk.isNumber)
+        ASSERT_IS_NOT_NIL(testChunk.isString)
+        ASSERT_IS_NOT_NIL(testChunk.isBoolean)
+        ASSERT_IS_NOT_NIL(testChunk.isNil)
+
+        ASSERT_IS_NOT_NIL(testChunk.isNotFunction)
+        ASSERT_IS_NOT_NIL(testChunk.isNotTable)
+        ASSERT_IS_NOT_NIL(testChunk.isNotNumber)
+        ASSERT_IS_NOT_NIL(testChunk.isNotString)
+        ASSERT_IS_NOT_NIL(testChunk.isNotBoolean)
+        ASSERT_IS_NOT_NIL(testChunk.isNotNil)
+    end
+    };
     
+    TEST_CASE{"runTestChunkWithinSpecificEnvironmentTest", function(self)
+        local testContainerName = 'testunit.luaunit'
+        local test = [[function testCase() end 
+                                local function notTestCase() end
+                                isTrue(type(true) == "boolean")]]
+        
+        local env = luaUnit.getTestEnv(testContainerName)
+        local res, msg = luaUnit.loadTestChunk(test, env, testContainerName)
+        ASSERT_EQUAL(true, res)
+        ASSERT_IS_NIL(msg)
+
+        ASSERT_IS_NOT_NIL(env.testCase)
+        ASSERT_IS_FUNCTION(env.testCase)
+
+        ASSERT_IS_NIL(env.notTestCase)
+    end
+    };
+
+    TEST_CASE{"loadTestChunkTest", function(self)
+        local testContainerName = 'testunit.luaunit'
+        local test = [[fixture =
+                                {
+                                    setUp = function()
+                                    end,
+
+                                    tearDown = function()
+                                    end
+                                }
+                                function testCase() end 
+                                function fixture.fixtureTestCase() end 
+                                local function notTestCase() end
+                                function _ignoredTest() end
+                                ]]
+        
+        local env = luaUnit.getTestEnv(testContainerName)
+        local res, msg = luaUnit.loadTestChunk(test, env, testContainerName)
+        ASSERT_EQUAL(true, res)
+        ASSERT_IS_NIL(msg)
+
+        ASSERT_IS_NOT_NIL(env.testCase)
+        ASSERT_IS_FUNCTION(env.testCase)
+
+        ASSERT_IS_NOT_NIL(env._ignoredTest)
+        ASSERT_IS_FUNCTION(env._ignoredTest)
+
+        ASSERT_IS_NOT_NIL(env.fixture)
+        ASSERT_IS_TABLE(env.fixture)
+
+        ASSERT_IS_NOT_NIL(env.fixture.setUp)
+        ASSERT_IS_FUNCTION(env.fixture.setUp)
+
+        ASSERT_IS_NOT_NIL(env.fixture.tearDown)
+        ASSERT_IS_FUNCTION(env.fixture.tearDown)
+
+        ASSERT_IS_NOT_NIL(env.fixture.fixtureTestCase)
+        ASSERT_IS_FUNCTION(env.fixture.fixtureTestCase)
+
+        ASSERT_IS_NIL(env.notTestCase)
+    end
+    };
+    
+    TEST_CASE{"testFilteringOfTestCases", function(self)
+        local env = 
+        {
+            testCase = function() end,
+            _ignoredTest = function() end,
+            fixture =
+            {
+                setUp = function() end,
+                tearDown = function() end,
+                fixtureTestCase = function() end,
+            }
+        }
+        
+        local expectedTestList = 
+        {
+            {
+                name_ = '_ignoredTest',
+                isIgnored_ = true,
+                test = env._ignoredTest,
+            },
+            {
+                name_ = 'testCase',
+                isIgnored_ = false,
+                test = env.testCase,
+            },
+            {
+                name_ = 'fixtureTestCase',
+                setUp = env.fixture.setUp,
+                isIgnored_ = false,
+                test = env.fixture.fixtureTestCase,
+                tearDown = env.fixture.tearDown,
+            },
+        }
+        
+        local testContainerName = 'testunit.luaunit'
+        local testList = luaUnit.collectPureTestCaseList(env)
+        
+        ASSERT_TRUE(table.isEqual(expectedTestList, testList))
+    end
+    };
 };
