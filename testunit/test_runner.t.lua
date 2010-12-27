@@ -32,21 +32,21 @@
 --- \class TestCaseRecord
 --- \brief Class, containing link to TestCase object and some additional info for active test list management
 
---- \fn loadLuaDriver(filePath)
+--- \fn loadLuaContainer(filePath)
 --- \brief Load tests from Lua file
 --- \param[in] filePath Path to the file, whitch name correspond to wildcard "*.t.lua"
 --- \return None
 
---- \fn loadCppDriver(filePath)
+--- \fn loadCppContainer(filePath)
 --- \brief Load C++ test driver (in view of DLL) to the current process
 --- \param[in] filePath Path to the file, whitch name correspond to wildcard "*.t.dll"
 --- \return None
 
---- \fn isLuaTestDriver(filePath)
+--- \fn isLuaTestContainer(filePath)
 --- \brief Check if 'filePath' is correspond to wildcard "*.t.lua"
 --- \return true or false
 
---- \fn isCppTestDriver(filePath)
+--- \fn isCppTestContainer(filePath)
 --- \brief Check if 'filePath' is correspond to wildcard "*.t.dll"
 --- \return true or false
 
@@ -54,7 +54,7 @@
 --- \brief Load modules, whitch allow to work with Lua and C++ tests
 --- \return None
 
---- \fn loadTestDrivers(filePathList)
+--- \fn loadTestContainers(filePathList)
 --- \brief Make first initialization, then load tests from files of 'filePathList',
 --- then copy ALL Lua and C++ test to thr global test list. Call this function only one time at script
 --- \param[in] filePathList Table with list of test (even Lua and C++ simultaneously) file paths. 
@@ -77,17 +77,12 @@
 --- \param[in] testObserver Object, whitch wlii be received messages from and about tests
 --- \return None
 
-local require, print = require, print;
+local luaUnit = require("testunit.luaunit");
+
+module('test_runner.t', luaUnit.testmodule, package.seeall);
 
 local testListeners = require("testunit.test_listeners");
 local testRunner = require("testunit.test_runner");
-local luaUnit = require("testunit.luaunit");
-
-local _G = _G;
-
-local testModuleName = "TestRunnerTest";
-
-module('test_runner.t', luaUnit.testmodule, package.seeall);
 
 -- This fixture save (at setUp) and restore (at tearDown) currentSuite variable at luaunit module for possibility TEST_* macro testing
 TEST_FIXTURE("LuaUnitSelfTestFixture")
@@ -151,9 +146,11 @@ TEST_SUITE("testModuleName")
         local ttpl1 = testListeners.TextTestProgressListener:new();
         local ttpl2 = testListeners.TextTestProgressListener:new();
         local tr = testRunner.TestObserver:new();
-        local fakeTestCaseName = testModuleName;
+        local fakeTestCaseName = _M._NAME;
         local fakeTestName = "testTestObserver";
         local fakeFailureMessage = "This is test message. It hasn't usefull information";
+        
+        ASSERT_IS_NOT_NIL(fakeTestCaseName)
         
         function ttpl1:addFailure(testCaseName, failureMessage)
             ASSERT_EQUAL(fakeTestCaseName, testCaseName);
@@ -317,22 +314,22 @@ TEST_SUITE("testModuleName")
     end
     };
 
-    TEST_CASE{"isLuaTestDriverTest", function(self)
-        ASSERT_TRUE(testRunner.isLuaTestDriver("unit.t.lua"));
-        ASSERT_TRUE(testRunner.isLuaTestDriver(" .t.lua"));
-        ASSERT_FALSE(testRunner.isLuaTestDriver("unit_t.lua"));
-        ASSERT_FALSE(testRunner.isLuaTestDriver("unit.test.lua"));
-        ASSERT_FALSE(testRunner.isLuaTestDriver("unit.lua.t"));
+    TEST_CASE{"isLuaTestContainerTest", function(self)
+        ASSERT_TRUE(testRunner.isLuaTestContainer("unit.t.lua"));
+        ASSERT_TRUE(testRunner.isLuaTestContainer(" .t.lua"));
+        ASSERT_FALSE(testRunner.isLuaTestContainer("unit_t.lua"));
+        ASSERT_FALSE(testRunner.isLuaTestContainer("unit.test.lua"));
+        ASSERT_FALSE(testRunner.isLuaTestContainer("unit.lua.t"));
     end
     };
 
-    TEST_CASE{"isCppTestDriverTest", function(self)
-        ASSERT_TRUE(testRunner.isCppTestDriver("unit.t.dll"));
-        ASSERT_TRUE(testRunner.isCppTestDriver(" .t.dll"));
-        ASSERT_FALSE(testRunner.isCppTestDriver("unit_t.dll"));
-        ASSERT_FALSE(testRunner.isCppTestDriver("unit.test.dll"));
-        ASSERT_FALSE(testRunner.isCppTestDriver("unit.dll.t"));
-        ASSERT_FALSE(testRunner.isCppTestDriver("unit.t.cpp"));
+    TEST_CASE{"isCppTestContainerTest", function(self)
+        ASSERT_TRUE(testRunner.isCppTestContainer("unit.t.dll"));
+        ASSERT_TRUE(testRunner.isCppTestContainer(" .t.dll"));
+        ASSERT_FALSE(testRunner.isCppTestContainer("unit_t.dll"));
+        ASSERT_FALSE(testRunner.isCppTestContainer("unit.test.dll"));
+        ASSERT_FALSE(testRunner.isCppTestContainer("unit.dll.t"));
+        ASSERT_FALSE(testRunner.isCppTestContainer("unit.t.cpp"));
     end
     };
 };

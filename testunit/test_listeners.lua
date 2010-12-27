@@ -1,14 +1,13 @@
-local setmetatable, ipairs, pairs, tostring, pcall, require, dofile, error, unpack = setmetatable, ipairs, pairs, tostring, pcall, require, dofile, error, unpack;
-local debug_traceback = debug.traceback;
-local table, io, string, package, os = table, io, string, package, os;
+local _G = _G
+
+--------------------------------------------------------------------------------------------------------------
+module(...)
+_G.setmetatable(_M, {__index = _G})
+--------------------------------------------------------------------------------------------------------------
 
 local testRunner = require("testunit.test_runner");
-
 --~ require("LuaXML");
 --~ local xml = xml;
---------------------------------------------------------------------------------------------------------------
-module('testunit.test_listeners');
---------------------------------------------------------------------------------------------------------------
 
 
 ------------------------------------------------------
@@ -145,7 +144,7 @@ end
 function TextTestProgressListener:totalErrorStr()
     local res = {}
     local testName, errorObject
-    for _, record in pairs(self.tableWithErrors) do
+    for _, record in ipairs(self.tableWithErrors) do
         testName, errorObject = unpack(record)
         table.insert(res, testName .. '\n\t' .. self:editorSpecifiedErrorLine(errorObject))
     end;
@@ -156,7 +155,7 @@ end
 function TextTestProgressListener:totalFailureStr()
     local res = {}
     local testName, errorObject
-    for _, record in pairs(self.tableWithFailures) do
+    for _, record in ipairs(self.tableWithFailures) do
         testName, errorObject = unpack(record)
         table.insert(res, testName .. '\n\t' .. self:editorSpecifiedErrorLine(errorObject))
     end;

@@ -1,28 +1,12 @@
-local table, string = table, string;
-local setmetatable = setmetatable;
-local getmetatable = getmetatable;
-local tostring = tostring;
-local error = error;
-local type = type;
-local ipairs = ipairs;
-local pairs = pairs;
-local pcall = pcall;
-local xpcall = xpcall;
-local error = error;
-local next = next;
-local debug_getinfo = debug.getinfo;
-
---~ local print = print; -- for debug
 local _G = _G;
 
-local luaExt = require('lua_ext');
 ------------------------------------------------------
---
--- Lua part of common test runner
---
+-- Lua Test Unit Engine
 --------------------------------------------------------------------------------------------------------------
-module('testunit.luaunit');
+module(...)
+_G.setmetatable(_M, {__index = _G})
 --------------------------------------------------------------------------------------------------------------
+local luaExt = require('lua_ext');
 
 -------------------------------------------------------
 function copyTable(object)
@@ -161,7 +145,7 @@ function callTestCaseMethod(testcase, testFunc)
     
     local function errorHandler(errorMsg)
         local errorObject = {};
-        local errorInfo = debug_getinfo(4, "Sln");
+        local errorInfo = debug.getinfo(4, "Sln");
         
         errorObject.source = errorInfo.short_src;
         -- TODO Sometimes short_src contains info such as '[C]:-1: ' at the begin of line. Need cut it.

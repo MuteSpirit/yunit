@@ -1,5 +1,9 @@
--- Global function
--- ! They must be moved to some dependence package
+local _G = _G
+
+--------------------------------------------------------------------------------------------------------------
+module(...)
+_G.setmetatable(_M, {__index = _G})
+--------------------------------------------------------------------------------------------------------------
 
 ------------------------------------------------------
 local function isFunction(variable)
@@ -18,18 +22,6 @@ local function isTable(variable)
 ------------------------------------------------------
     return "table" == type(variable);
 end
-
-
-local setmetatable, ipairs, tostring, pcall, require, dofile = setmetatable, ipairs, tostring, pcall, require, dofile;
-local debug_traceback = debug.traceback;
-local table, io, string, package, os = table, io, string, package, os;
-
--- for debug
-local print = print;
-local type = type;
---------------------------------------------------------------------------------------------------------------
-module('testunit.test_runner');
---------------------------------------------------------------------------------------------------------------
 
 function fakeFunction()
 end
@@ -226,21 +218,21 @@ function isUnix()
     return nil ~= string.match(envVar, '^/');
 end
 
-function loadLuaDriver(filePath)
+function loadLuaContainer(filePath)
     dofile(filePath);
 end
 
-function loadCppDriver(filePath)
+function loadCppContainer(filePath)
     -- we must only load library to current process for initialization global objects and
     -- filling test register
     package.loadlib(filePath, "");
 end
 
-function isLuaTestDriver(filePath)
+function isLuaTestContainer(filePath)
     return nil ~= string.find(filePath, "%.t%.lua$")
 end
 
-function isCppTestDriver(filePath)
+function isCppTestContainer(filePath)
     if isWin() then
         return nil ~= string.find(filePath, "%.t%.dll$");
     elseif isUnix() then
@@ -263,16 +255,16 @@ function initializeTestUnits()
     end
 end
 
-function loadTestDrivers(filePathList)
+function loadTestContainers(filePathList)
     initializeTestUnits();
     local luaTestsArePresent, cppTestsArePresent = false, false;
 
     for _, filePath in ipairs(filePathList) do
-        if isLuaTestDriver(filePath) then
-            loadLuaDriver(filePath);
+        if isLuaTestContainer(filePath) then
+            loadLuaContainer(filePath);
             luaTestsArePresent = true;
-        elseif isCppTestDriver(filePath) then
-            loadCppDriver(filePath);
+        elseif isCppTestContainer(filePath) then
+            loadCppContainer(filePath);
             cppTestsArePresent = true;
         end
     end

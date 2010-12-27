@@ -39,7 +39,7 @@ package.path='./?.lua;./?/init.lua;D:/_portable/lua/5.1/lua/?.lua;D:/_portable/l
 package.cpath='./?.dll;D:/_portable/lua/5.1/lua/?.dll;D:/_portable/lua/5.1/clibs/?.dll;../_bin/?.dll;../_bin/?.so;' .. package.cpath;
 local testRunner = require('testunit.test_runner');
 local testListeners = require('testunit.test_listeners');
-testRunner.loadTestDrivers(adtArg.state.paths);
+testRunner.loadTestContainers(adtArg.state.paths);
 local testObserver = testRunner.TestObserver:new();
 testObserver:addTestListener(testListeners.SciteTextTestProgressListener:new());
 testRunner.runAllTestCases(testObserver);

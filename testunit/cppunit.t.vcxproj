@@ -115,7 +115,7 @@ echo package.path = fs.canonizePath([[../_bin/../?.lua;../_bin/../?/init.lua;]] 
 echo package.cpath = fs.canonizePath([[../_bin/?.dll;]] .. package.cpath); &gt;&gt; %RUN_TEST_SCRIPT%
 echo local testRunner = require('testunit.test_runner'); &gt;&gt; %RUN_TEST_SCRIPT%
 echo local testListeners = require('testunit.test_listeners'); &gt;&gt; %RUN_TEST_SCRIPT%
-echo testRunner.loadTestDrivers{fs.canonizePath([[$(OutDir)/$(TargetFileName)]])}; &gt;&gt; %RUN_TEST_SCRIPT%
+echo testRunner.loadTestContainers{fs.canonizePath([[$(OutDir)/$(TargetFileName)]])}; &gt;&gt; %RUN_TEST_SCRIPT%
 echo local testObserver = testRunner.TestObserver:new(); &gt;&gt; %RUN_TEST_SCRIPT%
 echo testObserver:addTestListener(testListeners.TextTestProgressListener:new()); &gt;&gt; %RUN_TEST_SCRIPT%
 echo testRunner.runAllTestCases(testObserver); &gt;&gt; %RUN_TEST_SCRIPT%
@@ -199,7 +199,7 @@ echo package.path = fs.canonizePath([[../_bin/../?.lua;../_bin/../?/init.lua;]] 
 echo package.cpath = fs.canonizePath([[../_bin/?.dll;]] .. package.cpath); &gt;&gt; %RUN_TEST_SCRIPT%
 echo local testRunner = require('testunit.test_runner'); &gt;&gt; %RUN_TEST_SCRIPT%
 echo local testListeners = require('testunit.test_listeners'); &gt;&gt; %RUN_TEST_SCRIPT%
-echo testRunner.loadTestDrivers{fs.canonizePath([[$(OutDir)/$(TargetFileName)]])}; &gt;&gt; %RUN_TEST_SCRIPT%
+echo testRunner.loadTestContainers{fs.canonizePath([[$(OutDir)/$(TargetFileName)]])}; &gt;&gt; %RUN_TEST_SCRIPT%
 echo local testObserver = testRunner.TestObserver:new(); &gt;&gt; %RUN_TEST_SCRIPT%
 echo testObserver:addTestListener(testListeners.TextTestProgressListener:new()); &gt;&gt; %RUN_TEST_SCRIPT%
 echo testRunner.runAllTestCases(testObserver); &gt;&gt; %RUN_TEST_SCRIPT%
