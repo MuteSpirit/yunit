@@ -35,7 +35,7 @@ local path = lfs.currentdir() .. '\\..\\';
 local adtArg = {handler = savePath, filter = complexFilter, state = {paths = {}}, recursive = true};
 fs.applyOnFiles(path, adtArg);
 
-package.path='./?.lua;./?/init.lua;D:/_portable/lua/5.1/lua/?.lua;D:/_portable/lua/5.1/lua/?/init.lua;../?.lua;../?/init.lua;' .. package.path;
+package.path='./?.lua;./?/init.lua;../ts_modules/?.lua;D:/_portable/lua/5.1/lua/?.lua;D:/_portable/lua/5.1/lua/?/init.lua;../?.lua;../?/init.lua;' .. package.path;
 package.cpath='./?.dll;D:/_portable/lua/5.1/lua/?.dll;D:/_portable/lua/5.1/clibs/?.dll;../_bin/?.dll;../_bin/?.so;' .. package.cpath;
 local testRunner = require('testunit.test_runner');
 local testListeners = require('testunit.test_listeners');

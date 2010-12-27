@@ -235,7 +235,7 @@ function ASSERT_THROW(functionForRun, ...)
     end
     local ok, errmsg = pcall(functionForRun, ...);
     if ok then
-        error(string.format("ASSERT_THROW: no error expected but error was: '%s'", errmsg), 0)
+        error("ASSERT_THROW: error expected but it is absent", 0)
     end
 end
 
@@ -246,7 +246,7 @@ function ASSERT_NO_THROW(functionForRun, ...)
     end
     local ok, errmsg = pcall(functionForRun, ...);
     if not ok then
-        error("ASSERT_NO_THROW: error expected but it is absent", 0)
+        error(string.format("ASSERT_NO_THROW: no error expected but error was: '%s'", errmsg), 0)
     end
 end
 
@@ -514,4 +514,141 @@ function testmodule(moduleTable)
             end
         end
     end
+end
+
+-------------------------------------------------------
+-- New asserts
+-------------------------------------------------------
+
+function isTrue()
+end
+function isFalse()
+end
+function areEq()
+end
+function areNotEq()
+end
+function noThrow()
+end
+function willThrow()
+end
+
+function isFunction()
+end
+function isTable()
+end
+function isNumber()
+end
+function isString()
+end
+function isBoolean()
+end
+function isNil()
+end
+
+function isNotFunction()
+end
+function isNotTable()
+end
+function isNotNumber()
+end
+function isNotString()
+end
+function isNotBoolean()
+end
+function isNotNil()
+end
+
+function setAssertShortNames(ns)
+    ns.isTrue = isTrue
+    ns.isFalse = isFalse
+    ns.areEq = areEq
+    ns.areNotEq = areNotEq
+    ns.noThrow = noThrow
+    ns.willThrow = willThrow
+
+    ns.isFunction = isFunction
+    ns.isTable = isTable
+    ns.isNumber = isNumber
+    ns.isString = isString
+    ns.isBoolean = isBoolean
+    ns.isNil = isNil
+
+    ns.isNotFunction = isNotFunction
+    ns.isNotTable = isNotTable
+    ns.isNotNumber = isNotNumber
+    ns.isNotString = isNotString
+    ns.isNotBoolean = isNotBoolean
+    ns.isNotNil = isNotNil
+end
+
+-------------------------------------------------------
+function getTestEnv(moduleName)
+-------------------------------------------------------
+    local ns = {}
+    
+    ns._NAME = moduleName
+    ns._M = ns
+    ns._PACKAGE = string.gsub(moduleName, '[^%.]*$', '')
+    
+    setmetatable(ns, {__index = _G})
+    
+    setAssertShortNames(ns)
+    
+    return ns
+end
+
+        
+-------------------------------------------------------
+function loadTestChunk(testContainerSourceCode, env, testContainerName)
+-------------------------------------------------------
+    local testChunk, msg = loadstring(testContainerSourceCode, '=(load ' .. testContainerName .. ')')
+    if not testChunk then
+        return nil, msg
+    end
+    setfenv(testChunk, env)
+    
+    local status, msg = pcall(testChunk)
+    if not status then
+        return status, msg
+    end
+    
+    return true
+end
+
+-------------------------------------------------------
+function collectPureTestCaseList(env)
+-------------------------------------------------------
+    local function isFixture(value)
+        return "table" == type(value) and "function" == type(value.setUp) and "function" == type(value.tearDown)
+    end
+
+    local function isFixtureTestCase(name, value)
+        return "function" == type(value) and "setUp" ~= name and "tearDown" ~= name
+    end
+
+    local testCaseList = {}
+    
+    for name, value in pairs(env) do
+        
+        if "function" == type(value) then -- this is testCase
+            local testCase = TestCase:new(name)
+            testCase.isIgnored_ = nil ~= string.find(name, "^_")
+            testCase.test = value
+            table.insert(testCaseList, testCase)
+        elseif isFixture(value) then
+            local fixture = value
+            for i, v in pairs(fixture) do
+                if  isFixtureTestCase(i, v) then
+                    local testCase = TestCase:new(i)
+                    testCase.isIgnored_ = nil ~= string.find(i, "^_")
+                    testCase.test = v
+                    testCase.setUp = fixture.setUp
+                    testCase.tearDown = fixture.tearDown
+                    table.insert(testCaseList, testCase)
+                end
+            end
+        end
+    end
+    return testCaseList
 end

@@ -132,6 +132,12 @@ TEST_CASE{"tableCompareTest", function(self)
     ASSERT_TRUE(table.isEqual({1, 1.1, 'a', {}}, {1, 1.1, 'a', {}}));
     ASSERT_TRUE(table.isEqual({{1}}, {{1}}));
     
+    ASSERT_TRUE(table.isEqual({['a'] = 'a', ['1.1'] = 1.1, ['1'] = 1, {}}, {['1.1'] = 1.1, ['1'] = 1, ['a'] = 'a', {}}));
+    local a = function () end
+    ASSERT_TRUE(table.isEqual({['a'] = a, ['1.1'] = 1.1, ['1'] = 1, {}}, {['1.1'] = 1.1, ['1'] = 1, ['a'] = a, {}}));
+    ASSERT_FALSE(table.isEqual({['a'] = true}, {['a'] = false}));
+    ASSERT_TRUE(table.isEqual({['a'] = false}, {['a'] = false}));
+
     ASSERT_FALSE(table.isEqual({}, {1}));
     ASSERT_FALSE(table.isEqual({}, {1.1}));
     ASSERT_FALSE(table.isEqual({}, {'a'}));
