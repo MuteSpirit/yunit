@@ -83,9 +83,11 @@ module('test_runner.t', luaUnit.testmodule, package.seeall);
 
 local testListeners = require("testunit.test_listeners");
 local testRunner = require("testunit.test_runner");
+local fs = require("filesystem");
+local aux = require("aux_test_func");
 
 -- This fixture save (at setUp) and restore (at tearDown) currentSuite variable at luaunit module for possibility TEST_* macro testing
-TEST_FIXTURE("LuaUnitSelfTestFixture")
+TEST_FIXTURE("SubstitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir")
 {
     setUp = function(self)
         self.testRegistry = luaUnit.TestRegistry:new();
@@ -93,6 +95,9 @@ TEST_FIXTURE("LuaUnitSelfTestFixture")
         luaUnit.currentTestRegistry(self.testRegistry);
         
         self.currentSuite = luaUnit.currentSuite();
+
+        self.tmpDir = fs.tmpDirName();
+        lfs.mkdir(self.tmpDir);
     end
     ;
     tearDown = function(self)
@@ -100,6 +105,12 @@ TEST_FIXTURE("LuaUnitSelfTestFixture")
         luaUnit.currentTestRegistry(self.currentTestRegistry);
         self.currentSuite = nil;
         self.testRegistry = nil;
+        
+        ASSERT_IS_NOT_NIL(self.tmpDir);
+        ASSERT_TRUE(lfs.chdir(self.tmpDir .. fs.osSlash() .. '..'))
+        local status, msg = fs.rmdir(self.tmpDir)
+        ASSERT_EQUAL(nil, msg)
+        ASSERT_TRUE(status)
     end
     ;
 };
@@ -330,6 +341,40 @@ TEST_SUITE("testModuleName")
         ASSERT_FALSE(testRunner.isCppTestContainer("unit.test.dll"));
         ASSERT_FALSE(testRunner.isCppTestContainer("unit.dll.t"));
         ASSERT_FALSE(testRunner.isCppTestContainer("unit.t.cpp"));
+    end
+    };
+    
+    TEST_CASE_EX{"loadLuaContainerTest", "SubstitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir", function(self)
+        local luaTestContainerText = 
+            [[fixture =
+                {
+                    setUp = function()
+                    end,
+
+                    tearDown = function()
+                    end
+                }
+                function testCase() end 
+                function fixture.fixtureTestCase() end 
+                local function notTestCase() end
+                function _ignoredTest() end
+                ]]
+        local luaTestContainerFilename = 'load_lua_container.t.lua'
+        ASSERT_TRUE(aux.createTextFileWithContent(luaTestContainerFilename, luaTestContainerText))
+        
+        ASSERT_EQUAL(1, #self.testRegistry.testsuites)
+        ASSERT_EQUAL(0, #self.testRegistry.testsuites[1].testcases)
+        
+        local status, msg = testRunner.loadLuaContainer_(luaTestContainerFilename)
+        ASSERT_EQUAL(nil, msg)
+        ASSERT_TRUE(status)
+        
+        ASSERT_EQUAL(2, #self.testRegistry.testsuites)
+        ASSERT_EQUAL(0, #self.testRegistry.testsuites[1].testcases)
+        ASSERT_EQUAL(3, #self.testRegistry.testsuites[2].testcases)
+
+        local name, ext = fs.filename(luaTestContainerFilename)
+        ASSERT_EQUAL(name, self.testRegistry.testsuites[2].name_)
     end
     };
 };

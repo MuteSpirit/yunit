@@ -80,6 +80,7 @@ module("luaunit.t", luaUnit.testmodule, package.seeall);
 
 local testRunner = require("testunit.test_runner");
 local luaExt = require("lua_ext")
+local fs = require("filesystem")
 
 
 
@@ -570,9 +571,9 @@ TEST_SUITE("NewSyntaxTests")
                                 isTrue(type(true) == "boolean")]]
         
         local env = luaUnit.getTestEnv(testContainerName)
-        local res, msg = luaUnit.loadTestChunk(test, env, testContainerName)
+        local res, msg = luaUnit.executeTestChunk(test, env, testContainerName)
+        ASSERT_EQUAL(nil, msg)
         ASSERT_EQUAL(true, res)
-        ASSERT_IS_NIL(msg)
 
         ASSERT_IS_NOT_NIL(env.testCase)
         ASSERT_IS_FUNCTION(env.testCase)
@@ -581,7 +582,7 @@ TEST_SUITE("NewSyntaxTests")
     end
     };
 
-    TEST_CASE{"loadTestChunkTest", function(self)
+    TEST_CASE{"executeTestChunkTest", function(self)
         local testContainerName = 'testunit.luaunit'
         local test = [[fixture =
                                 {
@@ -598,7 +599,7 @@ TEST_SUITE("NewSyntaxTests")
                                 ]]
         
         local env = luaUnit.getTestEnv(testContainerName)
-        local res, msg = luaUnit.loadTestChunk(test, env, testContainerName)
+        local res, msg = luaUnit.executeTestChunk(test, env, testContainerName)
         ASSERT_EQUAL(true, res)
         ASSERT_IS_NIL(msg)
 
@@ -662,6 +663,38 @@ TEST_SUITE("NewSyntaxTests")
         local testList = luaUnit.collectPureTestCaseList(env)
         
         ASSERT_TRUE(table.isEqual(expectedTestList, testList))
+    end
+    };
+    
+    TEST_CASE_EX{"loadTestChunk", "LuaUnitSelfTestFixture", function(self)
+        local luaTestContainerSourceCode = 
+            [[fixture =
+                {
+                    setUp = function()
+                    end,
+
+                    tearDown = function()
+                    end
+                }
+                function testCase() end 
+                function fixture.fixtureTestCase() end 
+                local function notTestCase() end
+                function _ignoredTest() end
+                ]]
+        local luaTestContainerName = 'load_lua_container.t'
+
+        ASSERT_EQUAL(1, #self.testRegistry.testsuites)
+        ASSERT_EQUAL(0, #self.testRegistry.testsuites[1].testcases)
+        
+        local status, msg = luaUnit.loadTestChunk(luaTestContainerSourceCode, luaTestContainerName)
+        ASSERT_EQUAL(nil, msg)
+        ASSERT_TRUE(status)
+        
+        ASSERT_EQUAL(2, #self.testRegistry.testsuites)
+        ASSERT_EQUAL(0, #self.testRegistry.testsuites[1].testcases)
+        
+        ASSERT_EQUAL(luaTestContainerName, self.testRegistry.testsuites[2].name_)
+        ASSERT_EQUAL(3, #self.testRegistry.testsuites[2].testcases)
     end
     };
 };

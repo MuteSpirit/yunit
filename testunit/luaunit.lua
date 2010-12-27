@@ -582,6 +582,16 @@ function setAssertShortNames(ns)
     ns.isNotNil = isNotNil
 end
 
+local assertRefs = {}
+setAssertShortNames(assertRefs)
+
+local testCaseMt = 
+{
+    __index = function(t, k)
+        return nil ~= assertRefs[k] and assertRefs[k] or _G[k]
+    end,
+}
+
 -------------------------------------------------------
 function getTestEnv(moduleName)
 -------------------------------------------------------
@@ -591,16 +601,14 @@ function getTestEnv(moduleName)
     ns._M = ns
     ns._PACKAGE = string.gsub(moduleName, '[^%.]*$', '')
     
-    setmetatable(ns, {__index = _G})
-    
-    setAssertShortNames(ns)
+    setmetatable(ns, testCaseMt)
     
     return ns
 end
 
         
 -------------------------------------------------------
-function loadTestChunk(testContainerSourceCode, env, testContainerName)
+function executeTestChunk(testContainerSourceCode, env, testContainerName)
 -------------------------------------------------------
     local testChunk, msg = loadstring(testContainerSourceCode, '=(load ' .. testContainerName .. ')')
     if not testChunk then
@@ -651,4 +659,20 @@ function collectPureTestCaseList(env)
         end
     end
     return testCaseList
+end
+
+-------------------------------------------------------
+function loadTestChunk(testContainerSourceCode, testContainerName)
+-------------------------------------------------------
+    local env = getTestEnv(testContainerName)
+    local res, msg = executeTestChunk(testContainerSourceCode, env, testContainerName)
+    if not res then
+        return res, msg
+    end
+    
+    local testSuite = TestSuite:new(testContainerName)
+    testSuite.testcases = collectPureTestCaseList(env)
+    curTestRegistry:addTestSuite(testSuite)
+    
+    return true
 end
