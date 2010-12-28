@@ -218,7 +218,7 @@ function isUnix()
     return nil ~= string.match(envVar, '^/');
 end
 
-function loadLuaContainer_(filePath)
+function loadLuaContainer(filePath)
     local sourceCode;
     
     local hFile, errMsg = io.open(filePath, 'r');
@@ -228,18 +228,13 @@ function loadLuaContainer_(filePath)
     sourceCode = hFile:read('*a');
     hFile:close();
     
-    local filenameWithExt = string.match(filePath, '[^/\\]+$');
-    local filename = string.gsub(filenameWithExt, '%.?[^%.]*$', '');
-    local res, msg = luaUnit.loadTestChunk(sourceCode, filename);
+--~     local filenameWithExt = string.match(filePath, '[^/\\]+$');
+    local res, msg = luaUnit.loadTestChunk(sourceCode, filePath);
     if not res then
         return res, msg;
     end
     
     return true;
-end
-
-function loadLuaContainer(filePath)
-    dofile(filePath)
 end
 
 function loadCppContainer(filePath)

@@ -77,83 +77,78 @@
 --- \param[in] testObserver Object, whitch wlii be received messages from and about tests
 --- \return None
 
-local luaUnit = require("testunit.luaunit");
 
-module('test_runner.t', luaUnit.testmodule, package.seeall);
 
+
+local luaUnit = require("testunit.luaunit")
 local testListeners = require("testunit.test_listeners");
 local testRunner = require("testunit.test_runner");
 local fs = require("filesystem");
 local aux = require("aux_test_func");
 
 -- This fixture save (at setUp) and restore (at tearDown) currentSuite variable at luaunit module for possibility TEST_* macro testing
-TEST_FIXTURE("SubstitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir")
+substitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir = 
 {
     setUp = function(self)
-        self.testRegistry = luaUnit.TestRegistry:new();
-        self.currentTestRegistry = luaUnit.currentTestRegistry();
-        luaUnit.currentTestRegistry(self.testRegistry);
+        testRegistry = luaUnit.TestRegistry:new();
+        currentTestRegistry = luaUnit.currentTestRegistry();
+        luaUnit.currentTestRegistry(testRegistry);
         
-        self.currentSuite = luaUnit.currentSuite();
+        currentSuite = luaUnit.currentSuite();
 
-        self.tmpDir = fs.tmpDirName();
-        lfs.mkdir(self.tmpDir);
+        tmpDir = fs.tmpDirName();
+        lfs.mkdir(tmpDir);
     end
     ;
     tearDown = function(self)
-        luaUnit.currentSuite(self.currentSuite);
-        luaUnit.currentTestRegistry(self.currentTestRegistry);
-        self.currentSuite = nil;
-        self.testRegistry = nil;
+        luaUnit.currentSuite(currentSuite);
+        luaUnit.currentTestRegistry(currentTestRegistry);
+        currentSuite = nil;
+        testRegistry = nil;
         
-        ASSERT_IS_NOT_NIL(self.tmpDir);
-        ASSERT_TRUE(lfs.chdir(self.tmpDir .. fs.osSlash() .. '..'))
-        local status, msg = fs.rmdir(self.tmpDir)
-        ASSERT_EQUAL(nil, msg)
-        ASSERT_TRUE(status)
+        isNotNil(tmpDir);
+        isTrue(lfs.chdir(tmpDir .. fs.osSlash() .. '..'))
+        local status, msg = fs.rmdir(tmpDir)
+        areEq(nil, msg)
+        isTrue(status)
     end
     ;
 };
 
-TEST_FIXTURE("GlobalTestCaseListFixture")
+globalTestCaseListFixture = 
 {
     setUp = function(self)
-        self.testRegistry = luaUnit.TestRegistry:new();
-        self.currentTestRegistry = luaUnit.currentTestRegistry();
-        luaUnit.currentTestRegistry(self.testRegistry);
+        testRegistry = luaUnit.TestRegistry:new();
+        currentTestRegistry = luaUnit.currentTestRegistry();
+        luaUnit.currentTestRegistry(testRegistry);
         
-        self.currentSuite = luaUnit.currentSuite();
+        currentSuite = luaUnit.currentSuite();
 
-        self.globalTestCaseList = luaUnit.copyTable(testRunner.GlobalTestCaseList);
+        globalTestCaseList = luaUnit.copyTable(testRunner.GlobalTestCaseList);
         testRunner.GlobalTestCaseList = {};
     end
     ;
     tearDown = function(self)
-        luaUnit.currentSuite(self.currentSuite);
-        luaUnit.currentTestRegistry(self.currentTestRegistry);
-        self.currentSuite = nil;
-        self.testRegistry = nil;
+        luaUnit.currentSuite(currentSuite);
+        luaUnit.currentTestRegistry(currentTestRegistry);
+        currentSuite = nil;
+        testRegistry = nil;
 
-        testRunner.GlobalTestCaseList = luaUnit.copyTable(self.globalTestCaseList);
+        testRunner.GlobalTestCaseList = luaUnit.copyTable(globalTestCaseList);
     end
     ;
 };
-
-TEST_SUITE("testModuleName")
-{
-    TEST_CASE{"testTestListenerCreation", function(self)
-        ASSERT_IS_NOT_NIL(testRunner.TestListener:new());
+    function testTestListenerCreation()
+        isNotNil(testRunner.TestListener:new());
     end
-    };
 
 
-    TEST_CASE{"testObserverCreationTest", function(self)
-        ASSERT_IS_NOT_NIL(testRunner.TestObserver:new());
+    function testObserverCreationTest()
+        isNotNil(testRunner.TestObserver:new());
     end
-    };
 
 
-    TEST_CASE{"testObserverTestAddFailureFunctionTest", function(self)
+    function testObserverTestAddFailureFunctionTest()
         local ttpl1 = testListeners.TextTestProgressListener:new();
         local ttpl2 = testListeners.TextTestProgressListener:new();
         local tr = testRunner.TestObserver:new();
@@ -161,28 +156,27 @@ TEST_SUITE("testModuleName")
         local fakeTestName = "testTestObserver";
         local fakeFailureMessage = "This is test message. It hasn't usefull information";
         
-        ASSERT_IS_NOT_NIL(fakeTestCaseName)
+        isNotNil(fakeTestCaseName)
         
         function ttpl1:addFailure(testCaseName, failureMessage)
-            ASSERT_EQUAL(fakeTestCaseName, testCaseName);
-            ASSERT_EQUAL(fakeFailureMessage, failureMessage);
+            areEq(fakeTestCaseName, testCaseName);
+            areEq(fakeFailureMessage, failureMessage);
         end
         
         function ttpl2:addFailure(testCaseName, failureMessage)
-            ASSERT_EQUAL(fakeTestCaseName, testCaseName);
-            ASSERT_EQUAL(fakeFailureMessage, failureMessage);
+            areEq(fakeTestCaseName, testCaseName);
+            areEq(fakeFailureMessage, failureMessage);
         end
         
         tr:addTestListener(ttpl1);
         tr:addTestListener(ttpl2);
-        ASSERT_EQUAL(2, #tr.testListeners);
+        areEq(2, #tr.testListeners);
         
         tr:addFailure(fakeTestCaseName, fakeFailureMessage);
     end
-    };
 
 
-    TEST_CASE{"testObserverStartTestsFunctionTest", function(self)
+    function testObserverStartTestsFunctionTest()
         local ttpl1 = testListeners.TextTestProgressListener:new();
         local ttpl2 = testListeners.SciteTextTestProgressListener:new();
         local tr = testRunner.TestObserver:new();
@@ -200,12 +194,11 @@ TEST_SUITE("testModuleName")
         
         tr:startTests();
          
-        ASSERT_TRUE(ttpl1.startTestsCall);
-        ASSERT_TRUE(ttpl2.startTestsCall);
+        isTrue(ttpl1.startTestsCall);
+        isTrue(ttpl2.startTestsCall);
     end
-    };
 
-    TEST_CASE_EX{"runTestCaseTest", "GlobalTestCaseListFixture", function(self)
+    function globalTestCaseListFixture.runTestCaseTest()
 
         local TEST_FIXTURE = luaUnit.TEST_FIXTURE;
         local TEST_SUITE = luaUnit.TEST_SUITE;
@@ -224,32 +217,31 @@ TEST_SUITE("testModuleName")
             end;
         };
 
-        ASSERT_IS_NOT_NIL(_G["CallSetUpAndTearDownTestFixture"]);
+        isNotNil(_G["CallSetUpAndTearDownTestFixture"]);
         
         TEST_SUITE("CallSetUpAndTearDownTestSuite")
         {
-            TEST_CASE_EX{"CallSetUpAndTearDownTestCase", "CallSetUpAndTearDownTestFixture", function(self)
+            TEST_CASE_EX{"CallSetUpAndTearDownTestCase",  'CallSetUpAndTearDownTestFixture', function(self)
                 
             end
             };
-        };
+        }
         
-        ASSERT_EQUAL(2, #self.testRegistry.testsuites);
-        ASSERT_EQUAL(1, #self.testRegistry.testsuites[2].testcases);
-        ASSERT_EQUAL("CallSetUpAndTearDownTestCase", self.testRegistry.testsuites[2].testcases[1].name_);
+        areEq(2, #testRegistry.testsuites);
+        areEq(1, #testRegistry.testsuites[2].testcases);
+        areEq("CallSetUpAndTearDownTestCase", testRegistry.testsuites[2].testcases[1].name_);
         
         testRunner.copyAllLuaTestCasesToGlobalTestList();
-        ASSERT_EQUAL(1, #testRunner.GlobalTestCaseList);
-        ASSERT_EQUAL("CallSetUpAndTearDownTestSuite::CallSetUpAndTearDownTestCase", testRunner.GlobalTestCaseList[1].name_);
+        areEq(1, #testRunner.GlobalTestCaseList);
+        areEq("CallSetUpAndTearDownTestSuite::CallSetUpAndTearDownTestCase", testRunner.GlobalTestCaseList[1].name_);
         
         testRunner.runAllTestCases();
         
-        ASSERT_TRUE(setUpCalled_);
-        ASSERT_TRUE(tearDownCalled_);
+        isTrue(setUpCalled_);
+        isTrue(tearDownCalled_);
     end
-    };
 
-    TEST_CASE_EX{"runAllTestCasesTest", "GlobalTestCaseListFixture", function(self)
+    function globalTestCaseListFixture.runAllTestCasesTest()
         local TEST_SUITE = luaUnit.TEST_SUITE;
         local TEST_CASE = luaUnit.TEST_CASE;
         local ASSERT_TRUE = luaUnit.ASSERT_TRUE;
@@ -257,13 +249,13 @@ TEST_SUITE("testModuleName")
         TEST_SUITE("RunTestCaseTestSuite")
         {
             TEST_CASE{"successfullTest", function()
-                ASSERT_TRUE(true);
+                isTrue(true);
             end
             };
             
             TEST_CASE{"failureTest", function()
-                ASSERT_TRUE(false);
-            end;
+                isTrue(false);
+            end
             };
         };
         
@@ -295,56 +287,52 @@ TEST_SUITE("testModuleName")
         testRunner.copyAllLuaTestCasesToGlobalTestList();
         testRunner.runAllTestCases(tr);
         
-        ASSERT_TRUE(ttpl1.startTestsCall);
-        ASSERT_TRUE(ttpl1.endTestsCall);
+        isTrue(ttpl1.startTestsCall);
+        isTrue(ttpl1.endTestsCall);
         
-        ASSERT_TRUE(ttpl2.startTestsCall);
-        ASSERT_TRUE(ttpl2.endTestsCall);
+        isTrue(ttpl2.startTestsCall);
+        isTrue(ttpl2.endTestsCall);
     end
-    };
 
 
-    TEST_CASE{"isTestFunctionTest", function(self)
+    function isTestFunctionTest()
         local isTestFunction = testRunner.isTestFunction;
-        ASSERT_TRUE(isTestFunction("test"));
-        ASSERT_TRUE(isTestFunction("Test"));
-        ASSERT_TRUE(isTestFunction("test1"));
-        ASSERT_TRUE(isTestFunction("Test1"));
-        ASSERT_TRUE(isTestFunction("sometest"));
-        ASSERT_TRUE(isTestFunction("SomeTest"));
+        isTrue(isTestFunction("test"));
+        isTrue(isTestFunction("Test"));
+        isTrue(isTestFunction("test1"));
+        isTrue(isTestFunction("Test1"));
+        isTrue(isTestFunction("sometest"));
+        isTrue(isTestFunction("SomeTest"));
 
-        ASSERT_FALSE(isTestFunction("TEST_FIXTURE"));
-        ASSERT_FALSE(isTestFunction("TEST_SUITE"));
-        ASSERT_FALSE(isTestFunction("TEST_CASE"));
-        ASSERT_FALSE(isTestFunction("TEST_CASE_EX"));
+        isFalse(isTestFunction("TEST_FIXTURE"));
+        isFalse(isTestFunction("TEST_SUITE"));
+        isFalse(isTestFunction("TEST_CASE"));
+        isFalse(isTestFunction("TEST_CASE_EX"));
 
-        ASSERT_TRUE(isTestFunction("test_fixture"));
-        ASSERT_TRUE(isTestFunction("test_suite"));
-        ASSERT_TRUE(isTestFunction("test_case"));
-        ASSERT_TRUE(isTestFunction("test_case_ex"));
+        isTrue(isTestFunction("test_fixture"));
+        isTrue(isTestFunction("test_suite"));
+        isTrue(isTestFunction("test_case"));
+        isTrue(isTestFunction("test_case_ex"));
     end
-    };
 
-    TEST_CASE{"isLuaTestContainerTest", function(self)
-        ASSERT_TRUE(testRunner.isLuaTestContainer("unit.t.lua"));
-        ASSERT_TRUE(testRunner.isLuaTestContainer(" .t.lua"));
-        ASSERT_FALSE(testRunner.isLuaTestContainer("unit_t.lua"));
-        ASSERT_FALSE(testRunner.isLuaTestContainer("unit.test.lua"));
-        ASSERT_FALSE(testRunner.isLuaTestContainer("unit.lua.t"));
+    function isLuaTestContainerTest()
+        isTrue(testRunner.isLuaTestContainer("unit.t.lua"));
+        isTrue(testRunner.isLuaTestContainer(" .t.lua"));
+        isFalse(testRunner.isLuaTestContainer("unit_t.lua"));
+        isFalse(testRunner.isLuaTestContainer("unit.test.lua"));
+        isFalse(testRunner.isLuaTestContainer("unit.lua.t"));
     end
-    };
 
-    TEST_CASE{"isCppTestContainerTest", function(self)
-        ASSERT_TRUE(testRunner.isCppTestContainer("unit.t.dll"));
-        ASSERT_TRUE(testRunner.isCppTestContainer(" .t.dll"));
-        ASSERT_FALSE(testRunner.isCppTestContainer("unit_t.dll"));
-        ASSERT_FALSE(testRunner.isCppTestContainer("unit.test.dll"));
-        ASSERT_FALSE(testRunner.isCppTestContainer("unit.dll.t"));
-        ASSERT_FALSE(testRunner.isCppTestContainer("unit.t.cpp"));
+    function isCppTestContainerTest()
+        isTrue(testRunner.isCppTestContainer("unit.t.dll"));
+        isTrue(testRunner.isCppTestContainer(" .t.dll"));
+        isFalse(testRunner.isCppTestContainer("unit_t.dll"));
+        isFalse(testRunner.isCppTestContainer("unit.test.dll"));
+        isFalse(testRunner.isCppTestContainer("unit.dll.t"));
+        isFalse(testRunner.isCppTestContainer("unit.t.cpp"));
     end
-    };
     
-    TEST_CASE_EX{"loadLuaContainerTest", "SubstitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir", function(self)
+    function substitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir.loadLuaContainerTest()
         local luaTestContainerText = 
             [[fixture =
                 {
@@ -359,23 +347,20 @@ TEST_SUITE("testModuleName")
                 local function notTestCase() end
                 function _ignoredTest() end
                 ]]
-        local luaTestContainerFilename = 'load_lua_container.t.lua'
-        ASSERT_TRUE(aux.createTextFileWithContent(luaTestContainerFilename, luaTestContainerText))
+        local luaTestContainerFilename = tmpDir .. fs.osSlash() .. 'load_lua_container.t.lua'
+        isTrue(aux.createTextFileWithContent(luaTestContainerFilename, luaTestContainerText))
         
-        ASSERT_EQUAL(1, #self.testRegistry.testsuites)
-        ASSERT_EQUAL(0, #self.testRegistry.testsuites[1].testcases)
+        areEq(1, #testRegistry.testsuites)
+        areEq(0, #testRegistry.testsuites[1].testcases)
         
-        local status, msg = testRunner.loadLuaContainer_(luaTestContainerFilename)
-        ASSERT_EQUAL(nil, msg)
-        ASSERT_TRUE(status)
+        local status, msg = testRunner.loadLuaContainer(luaTestContainerFilename)
+        areEq(nil, msg)
+        isTrue(status)
         
-        ASSERT_EQUAL(2, #self.testRegistry.testsuites)
-        ASSERT_EQUAL(0, #self.testRegistry.testsuites[1].testcases)
-        ASSERT_EQUAL(3, #self.testRegistry.testsuites[2].testcases)
+        areEq(2, #testRegistry.testsuites)
+        areEq(0, #testRegistry.testsuites[1].testcases)
+        areEq(3, #testRegistry.testsuites[2].testcases)
 
-        local name, ext = fs.filename(luaTestContainerFilename)
-        ASSERT_EQUAL(name, self.testRegistry.testsuites[2].name_)
+        areEq(luaTestContainerFilename, testRegistry.testsuites[2].name_)
     end
-    };
-};
 

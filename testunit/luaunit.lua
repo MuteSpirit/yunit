@@ -651,7 +651,7 @@ end
 -------------------------------------------------------
 function executeTestChunk(testContainerSourceCode, env, testContainerName)
 -------------------------------------------------------
-    local testChunk, msg = loadstring(testContainerSourceCode, '=(load ' .. testContainerName .. ')')
+    local testChunk, msg = loadstring(testContainerSourceCode, '=' .. testContainerName)
     if not testChunk then
         return nil, msg
     end

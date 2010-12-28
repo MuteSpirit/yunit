@@ -36,25 +36,20 @@
 --- \param[in] delimiter It is pattern for delimiter substring. I.e. string.len(delimiter) maybe > 1. Attention with special simbols, whith need % before them.
 --- \return Array (i.e. {'a', 'b',}) of string parts
 
-local luaUnit = require("testunit.luaunit")
-module("lua_ext.t", luaUnit.testmodule, package.seeall)
+
+
 local luaExt = require('lua_ext')
 
 
-TEST_SUITE("test_lua_ext")
-{
 
-
-
-TEST_CASE{"testFindInTable", function(self)
-    ASSERT_TRUE(luaExt.findKey({[1] = "1"}, 1))
-    ASSERT_FALSE(luaExt.findKey({[2] = "1"}, 1))
-    ASSERT_TRUE(luaExt.findValue({[1] = "1"}, "1"))
-    ASSERT_FALSE(luaExt.findValue({[1] = "2"}, "1"))
+function testFindInTable()
+    isTrue(luaExt.findKey({[1] = "1"}, 1))
+    isFalse(luaExt.findKey({[2] = "1"}, 1))
+    isTrue(luaExt.findValue({[1] = "1"}, "1"))
+    isFalse(luaExt.findValue({[1] = "2"}, "1"))
 end
-};
 
-TEST_CASE{"toLuaCode", function(self)
+function toLuaCode()
     local t = 
     {
         [1] = 1,
@@ -69,87 +64,80 @@ TEST_CASE{"toLuaCode", function(self)
         [{}] = {},
         ['a'] = [=[a]=],
 }]]    
-    ASSERT_EQUAL(designedStr, str)
+    areEq(designedStr, str)
 end
-};
 
-TEST_CASE{"testStringSplit", function(self)
+function testStringSplit()
     local parts = {};
 
     parts = string.split('', ';');
-    ASSERT_EQUAL('', parts[1]);
+    areEq('', parts[1]);
 
     parts = string.split(';', ';');
-    ASSERT_EQUAL('', parts[1]);
-    ASSERT_EQUAL('', parts[2]);
+    areEq('', parts[1]);
+    areEq('', parts[2]);
 
     parts = string.split(';/bin;', ';');
-    ASSERT_EQUAL('', parts[1]);
-    ASSERT_EQUAL('/bin', parts[2]);
-    ASSERT_EQUAL('', parts[3]);
+    areEq('', parts[1]);
+    areEq('/bin', parts[2]);
+    areEq('', parts[3]);
     
     parts = string.split('/bin;/local/bin;c:', ';');
-    ASSERT_EQUAL('/bin', parts[1]);
-    ASSERT_EQUAL('/local/bin', parts[2]);
-    ASSERT_EQUAL('c:', parts[3]);
+    areEq('/bin', parts[1]);
+    areEq('/local/bin', parts[2]);
+    areEq('c:', parts[3]);
     
     parts = string.split('aa  bb  cc\tdd\t\tee\t gg', '%s+');
-    ASSERT_EQUAL('aa', parts[1]);
-    ASSERT_EQUAL('bb', parts[2]);
-    ASSERT_EQUAL('cc', parts[3]);
-    ASSERT_EQUAL(6, #parts);
+    areEq('aa', parts[1]);
+    areEq('bb', parts[2]);
+    areEq('cc', parts[3]);
+    areEq(6, #parts);
 end
-};
 
-TEST_CASE{"tableKeysTest", function(self)
+function tableKeysTest()
     local keyList = table.keys({[10] = 1, [11] = 1, [12] = 1, [13] = 1});
     table.sort(keyList);
-    ASSERT_EQUAL(10, keyList[1]);
-    ASSERT_EQUAL(11, keyList[2]);
-    ASSERT_EQUAL(12, keyList[3]);
-    ASSERT_EQUAL(13, keyList[4]);
+    areEq(10, keyList[1]);
+    areEq(11, keyList[2]);
+    areEq(12, keyList[3]);
+    areEq(13, keyList[4]);
 end
-};
 
-TEST_CASE{"tableEmptyTest", function(self)
-    ASSERT_TRUE(table.isEmpty{});
-    ASSERT_FALSE(table.isEmpty{''});
+function tableEmptyTest()
+    isTrue(table.isEmpty{});
+    isFalse(table.isEmpty{''});
 end
-};
 
-TEST_CASE{"convertTextToRePattern", function(self)
-    ASSERT_EQUAL('exportDg %.cpp', luaExt.convertTextToRePattern('exportDg .cpp'));
+function convertTextToRePattern()
+    areEq('exportDg %.cpp', luaExt.convertTextToRePattern('exportDg .cpp'));
     
 end
-};
 
-TEST_CASE{"tableCompareTest", function(self)
-    ASSERT_TRUE(table.isEqual({}, {}));
-    ASSERT_TRUE(table.isEqual({1}, {1}));
-    ASSERT_TRUE(table.isEqual({1.1}, {1.1}));
-    ASSERT_TRUE(table.isEqual({'a'}, {'a'}));
-    ASSERT_TRUE(table.isEqual({{}}, {{}}));
-    ASSERT_TRUE(table.isEqual({1, 1.1, 'a', {}}, {1, 1.1, 'a', {}}));
-    ASSERT_TRUE(table.isEqual({{1}}, {{1}}));
+function tableCompareTest()
+    isTrue(table.isEqual({}, {}));
+    isTrue(table.isEqual({1}, {1}));
+    isTrue(table.isEqual({1.1}, {1.1}));
+    isTrue(table.isEqual({'a'}, {'a'}));
+    isTrue(table.isEqual({{}}, {{}}));
+    isTrue(table.isEqual({1, 1.1, 'a', {}}, {1, 1.1, 'a', {}}));
+    isTrue(table.isEqual({{1}}, {{1}}));
     
-    ASSERT_TRUE(table.isEqual({['a'] = 'a', ['1.1'] = 1.1, ['1'] = 1, {}}, {['1.1'] = 1.1, ['1'] = 1, ['a'] = 'a', {}}));
+    isTrue(table.isEqual({['a'] = 'a', ['1.1'] = 1.1, ['1'] = 1, {}}, {['1.1'] = 1.1, ['1'] = 1, ['a'] = 'a', {}}));
     local a = function () end
-    ASSERT_TRUE(table.isEqual({['a'] = a, ['1.1'] = 1.1, ['1'] = 1, {}}, {['1.1'] = 1.1, ['1'] = 1, ['a'] = a, {}}));
-    ASSERT_FALSE(table.isEqual({['a'] = true}, {['a'] = false}));
-    ASSERT_TRUE(table.isEqual({['a'] = false}, {['a'] = false}));
+    isTrue(table.isEqual({['a'] = a, ['1.1'] = 1.1, ['1'] = 1, {}}, {['1.1'] = 1.1, ['1'] = 1, ['a'] = a, {}}));
+    isFalse(table.isEqual({['a'] = true}, {['a'] = false}));
+    isTrue(table.isEqual({['a'] = false}, {['a'] = false}));
 
-    ASSERT_FALSE(table.isEqual({}, {1}));
-    ASSERT_FALSE(table.isEqual({}, {1.1}));
-    ASSERT_FALSE(table.isEqual({}, {'a'}));
-    ASSERT_FALSE(table.isEqual({}, {{}}));
+    isFalse(table.isEqual({}, {1}));
+    isFalse(table.isEqual({}, {1.1}));
+    isFalse(table.isEqual({}, {'a'}));
+    isFalse(table.isEqual({}, {{}}));
     
-    ASSERT_FALSE(table.isEqual({1}, {}));
-    ASSERT_FALSE(table.isEqual({1.1}, {}));
-    ASSERT_FALSE(table.isEqual({'a'}, {}));
-    ASSERT_FALSE(table.isEqual({{}}, {}));
+    isFalse(table.isEqual({1}, {}));
+    isFalse(table.isEqual({1.1}, {}));
+    isFalse(table.isEqual({'a'}, {}));
+    isFalse(table.isEqual({{}}, {}));
 
-    ASSERT_TRUE(table.isEqual( { [{1}] = 1}, { [{1}] = 1} ));
+    isTrue(table.isEqual( { [{1}] = 1}, { [{1}] = 1} ));
 end
-};
 
-};
