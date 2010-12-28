@@ -48,9 +48,11 @@ sciteTextTestProgressListenerFixture =
     end
     ;
 };
+
     function testTextTestProgressListenerCreation()
         isNotNil(testListeners.TextTestProgressListener:new());
     end
+
     function errorObjectFixture.testSciteErrorFormatterString()
         local ttpl = testListeners.SciteTextTestProgressListener:new();
       
@@ -83,6 +85,19 @@ sciteTextTestProgressListenerFixture =
                                        fakeTestCaseName .. "1\n\t" .. ttpl:sciteErrorLine(fakeErrorObject)
         
         areEq(desiredString, ttpl:totalFailureStr())
+    end
+
+    function errorObjectFixture.testIgnoreString()
+        local ttpl = testListeners.SciteTextTestProgressListener:new();
+
+        ttpl.outputMessage = function(self, msg) end
+        ttpl:addIgnore(fakeTestCaseName .. '2')
+        ttpl:addIgnore(fakeTestCaseName .. '1')
+        
+        local desiredString = fakeTestCaseName .. "2" .. 
+                                       "\n" .. 
+                                       fakeTestCaseName .. "1"
+        areEq(desiredString, ttpl:totalIgnoreStr())
     end
 
     function errorObjectFixture.testOutput()

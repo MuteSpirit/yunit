@@ -138,6 +138,11 @@ function TextTestProgressListener:endTests()
         table.insert(res, str)
     end
 
+    local str = self:totalIgnoreStr()
+    if string.len(str) > 0 then 
+        table.insert(res, str)
+    end
+
     self:outputMessage(table.concat(res, '\n'));
 end
 
@@ -163,6 +168,16 @@ function TextTestProgressListener:totalFailureStr()
     return table.concat(res, '\n------------------------------------------------------------------------------------------------------\n')
 end
 
+function TextTestProgressListener:totalIgnoreStr()
+    local res = {}
+    local testName
+    for _, record in ipairs(self.tableWithIgnores) do
+        testName = unpack(record)
+        table.insert(res, testName)
+    end;
+    
+    return table.concat(res, '\n')
+end
 
 
 ------------------------------------------------------
