@@ -325,6 +325,49 @@ Test Case начинаетс€ любым из макросов TEST\_CASE*, но должен завершатьс€ макрос
 %-------------------------------------------
 \subsubsection{ћодульные тесты на C++}
 
+\begin{lstlisting}[language=c++]
+////////////////////////////////////////////////////////////
+// component.t.cpp
+//
+////////////////////////////////////////////////////////////
+#include "test.h"
+
+
+TEST_FIXTURE(SetUpCallCheck)
+{
+    SETUP
+	{
+		setUpCall_ = true;
+	}
+
+    TEARDOWN
+	{
+		setUpCall_ = false;
+	}
+    // private value, used with fixture
+	bool setUpCall_;
+};
+
+TEST_SUITE(SimpleTestSuite)
+{
+	TEST_CASE(simpleTest)
+		ASSERT_EQUAL(1, 1);
+	TEST_CASE_END
+
+	TEST_CASE_EX(testCheckSetUpCall, SetUpCallCheck)
+		ASSERT(setUpCall_);
+	TEST_CASE_END
+};
+
+TEST_CASE_ALONE(standaloneTestCase)
+    ASSERT(true);
+TEST_CASE_END
+
+TEST_CASE_EX_ALONE(standaloneTestCaseWithSetUpAndTeardown, SetUpCallCheck)
+    ASSERT(setUpCall_);
+TEST_CASE_END
+\end{lstlisting}
+
 %-------------------------------------------
 \subsubsection{ћодульные тесты на Lua}
 
