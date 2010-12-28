@@ -31,12 +31,6 @@
 --- \param[in] actual Actual value
 --- \return None. Throw exception in case of error.
 
---- \fn ASSERT_MULTIPLE_EQUAL(...)
---- \brief Compare first half of argument (expected values) with second half of arguments (actual values). If function receive odd number of 
---- arguments, then it will throw error exception.
---- \param[in] ... Value for comparison
---- \return None. Throw exception in case of error.
-
 --- \fn ASSERT_STRING_EQUAL(expected, actual)
 --- \brief Compare two multiline strings (usualy long string and very long strings) and in case of unequation it show only
 --- differential lines of 'expected' and 'actual'
@@ -82,6 +76,7 @@ local testRunner = require("testunit.test_runner");
 local luaExt = require("lua_ext")
 local fs = require("filesystem")
 
+luaUnit.setAssertShortNames(_M)
 
 
 TEST_FIXTURE("assertsAtSetUpFixture")
@@ -493,17 +488,6 @@ TEST_SUITE("LuaUnitAssertMacroTest")
     end
     };
 
-    TEST_CASE{"assertMultipleEqualTest", function(self)
-        ASSERT_MULTIPLE_EQUAL(1, 1);
-        ASSERT_MULTIPLE_EQUAL(1, 'a', 1, "a");
-        
-        ASSERT_THROW(function() ASSERT_MULTIPLE_EQUAL(1) end);
-        ASSERT_THROW(function() ASSERT_MULTIPLE_EQUAL(1, 1, 1) end);
-        ASSERT_THROW(function() ASSERT_MULTIPLE_EQUAL(1, 0) end);
-        ASSERT_THROW(function() ASSERT_MULTIPLE_EQUAL(1, 'a', 0, "a") end);
-    end
-    };
-
     TEST_CASE{"assertStringEqualTest", function(self)
         ASSERT_STRING_EQUAL('', '');
         ASSERT_STRING_EQUAL('a', 'a');
@@ -552,6 +536,7 @@ TEST_SUITE("NewSyntaxTests")
         ASSERT_IS_NOT_NIL(testChunk.isTable)
         ASSERT_IS_NOT_NIL(testChunk.isNumber)
         ASSERT_IS_NOT_NIL(testChunk.isString)
+        ASSERT_IS_NOT_NIL(testChunk.isBool)
         ASSERT_IS_NOT_NIL(testChunk.isBoolean)
         ASSERT_IS_NOT_NIL(testChunk.isNil)
 
@@ -559,6 +544,7 @@ TEST_SUITE("NewSyntaxTests")
         ASSERT_IS_NOT_NIL(testChunk.isNotTable)
         ASSERT_IS_NOT_NIL(testChunk.isNotNumber)
         ASSERT_IS_NOT_NIL(testChunk.isNotString)
+        ASSERT_IS_NOT_NIL(testChunk.isNotBool)
         ASSERT_IS_NOT_NIL(testChunk.isNotBoolean)
         ASSERT_IS_NOT_NIL(testChunk.isNotNil)
     end
@@ -697,4 +683,161 @@ TEST_SUITE("NewSyntaxTests")
         ASSERT_EQUAL(3, #self.testRegistry.testsuites[2].testcases)
     end
     };
+};
+
+TEST_SUITE("newSyntaxAssertFunctionTest")
+{
+    TEST_CASE{"isTrueTest", function(self)
+        isTrue(true);
+
+        isTrue(1);
+
+        isTrue(0 == 0);
+        isTrue(0 >= 0);
+        isTrue(0 <= 0);
+        isTrue(0 <= 1);
+        isTrue(1 > 0);
+        isTrue(-1 < 0);
+
+        isTrue(1 == 1);
+        isTrue(1 ~= 2);
+        isTrue(1 < 2);
+        isTrue(1 <= 1);
+        isTrue(1 <= 2);
+
+        isTrue(-1 == -1);
+        isTrue(1 ~= -1);
+    end
+    };
+
+    TEST_CASE{"isTrueFailTest", function(self)
+        willThrow(function() isTrue(false) end);
+        willThrow(function() isTrue(1 < 0) end);
+        willThrow(function() isTrue(1 == -1) end);
+        willThrow(function() isTrue(-1 ~= -1) end);
+        willThrow(function() isTrue(-1 < -2) end);
+    end
+    };
+
+    TEST_CASE{"isFalseTest", function(self)
+        isFalse(false);
+        isFalse(0 ~= 0);
+        isFalse(-1 ~= -1);
+    end
+    };
+
+    TEST_CASE{"isFalseFailTest", function(self)
+        willThrow(function() isFalse(true) end);
+        willThrow(function() isFalse(0 == 0) end);
+        willThrow(function() isFalse(-1 == -1) end);
+    end
+    };
+    TEST_CASE{"areEqTest", function(self)
+        noThrow(function() areEq(1, 1) end);
+        noThrow(function() areEq(0, 0) end);
+        noThrow(function() areEq(-1, -1) end);
+        noThrow(function() areEq(nil, nil) end);
+
+        noThrow(function() areEq('', '') end);
+        noThrow(function() areEq('a', 'a') end);
+        noThrow(function() areEq('abc', 'abc') end);
+        noThrow(function() areEq('\t\n\r\b', '\t\n\r\b') end);
+        noThrow(function() areEq('aA12-=+[](){}: end);,./?*', 'aA12-=+[](){}: end);,./?*') end);
+    end
+    };
+
+    TEST_CASE{"areEqFailTest", function(self)
+        willThrow(function() areEq(-1, 'asd') end);
+        willThrow(function() areEq(1, nil) end);
+        willThrow(function() areEq(false, nil) end);
+        willThrow(function() areEq(true, 1) end);
+        willThrow(function() areEq(true, 'true') end);
+
+        willThrow(function() areEq(1, 0) end);
+        willThrow(function() areEq(-1, -2) end);
+        willThrow(function() areEq({}, {}) end);
+      
+        willThrow(function() areEq(
+            '\ta\nA\n1\n2\n-\n=\n+\n[\n]\n(\n)\n{\n}\n:\n;\n,\n.\n/\n?\n*\n',
+            '\ta\nC\n1\n2\n-\n=\n+\n[\n]\n(\n)\n{\n}\n:\n;\n,\n.\n/\n?\n*\n') end);
+    end
+    };
+
+    TEST_CASE{"areNotEqTest", function(self)
+        noThrow(function() areNotEq(1, 0) end);
+        noThrow(function() areNotEq(-1, -2) end);
+        noThrow(function() areNotEq('', 1) end);
+        noThrow(function() areNotEq(nil, false) end);
+        noThrow(function() areNotEq(true, 'true') end);
+        noThrow(function() areNotEq({}, {}) end);
+    end
+    };
+
+    TEST_CASE{"areNotEqFailTest", function(self)
+        willThrow(function() areNotEq(1, 1) end);
+        willThrow(function() areNotEq(0, 0) end);
+        willThrow(function() areNotEq(-1, -1) end);
+
+        willThrow(function() areNotEq(nil, nil) end);
+        willThrow(function() areNotEq('', '') end);
+    end
+    };
+    
+    TEST_CASE{"willThrowTest", function(self)
+        willThrow(function() error("", 0) end);
+        willThrow(function() willThrow(function() end) end);
+    end
+    };
+
+    TEST_CASE{"noThrowTest", function(self)
+        willThrow(function() noThrow(function() error("", 0) end) end);
+        noThrow(function() end);
+    end
+    };
+
+    TEST_CASE{"isTypenameTest", function(self)
+        noThrow(function() isNil(nil) end);
+        noThrow(function() isBoolean(true) end);
+        noThrow(function() isBool(true) end);
+        noThrow(function() isNumber(1) end);
+        noThrow(function() isString("a") end);
+        noThrow(function() isTable({}) end);
+        noThrow(function() isFunction(function() end) end);
+
+        willThrow(function() isNil(true) end);
+        willThrow(function() isBoolean(nil) end);
+        willThrow(function() isBool(nil) end);
+        willThrow(function() isNumber("a") end);
+        willThrow(function() isString(1) end);
+        willThrow(function() isTable(function() end) end);
+        willThrow(function() isFunction({}) end);
+    end
+    };
+
+    TEST_CASE{"isNotTypenameTest", function(self)
+        willThrow(function() isNotNil(nil) end);
+        willThrow(function() isNotBoolean(true) end);
+        willThrow(function() isNotBool(true) end);
+        willThrow(function() isNotNumber(1) end);
+        willThrow(function() isNotString("a") end);
+        willThrow(function() isNotTable({}) end);
+        willThrow(function() isNotFunction(function() end) end);
+
+        noThrow(function() isNotNil(true) end);
+        noThrow(function() isNotBoolean(nil) end);
+        noThrow(function() isNotBool(nil) end);
+        noThrow(function() isNotNumber("a") end);
+        noThrow(function() isNotString(1) end);
+        noThrow(function() isNotTable(function() end) end);
+        noThrow(function() isNotFunction({}) end);
+    end
+    };
+
+--~     TEST_CASE_EX{"assertsAtSetUp", "assertsAtSetUpFixture", function(self)
+--~     end
+--~     };
+--~     
+--~     TEST_CASE_EX{"assertsAtTearDown", "assertsAtTearDownFixture", function(self)
+--~     end
+--~     };
 };
