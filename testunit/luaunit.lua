@@ -30,24 +30,24 @@ function copyTable(object)
 end
 
 -------------------------------------------------------
-TestFuxture = {};
+TestFixture = {};
 -------------------------------------------------------
 
-function TestFuxture:new(o)
+function TestFixture:new(o)
     local obj =  o or {};
     setmetatable(obj, self);
     self.__index = self;
     return obj;
 end
 
-function TestFuxture:setUp()
+function TestFixture:setUp()
 end
 
-function TestFuxture:tearDown()
+function TestFixture:tearDown()
 end
 
 -------------------------------------------------------
-TestCase = TestFuxture:new{};
+TestCase = TestFixture:new{};
 -------------------------------------------------------
 
 function TestCase:new(name)
@@ -432,7 +432,7 @@ end
 function TEST_FIXTURE(name)
 -------------------------------------------------------
     return function(fixtureObject)
-        _G[name] = TestFuxture:new(fixtureObject);
+        _G[name] = TestFixture:new(fixtureObject);
     end
 end
 

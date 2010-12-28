@@ -3,7 +3,7 @@
 --- \param[in] object Sample for cloning
 --- \return Cloned object of original object
 
---- \class TestFuxture
+--- \class TestFixture
 --- \brief Class, whtich has setUp and tearDown function. It is base for TestCase class.
 
 --- \class TestCase
@@ -25,19 +25,6 @@
 --- \brief Return collection of objects with TestCase interface ("name_", setUp, test, tearDown). Names of TestCases contains TestSuite and TestCase name, separated by '::'
 --- \return List of TestCases-like objects 
 
---- \fn areEq(expected, actual)
---- \brief Compare two values of the same type and check their equation.
---- \param[in] expected Expected value
---- \param[in] actual Actual value
---- \return None. Throw exception in case of error.
-
---- \fn areEq(expected, actual)
---- \brief Compare two multiline strings (usualy long string and very long strings) and in case of unequation it show only
---- differential lines of 'expected' and 'actual'
---- \param[in] expected Expected string
---- \param[in] actual Actual string
---- \return None. Throw exception in case of error.
-
 --- \fn TEST_FIXTURE(name)
 --- \brief Only insert fixture object into global table _G
 --- \param[in] name Name of TestFixture object
@@ -57,17 +44,11 @@
 --- \param[in] args Table {name, TestFixtureName[, ...], function}, containing name of TestCase, names
 --- of base TestFixture classes and test function of TestCase
 
---- \fn test
---- \brief This function become available such function as ASSERT_ directly from test module.
---- Pass this function as argument (after module name) of function 'module', for example: \n 
---- 
-
 --- \fn callTestCaseMethod(testcase, testFunc)
 --- \brief Call method of TestCase object and get advanced info in case of mistaken execution
 --- \param[in] testcase TestCase object
 --- \param[in] testFunc 'test', 'setUp' or 'tearDown' function of 'testcase'
 --- \return status code of 'testFunc' execution and ErrorObject with additional info
-
 
 
 

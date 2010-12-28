@@ -275,7 +275,7 @@ Test Case начинается любым из макросов TEST\_CASE*, но должен завершаться макрос
 Т.к. подавляющий объем кода находится в test\_runner и он "<луновый">, то это упрощает процесс разработки и поддержки проекта за счет большей скорости разработки на скриптовом языке. Особенно это скажется при написании сложных TestListener-ов, коих нам понадобиться несколько типов, выдающих, например, полученные сообщения в определенном формате (txt, html, http-запрос) и на определенный приемник (консольный вывод, файл, syslogd, веб-сервер, Jabber Client). Для того, чтобы можно было на некотором количестве тестов запускать несколько наборов тестов без перезапуска, либо порождения отдльного процесса, нужно, чтобы при фильтрации списка запускаемых TestCase-ов сами объекты этих TestCase-ов не удалялись из памяти.
 
 %-----------------------------------------------------
-\subsection{Макросы проверки}
+\subsection{Функции проверок}
 
 Для тестов на C++ доступны следующие макросы:
 \begin{itemize}
@@ -284,35 +284,86 @@ Test Case начинается любым из макросов TEST\_CASE*, но должен завершаться макрос
 \item ASSERT\_NOT\_EQUAL(expected, actual)
 \item ASSERT\_DOUBLES\_NOT\_EQUAL(expected, actual, delta)
 \item ASSERT\_THROW(expression, exceptionType)
-\item ASSERT\_NO\_CPP\_EXCEPTION_THROW(expression, exceptionType)
+\item ASSERT\_NO\_CPP\_EXCEPTION\_THROW(expression, exceptionType)
 \item ASSERT\_NO\_ANY\_CPP\_EXCEPTION(expression)
 \end{itemize}
 
 а для тестов на Lua:
 \begin{itemize}
-\item ASSERT(assertion)
-\item ASSERT\_TRUE(actual)
-\item ASSERT\_FALSE(actual)
-\item ASSERT\_THROW(functionForRun, ...)
-\item ASSERT\_NO\_THROW(functionForRun, ...)
-\item ASSERT\_EQUAL(expected, actual)
-\item ASSERT\_NOT\_EQUAL(expected, actual)
-\item ASSERT\_NIL(variable)
-\item ASSERT\_BOOLEAN(variable)
-\item ASSERT\_NUMBER(variable)
-\item ASSERT\_STRING(variable)
-\item ASSERT\_TABLE(variable)
-\item ASSERT\_FUNCTION(variable)
-\item ASSERT\_THREAD(variable)
-\item ASSERT\_USERDATA(variable)
-\item ASSERT\_NOT\_NIL(variable)
-\item ASSERT\_NOT\_BOOLEAN(variable)
-\item ASSERT\_NOT\_NUMBER(variable)
-\item ASSERT\_NOT\_STRING(variable)
-\item ASSERT\_NOT\_TABLE(variable)
-\item ASSERT\_NOT\_FUNCTION(variable)
-\item ASSERT\_NOT\_THREAD(variable)
-\item ASSERT\_NOT\_USERDATA(variable)
+\item isTrue(actual)
+\item isFalse(actual)
+\item areEq(expected, actual)
+\item areNotEq(expected, actual)
+\item noThrow(functionForRun, \ldots)
+\item willThrow(functionForRun, \ldots)
+%
+\item isFunction(actual)
+\item isTable(actual)
+\item isNumber(actual)
+\item isString(actual)
+\item isBoolean(actual)
+\item isBoolean(actual)
+\item isNil(actual)
+%
+\item isNotFunction(actual)
+\item isNotTable(actual)
+\item isNotNumber(actual)
+\item isNotString(actual)
+\item isNotBoolean(actual)
+\item isNotBoolean(actual)
+\item isNotNil(actual)
+\end{itemize}
+
+\clearpage
+%-----------------------------------------------------
+\subsection{Синтаксис модульных тестов}
+
+%-------------------------------------------
+\subsubsection{Модульные тесты на C++}
+
+%-------------------------------------------
+\subsubsection{Модульные тесты на Lua}
+
+\begin{lstlisting}[language=lua]
+qq = 
+{
+    initialize = function() end;
+    release = function() end;
+    add = 
+        function(self, value)
+            table.insert(self.list, value);
+            if self.list[#self.list] then
+                return true;
+            end
+        end;
+    list = {};
+};
+
+sampleFixture = 
+{
+    setUp = function(self)
+        qq:initialize();
+    end
+    ;
+    tearDown = function(self)
+        qq:release();
+    end
+    ;
+};
+
+function simpleTest()
+    local q = 2;
+    areEq(4, q + 2);
+end
+
+function sampleFixture.addTest()
+    isTrue(qq:add(""));
+end
+\end{lstlisting}
+
+Синтаксис опирается на следующие принципы:
+\begin{itemize}
+\item Не нужно писать require для модуля, реализующего синтаксис
 \end{itemize}
 
 %-----------------------------------------------------
