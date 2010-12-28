@@ -15,69 +15,66 @@ local luaExt = require('lua_ext')
 local atf = require('aux_test_func')
 
 local luaUnit = require('testunit.luaunit');
-module('aux_test_func.t', luaUnit.testmodule, package.seeall);
+
 
 
 local function trace()
     -- empty for disable output
 end
 
-TEST_FIXTURE("UseTestTmpDirFixture")
+useTestTmpDirFixture = 
 {
     setUp = function(self)
-        self.tmpDir = fs.tmpDirName();
-        ASSERT_IS_NOT_NIL(self.tmpDir);
+        tmpDir = fs.tmpDirName();
+        isNotNil(tmpDir);
         local curDir = lfs.currentdir();
-        ASSERT_IS_NOT_NIL(curDir);
-        ASSERT_IS_NIL(lfs.chdir(self.tmpDir));
-        ASSERT_TRUE(lfs.mkdir(self.tmpDir));
-        ASSERT_TRUE(lfs.chdir(self.tmpDir));
-        ASSERT_TRUE(lfs.chdir(curDir));
+        isNotNil(curDir);
+        isNil(lfs.chdir(tmpDir));
+        isTrue(lfs.mkdir(tmpDir));
+        isTrue(lfs.chdir(tmpDir));
+        isTrue(lfs.chdir(curDir));
     end
     ;
 
     tearDown = function(self)
-        ASSERT_IS_NOT_NIL(self.tmpDir);
-        ASSERT_TRUE(lfs.chdir(self.tmpDir .. fs.osSlash() .. '..'))
-        local status, msg = fs.rmdir(self.tmpDir)
-        ASSERT_EQUAL(nil, msg)
-        ASSERT_TRUE(status)
+        isNotNil(tmpDir);
+        isTrue(lfs.chdir(tmpDir .. fs.osSlash() .. '..'))
+        local status, msg = fs.rmdir(tmpDir)
+        areEq(nil, msg)
+        isTrue(status)
     end
     ;
 };
 
-TEST_CASE_EX{"createTextFileWithContentTest", "UseTestTmpDirFixture", function(self)
-    local tmpFilePath = self.tmpDir .. fs.osSlash() .. 'tmp.file';
+function useTestTmpDirFixture.createTextFileWithContentTest()
+    local tmpFilePath = tmpDir .. fs.osSlash() .. 'tmp.file';
     local text = 'some\nsimple\ntext\n';
-    ASSERT_TRUE(atf.createTextFileWithContent(tmpFilePath, text));
+    isTrue(atf.createTextFileWithContent(tmpFilePath, text));
 
     local tmpFile = io.open(tmpFilePath, 'r');
-    ASSERT_IS_NOT_NIL(tmpFile);
-    ASSERT_EQUAL(text, tmpFile:read("*a"));
+    isNotNil(tmpFile);
+    areEq(text, tmpFile:read("*a"));
     tmpFile:close();
 end
-};
 
-TEST_CASE_EX{"fileContentAsStringTest", "UseTestTmpDirFixture", function(self)
-    local path = self.tmpDir .. 'file.txt';
+function useTestTmpDirFixture.fileContentAsStringTest()
+    local path = tmpDir .. 'file.txt';
     local content = '1st line\r\n2nd line\n  ';
-    ASSERT_TRUE(atf.createTextFileWithContent(path, content));
-    ASSERT_EQUAL(content, atf.fileContentAsString(path));
+    isTrue(atf.createTextFileWithContent(path, content));
+    areEq(content, atf.fileContentAsString(path));
 end
-};
 
 
-TEST_CASE_EX{"fileContentAsLinesTest", "UseTestTmpDirFixture", function(self)
-    local path = self.tmpDir .. 'file.txt';
+function useTestTmpDirFixture.fileContentAsLinesTest()
+    local path = tmpDir .. 'file.txt';
     do
         local content = {'1st line', '2nd line', '  '};
-        ASSERT_TRUE(atf.createTextFileWithContent(path, table.concat(content, '\n')));
-        ASSERT_TRUE(table.isEqual(content, atf.fileContentAsLines(path)));
+        isTrue(atf.createTextFileWithContent(path, table.concat(content, '\n')));
+        isTrue(table.isEqual(content, atf.fileContentAsLines(path)));
     end
     do
         local content = {'1st line\r', '2nd line\r', '  '};
-        ASSERT_TRUE(atf.createTextFileWithContent(path, table.concat(content, '\n')));
-        ASSERT_TRUE(table.isEqual(content, atf.fileContentAsLines(path)));
+        isTrue(atf.createTextFileWithContent(path, table.concat(content, '\n')));
+        isTrue(table.isEqual(content, atf.fileContentAsLines(path)));
     end
 end
-};

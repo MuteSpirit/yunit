@@ -25,13 +25,13 @@
 --- \brief Return collection of objects with TestCase interface ("name_", setUp, test, tearDown). Names of TestCases contains TestSuite and TestCase name, separated by '::'
 --- \return List of TestCases-like objects 
 
---- \fn ASSERT_EQUAL(expected, actual)
+--- \fn areEq(expected, actual)
 --- \brief Compare two values of the same type and check their equation.
 --- \param[in] expected Expected value
 --- \param[in] actual Actual value
 --- \return None. Throw exception in case of error.
 
---- \fn ASSERT_STRING_EQUAL(expected, actual)
+--- \fn areEq(expected, actual)
 --- \brief Compare two multiline strings (usualy long string and very long strings) and in case of unequation it show only
 --- differential lines of 'expected' and 'actual'
 --- \param[in] expected Expected string
@@ -57,10 +57,10 @@
 --- \param[in] args Table {name, TestFixtureName[, ...], function}, containing name of TestCase, names
 --- of base TestFixture classes and test function of TestCase
 
---- \fn testmodule(moduleTable)
+--- \fn test
 --- \brief This function become available such function as ASSERT_ directly from test module.
 --- Pass this function as argument (after module name) of function 'module', for example: \n 
---- module("lua_test_sample", luaUnit.testmodule, package.seeall);\n
+--- 
 
 --- \fn callTestCaseMethod(testcase, testFunc)
 --- \brief Call method of TestCase object and get advanced info in case of mistaken execution
@@ -68,21 +68,19 @@
 --- \param[in] testFunc 'test', 'setUp' or 'tearDown' function of 'testcase'
 --- \return status code of 'testFunc' execution and ErrorObject with additional info
 
-local luaUnit = require("testunit.luaunit");
 
-module("luaunit.t", luaUnit.testmodule, package.seeall);
+
+
 
 local testRunner = require("testunit.test_runner");
 local luaExt = require("lua_ext")
 local fs = require("filesystem")
+local luaUnit = require('testunit.luaunit');
 
-luaUnit.setAssertShortNames(_M)
-
-
-TEST_FIXTURE("assertsAtSetUpFixture")
+assertsAtSetUpFixture = 
 {
     setUp = function(self)
-        ASSERT_TRUE(true)
+        isTrue(true)
     end
     ;
     tearDown = function(self)
@@ -90,41 +88,38 @@ TEST_FIXTURE("assertsAtSetUpFixture")
     ;
 };
 
-TEST_FIXTURE("assertsAtTearDownFixture")
+assertsAtTearDownFixture = 
 {
     setUp = function(self)
     end
     ;
     tearDown = function(self)
-        ASSERT_TRUE(true)
+        isTrue(true)
     end
     ;
 };
 
 -- This fixture save (at setUp) and restore (at tearDown) currentSuite variable at luaunit module for possibility TEST_* macro testing
-TEST_FIXTURE("LuaUnitSelfTestFixture")
+luaUnitSelfTestFixture = 
 {
     setUp = function(self)
-        self.testRegistry = luaUnit.TestRegistry:new();
-        self.currentTestRegistry = luaUnit.currentTestRegistry();
-        luaUnit.currentTestRegistry(self.testRegistry);
+        testRegistry = luaUnit.TestRegistry:new();
+        currentTestRegistry = luaUnit.currentTestRegistry();
+        luaUnit.currentTestRegistry(testRegistry);
         
-        self.currentSuite = luaUnit.currentSuite();
+        currentSuite = luaUnit.currentSuite();
     end
     ;
     tearDown = function(self)
-        luaUnit.currentSuite(self.currentSuite);
-        luaUnit.currentTestRegistry(self.currentTestRegistry);
-        self.currentSuite = nil;
-        self.testRegistry = nil;
+        luaUnit.currentSuite(currentSuite);
+        luaUnit.currentTestRegistry(currentTestRegistry);
+        currentSuite = nil;
+        testRegistry = nil;
     end
     ;
 };
 
-
-TEST_SUITE("AppliedFunctionTestSuite")
-{
-    TEST_CASE{"copyTableTest", function(self)
+    function copyTableTest()
         local object = 
         {
             a_ = 5;
@@ -140,96 +135,84 @@ TEST_SUITE("AppliedFunctionTestSuite")
         
         setmetatable(object, mt);
         local clone = luaUnit.copyTable(object);
-        ASSERT_EQUAL(object.a_, clone.a_);
-        ASSERT_EQUAL(object.get(), clone.get());
+        areEq(object.a_, clone.a_);
+        areEq(object.get(), clone.get());
         object.set(1); clone.set(1);
-        ASSERT_EQUAL(object.get(), clone.get());
-        ASSERT_EQUAL(object.b_, clone.b_);
-        ASSERT_EQUAL(getmetatable(object), getmetatable(clone));
+        areEq(object.get(), clone.get());
+        areEq(object.b_, clone.b_);
+        areEq(getmetatable(object), getmetatable(clone));
     end
-    };
-};
 
-TEST_SUITE("TestCaseTest")
-{
-    TEST_CASE{"createTestCaseTest", function(self)
+    function createTestCaseTest()
         local testcase = luaUnit.TestCase:new("OnlyCreatedTestCase");
-        ASSERT_IS_NOT_NIL(testcase);
-        ASSERT_IS_NOT_NIL(testcase.setUp);
-        ASSERT_EQUAL("function", type(testcase.setUp));
-        ASSERT_IS_NOT_NIL(testcase.test);
-        ASSERT_EQUAL("function", type(testcase.test));
-        ASSERT_IS_NOT_NIL(testcase.tearDown);
-        ASSERT_EQUAL("function", type(testcase.tearDown));
+        isNotNil(testcase);
+        isNotNil(testcase.setUp);
+        areEq("function", type(testcase.setUp));
+        isNotNil(testcase.test);
+        areEq("function", type(testcase.test));
+        isNotNil(testcase.tearDown);
+        areEq("function", type(testcase.tearDown));
     end
-    };
 
-    TEST_CASE{"runSimpleTestCaseTest", function(self)
+    function runSimpleTestCaseTest()
         local testcase = luaUnit.TestCase:new("runSimpleTestCase");
         testcase.test = function()
-            luaUnit.ASSERT_EQUAL(0, 0);
+            luaUnit.areEq(0, 0);
         end
-        ASSERT_NO_THROW(testcase.setUp);
-        ASSERT_NO_THROW(testcase.test);
-        ASSERT_NO_THROW(testcase.tearDown);
+        noThrow(testcase.setUp);
+        noThrow(testcase.test);
+        noThrow(testcase.tearDown);
     end
-    };
-};
-
-TEST_SUITE("LuaUnitTestRegistryTest")
-{
-    TEST_CASE_EX{"addingTestCasesToTestRegistryTest", "LuaUnitSelfTestFixture", function(self)
-        ASSERT_EQUAL(1, #self.testRegistry.testsuites);
-        ASSERT_EQUAL("Default", self.testRegistry.testsuites[1].name_);
-        ASSERT_EQUAL(0, #self.testRegistry.testsuites[1].testcases);
+    function luaUnitSelfTestFixture.addingTestCasesToTestRegistryTest()
+        areEq(1, #testRegistry.testsuites);
+        areEq("Default", testRegistry.testsuites[1].name_);
+        areEq(0, #testRegistry.testsuites[1].testcases);
         
-        self.testRegistry:addTestCase(luaUnit.TestCase:new("TestCaseForDefaultTestSuite"));
-        ASSERT_EQUAL(1, #self.testRegistry.testsuites);
-        ASSERT_EQUAL(1, #self.testRegistry.testsuites[1].testcases);
+        testRegistry:addTestCase(luaUnit.TestCase:new("TestCaseForDefaultTestSuite"));
+        areEq(1, #testRegistry.testsuites);
+        areEq(1, #testRegistry.testsuites[1].testcases);
         
         local testsuite = luaUnit.TestSuite:new("NotDefaultTestSuite");
-        self.testRegistry:addTestSuite(testsuite);
-        ASSERT_EQUAL(2, #self.testRegistry.testsuites);
-        ASSERT_EQUAL(1, #self.testRegistry.testsuites[1].testcases);
-        ASSERT_EQUAL(0, #self.testRegistry.testsuites[2].testcases);
+        testRegistry:addTestSuite(testsuite);
+        areEq(2, #testRegistry.testsuites);
+        areEq(1, #testRegistry.testsuites[1].testcases);
+        areEq(0, #testRegistry.testsuites[2].testcases);
 
-        self.testRegistry:addTestCase(luaUnit.TestCase:new("OtherTestCaseForDefaultTestSuite"));
-        ASSERT_EQUAL(2, #self.testRegistry.testsuites);
-        ASSERT_EQUAL(2, #self.testRegistry.testsuites[1].testcases);
-        ASSERT_EQUAL(0, #self.testRegistry.testsuites[2].testcases);
+        testRegistry:addTestCase(luaUnit.TestCase:new("OtherTestCaseForDefaultTestSuite"));
+        areEq(2, #testRegistry.testsuites);
+        areEq(2, #testRegistry.testsuites[1].testcases);
+        areEq(0, #testRegistry.testsuites[2].testcases);
         
         testsuite:addTestCase(luaUnit.TestCase:new("TestCase1"));
-        ASSERT_EQUAL(2, #self.testRegistry.testsuites);
-        ASSERT_EQUAL(2, #self.testRegistry.testsuites[1].testcases);
-        ASSERT_EQUAL(1, #self.testRegistry.testsuites[2].testcases);
+        areEq(2, #testRegistry.testsuites);
+        areEq(2, #testRegistry.testsuites[1].testcases);
+        areEq(1, #testRegistry.testsuites[2].testcases);
         
-        self.testRegistry:reset();
-        ASSERT_EQUAL(1, #self.testRegistry.testsuites);
-        ASSERT_EQUAL("Default", self.testRegistry.testsuites[1].name_);
-        ASSERT_EQUAL(0, #self.testRegistry.testsuites[1].testcases);
+        testRegistry:reset();
+        areEq(1, #testRegistry.testsuites);
+        areEq("Default", testRegistry.testsuites[1].name_);
+        areEq(0, #testRegistry.testsuites[1].testcases);
     end
-    };
 
-    TEST_CASE_EX{"getTestListTest", "LuaUnitSelfTestFixture", function(self)
+    function luaUnitSelfTestFixture.getTestListTest()
         local testList = luaUnit.getTestList();
-        ASSERT_IS_NOT_NIL(testList);
-        ASSERT_EQUAL(0, #testList);
+        isNotNil(testList);
+        areEq(0, #testList);
         
         -- add one TestCase
         local testcaseName = "GetTestListTestCase";
         local testcase = luaUnit.TestCase:new(testcaseName);
         testcase.test = function()
-            luaUnit.ASSERT_EQUAL(0, 0);
+            luaUnit.areEq(0, 0);
         end
-        self.testRegistry:addTestCase(testcase);
+        testRegistry:addTestCase(testcase);
 
         testList = luaUnit.getTestList();
-        ASSERT_IS_NOT_NIL(testList);
-        ASSERT_EQUAL(1, #testList);
+        isNotNil(testList);
+        areEq(1, #testList);
     end
-    };
 
-    TEST_CASE_EX{"protectTestCaseMethodCallTest", "LuaUnitSelfTestFixture", function(self)
+    function luaUnitSelfTestFixture.protectTestCaseMethodCallTest()
         -- we try to call create simple TestCAse and call 'setUp', 'test', 'tearDown' in protected mode
         -- in the result we must receive object with such data:
         -- - file name of script  with error
@@ -239,48 +222,46 @@ TEST_SUITE("LuaUnitTestRegistryTest")
         local testcase = luaUnit.TestCase:new("TestCaseForProtectCall");
         testcase.test = function()
             -- must except error
-            luaUnit.ASSERT_NOT_EQUAL(0, 0);
+            luaUnit.areNotEq(0, 0);
         end
         
         local statusCode, errorObject = luaUnit.callTestCaseMethod(testcase, testcase.test);
-        ASSERT_FALSE(statusCode);
+        isFalse(statusCode);
         
-        ASSERT_IS_NOT_NIL(string.find(errorObject.source, 'luaunit%.t%.lua$'))
-        ASSERT_EQUAL("testFunc", errorObject.func);
+        isNotNil(string.find(errorObject.source, 'luaunit%.t%.lua$'))
+        areEq("testFunc", errorObject.func);
         
-        ASSERT_IS_NOT_NIL(errorObject.line);
-        ASSERT_IS_NUMBER(errorObject.line);
-        ASSERT_NOT_EQUAL(0, errorObject.line);
+        isNotNil(errorObject.line);
+        isNumber(errorObject.line);
+        areNotEq(0, errorObject.line);
         
-        ASSERT_IS_NOT_NIL(errorObject.message);
-        ASSERT_IS_STRING(errorObject.message);
+        isNotNil(errorObject.message);
+        isString(errorObject.message);
     end
-    };
 
-    TEST_CASE_EX{"macroTest", "LuaUnitSelfTestFixture", function(self)
+    function luaUnitSelfTestFixture.macroTest()
         luaUnit.TEST_SUITE("EmptyMacroTestSuite")
         {
         };
         
-        ASSERT_EQUAL(2, #self.testRegistry.testsuites);
-        ASSERT_EQUAL(0, #self.testRegistry.testsuites[2].testcases);
+        areEq(2, #testRegistry.testsuites);
+        areEq(0, #testRegistry.testsuites[2].testcases);
 
         luaUnit.TEST_SUITE("MacroTestSuiteWithOneTestCase")
         {
             luaUnit.TEST_CASE{"MacroTestCase", function()
-                luaUnit.ASSERT_EQUAL(0, 0);
+                luaUnit.areEq(0, 0);
             end
             };
-        };
+        }
 
-        ASSERT_EQUAL(3, #self.testRegistry.testsuites);
-        ASSERT_EQUAL(0, #self.testRegistry.testsuites[1].testcases);
-        ASSERT_EQUAL(0, #self.testRegistry.testsuites[2].testcases);
-        ASSERT_EQUAL(1, #self.testRegistry.testsuites[3].testcases);
+        areEq(3, #testRegistry.testsuites);
+        areEq(0, #testRegistry.testsuites[1].testcases);
+        areEq(0, #testRegistry.testsuites[2].testcases);
+        areEq(1, #testRegistry.testsuites[3].testcases);
     end
-    };
 
-    TEST_CASE_EX{"testFrameTest", "LuaUnitSelfTestFixture", function(self)
+    function luaUnitSelfTestFixture.testFrameTest()
         ---------------------------------------------------
         -- initialize message system
         local testObserver = testRunner.TestObserver:new();
@@ -298,34 +279,34 @@ TEST_SUITE("LuaUnitTestRegistryTest")
         mockTestListener.error_ = false;
         local testcase = luaUnit.TestCase:new("GetTestListTestCase");
         testcase.test = function()
-            luaUnit.ASSERT_EQUAL(0, 0);
+            luaUnit.areEq(0, 0);
         end
         
-        self.testRegistry:addTestCase(testcase);
+        testRegistry:addTestCase(testcase);
 
         local testList = luaUnit.getTestList();
-        ASSERT_IS_NOT_NIL(testList);
-        ASSERT_EQUAL(1, #testList);
+        isNotNil(testList);
+        areEq(1, #testList);
 
         testRunner.runTestCase(testList[1].name_, testList[1], testObserver);
-        ASSERT_FALSE(mockTestListener.error_);
+        isFalse(mockTestListener.error_);
 
         mockTestListener.error_ = false;
         luaUnit.TEST_SUITE("TestFrameTestSuite")
         {
             luaUnit.TEST_CASE{"TestFrameTestCase", function()
-                luaUnit.ASSERT_EQUAL(0, 0);
+                luaUnit.areEq(0, 0);
             end
             };
-        };
+        }
+
         
         testList = luaUnit.getTestList();
-        ASSERT_IS_NOT_NIL(testList);
-        ASSERT_EQUAL(2, #testList);
+        isNotNil(testList);
+        areEq(2, #testList);
     end
-    };
 
-    TEST_CASE_EX{"testFixtureTest", "LuaUnitSelfTestFixture", function(self)
+    function luaUnitSelfTestFixture.testFixtureTest()
         local setUpExecuted = false;
         local testExecuted = false;
         local tearDownExecuted = false;
@@ -342,8 +323,8 @@ TEST_SUITE("LuaUnitTestRegistryTest")
             ;
         };
         
-        ASSERT_EQUAL(1, #self.testRegistry.testsuites);
-        ASSERT_IS_NOT_NIL(_G["MockTestFixture"]);
+        areEq(1, #testRegistry.testsuites);
+        isNotNil(_G["MockTestFixture"]);
 
         luaUnit.TEST_SUITE("TestFixtureTests")
         {
@@ -351,206 +332,63 @@ TEST_SUITE("LuaUnitTestRegistryTest")
                 testExecuted = true;
             end
             };
-        };
+        }
 
-        ASSERT_EQUAL(2, #self.testRegistry.testsuites);
-        ASSERT_EQUAL(0, #self.testRegistry.testsuites[1].testcases);
-        ASSERT_EQUAL(1, #self.testRegistry.testsuites[2].testcases);
+
+        areEq(2, #testRegistry.testsuites);
+        areEq(0, #testRegistry.testsuites[1].testcases);
+        areEq(1, #testRegistry.testsuites[2].testcases);
         
         local testList = luaUnit.getTestList();
-        ASSERT_EQUAL(1, #testList);
+        areEq(1, #testList);
         
         local testObserver = testRunner.TestObserver:new();
         testRunner.runTestCase("TestFixtureTests::EmptyTest", testList[1], testObserver);
         
-        ASSERT_TRUE(setUpExecuted);
-        ASSERT_TRUE(testExecuted);
-        ASSERT_TRUE(tearDownExecuted);
+        isTrue(setUpExecuted);
+        isTrue(testExecuted);
+        isTrue(tearDownExecuted);
     end
-    };
-};
-
-TEST_SUITE("LuaUnitAssertMacroTest")
-{
-    TEST_CASE{"boolAssertMacroTest", function(self)
-        ASSERT(true);
-
-        ASSERT(1);
-
-        ASSERT(0 == 0);
-        ASSERT(0 >= 0);
-        ASSERT(0 <= 0);
-        ASSERT(0 <= 1);
-        ASSERT(1 > 0);
-        ASSERT(-1 < 0);
-
-        ASSERT(1 == 1);
-        ASSERT(1 ~= 2);
-        ASSERT(1 < 2);
-        ASSERT(1 <= 1);
-        ASSERT(1 <= 2);
-
-        ASSERT(-1 == -1);
-        ASSERT(1 ~= -1);
-        
-        ASSERT_THROW(function() ASSERT(1 < 0) end);
-        ASSERT_THROW(function() ASSERT(1 == -1) end);
-        ASSERT_THROW(function() ASSERT(-1 ~= -1) end);
-        ASSERT_THROW(function() ASSERT(-1 < -2) end);
-    end
-    };
-
-    TEST_CASE{"assertEqualMacroTest", function(self)
-        ASSERT_EQUAL(1, 1);
-        ASSERT_EQUAL(0, 0);
-        ASSERT_EQUAL(-1, -1);
-
-        ASSERT_THROW(function() ASSERT_EQUAL(1, 0) end);
-        ASSERT_THROW(function() ASSERT_EQUAL(-1, -2) end);
-    end
-    };
-
-    TEST_CASE{"assertNoEqualMacroTest", function(self)
-        ASSERT_THROW(function() ASSERT_NOT_EQUAL(1, 1) end);
-        ASSERT_THROW(function() ASSERT_NOT_EQUAL(0, 0) end);
-        ASSERT_THROW(function() ASSERT_NOT_EQUAL(-1, -1) end);
-
-        ASSERT_NOT_EQUAL(1, 0);
-        ASSERT_NOT_EQUAL(-1, -2);
-    end
-    };
-
-    TEST_CASE{"assertTrueTest", function(self)
-        ASSERT_TRUE(true);
-        ASSERT_TRUE(0 == 0);
-        ASSERT_TRUE(-1 == -1);
-
-        ASSERT_THROW(function() ASSERT_TRUE(false) end);
-        ASSERT_THROW(function() ASSERT_TRUE(0 ~= 0) end);
-        ASSERT_THROW(function() ASSERT_TRUE(-1 ~= -1) end);
-    end
-    };
-
-    TEST_CASE{"assertFalseTest", function(self)
-        ASSERT_FALSE(false);
-        ASSERT_FALSE(0 ~= 0);
-        ASSERT_FALSE(-1 ~= -1);
-
-        ASSERT_THROW(function() ASSERT_FALSE(true) end);
-        ASSERT_THROW(function() ASSERT_FALSE(0 == 0) end);
-        ASSERT_THROW(function() ASSERT_FALSE(-1 == -1) end);
-    end
-    };
-
-    TEST_CASE{"assertThrowTest", function(self)
-        ASSERT_THROW(function() error("", 0) end);
-        ASSERT_THROW(function() ASSERT_THROW(function() end) end);
-    end
-    };
-
-    TEST_CASE{"assertNoThrowTest", function(self)
-        ASSERT_THROW(function() ASSERT_NO_THROW(function() error("", 0) end) end);
-        ASSERT_NO_THROW(function() end);
-    end
-    };
-
-    TEST_CASE{"assertIsTypeTest", function(self)
-        ASSERT_IS_NIL(nil);
-        ASSERT_IS_BOOLEAN(true);
-        ASSERT_IS_NUMBER(1);
-        ASSERT_IS_STRING("a");
-        ASSERT_IS_TABLE({});
-        ASSERT_IS_FUNCTION(function() end);
-
-        ASSERT_THROW(function() ASSERT_IS_NIL(true) end);
-        ASSERT_THROW(function() ASSERT_IS_BOOLEAN(nil) end);
-        ASSERT_THROW(function() ASSERT_IS_NUMBER("a") end);
-        ASSERT_THROW(function() ASSERT_IS_STRING(1) end);
-        ASSERT_THROW(function() ASSERT_IS_TABLE(function() end) end);
-        ASSERT_THROW(function() ASSERT_IS_FUNCTION({}) end);
-    end
-    };
-
-    TEST_CASE{"assertIsNotTypeTest", function(self)
-        ASSERT_THROW(function() ASSERT_IS_NOT_NIL(nil) end);
-        ASSERT_THROW(function() ASSERT_IS_NOT_BOOLEAN(true) end);
-        ASSERT_THROW(function() ASSERT_IS_NOT_NUMBER(1) end);
-        ASSERT_THROW(function() ASSERT_IS_NOT_STRING("a") end);
-        ASSERT_THROW(function() ASSERT_IS_NOT_TABLE({}) end);
-        ASSERT_THROW(function() ASSERT_IS_NOT_FUNCTION(function() end) end);
-
-        ASSERT_IS_NOT_NIL(true);
-        ASSERT_IS_NOT_BOOLEAN(nil);
-        ASSERT_IS_NOT_NUMBER("a");
-        ASSERT_IS_NOT_STRING(1);
-        ASSERT_IS_NOT_TABLE(function() end);
-        ASSERT_IS_NOT_FUNCTION({});
-    end
-    };
-
-    TEST_CASE{"assertStringEqualTest", function(self)
-        ASSERT_STRING_EQUAL('', '');
-        ASSERT_STRING_EQUAL('a', 'a');
-        ASSERT_STRING_EQUAL('abc', 'abc');
-        ASSERT_STRING_EQUAL('aA12-=+[](){}:;,./?*', 'aA12-=+[](){}:;,./?*');
-        ASSERT_THROW(function() ASSERT_STRING_EQUAL(
-            'a\nA\n1\n2\n-\n=\n+\n[\n]\n(\n)\n{\n}\n:\n;\n,\n.\n/\n?\n*\n',
-            'a\nC\n1\n2\n-\n=\n+\n[\n]\n(\n)\n{\n}\n:\n;\n,\n.\n/\n?\n*\n') end);
-    end
-    };
     
-    TEST_CASE_EX{"assertsAtSetUp", "assertsAtSetUpFixture", function(self)
-    end
-    };
-    
-    TEST_CASE_EX{"assertsAtTearDown", "assertsAtTearDownFixture", function(self)
-    end
-    };
-};
-
-
-TEST_SUITE("NewSyntaxTests")
-{
-    TEST_CASE{"getTestEnvTest", function(self)
+    function getTestEnvTest()
         local testContainerName = 'testunit.luaunit'
         local testChunk = luaUnit.getTestEnv(testContainerName)
         
         local mt = getmetatable(testChunk)
-        ASSERT_IS_NOT_NIL(mt)
-        ASSERT_IS_NOT_NIL(mt.__index)
-        ASSERT_IS_NOT_NIL(testChunk._G)
+        isNotNil(mt)
+        isNotNil(mt.__index)
+        isNotNil(testChunk._G)
         
-        ASSERT_IS_NOT_NIL(testChunk._M)
-        ASSERT_EQUAL(testChunk, testChunk._M)
+        isNotNil(testChunk._M)
+        areEq(testChunk, testChunk._M)
         
-        ASSERT_EQUAL(testContainerName, testChunk._NAME)
+        areEq(testContainerName, testChunk._NAME)
         
-        ASSERT_IS_NOT_NIL(testChunk.isTrue)
-        ASSERT_IS_NOT_NIL(testChunk.isFalse)
-        ASSERT_IS_NOT_NIL(testChunk.areEq)
-        ASSERT_IS_NOT_NIL(testChunk.areNotEq)
-        ASSERT_IS_NOT_NIL(testChunk.noThrow)
-        ASSERT_IS_NOT_NIL(testChunk.willThrow)
+        isNotNil(testChunk.isTrue)
+        isNotNil(testChunk.isFalse)
+        isNotNil(testChunk.areEq)
+        isNotNil(testChunk.areNotEq)
+        isNotNil(testChunk.noThrow)
+        isNotNil(testChunk.willThrow)
 
-        ASSERT_IS_NOT_NIL(testChunk.isFunction)
-        ASSERT_IS_NOT_NIL(testChunk.isTable)
-        ASSERT_IS_NOT_NIL(testChunk.isNumber)
-        ASSERT_IS_NOT_NIL(testChunk.isString)
-        ASSERT_IS_NOT_NIL(testChunk.isBool)
-        ASSERT_IS_NOT_NIL(testChunk.isBoolean)
-        ASSERT_IS_NOT_NIL(testChunk.isNil)
+        isNotNil(testChunk.isFunction)
+        isNotNil(testChunk.isTable)
+        isNotNil(testChunk.isNumber)
+        isNotNil(testChunk.isString)
+        isNotNil(testChunk.isBool)
+        isNotNil(testChunk.isBoolean)
+        isNotNil(testChunk.isNil)
 
-        ASSERT_IS_NOT_NIL(testChunk.isNotFunction)
-        ASSERT_IS_NOT_NIL(testChunk.isNotTable)
-        ASSERT_IS_NOT_NIL(testChunk.isNotNumber)
-        ASSERT_IS_NOT_NIL(testChunk.isNotString)
-        ASSERT_IS_NOT_NIL(testChunk.isNotBool)
-        ASSERT_IS_NOT_NIL(testChunk.isNotBoolean)
-        ASSERT_IS_NOT_NIL(testChunk.isNotNil)
+        isNotNil(testChunk.isNotFunction)
+        isNotNil(testChunk.isNotTable)
+        isNotNil(testChunk.isNotNumber)
+        isNotNil(testChunk.isNotString)
+        isNotNil(testChunk.isNotBool)
+        isNotNil(testChunk.isNotBoolean)
+        isNotNil(testChunk.isNotNil)
     end
-    };
     
-    TEST_CASE{"runTestChunkWithinSpecificEnvironmentTest", function(self)
+    function runTestChunkWithinSpecificEnvironmentTest()
         local testContainerName = 'testunit.luaunit'
         local test = [[function testCase() end 
                                 local function notTestCase() end
@@ -558,17 +396,16 @@ TEST_SUITE("NewSyntaxTests")
         
         local env = luaUnit.getTestEnv(testContainerName)
         local res, msg = luaUnit.executeTestChunk(test, env, testContainerName)
-        ASSERT_EQUAL(nil, msg)
-        ASSERT_EQUAL(true, res)
+        areEq(nil, msg)
+        areEq(true, res)
 
-        ASSERT_IS_NOT_NIL(env.testCase)
-        ASSERT_IS_FUNCTION(env.testCase)
+        isNotNil(env.testCase)
+        isFunction(env.testCase)
 
-        ASSERT_IS_NIL(env.notTestCase)
+        isNil(env.notTestCase)
     end
-    };
 
-    TEST_CASE{"executeTestChunkTest", function(self)
+    function executeTestChunkTest()
         local testContainerName = 'testunit.luaunit'
         local test = [[fixture =
                                 {
@@ -586,32 +423,31 @@ TEST_SUITE("NewSyntaxTests")
         
         local env = luaUnit.getTestEnv(testContainerName)
         local res, msg = luaUnit.executeTestChunk(test, env, testContainerName)
-        ASSERT_EQUAL(true, res)
-        ASSERT_IS_NIL(msg)
+        areEq(true, res)
+        isNil(msg)
 
-        ASSERT_IS_NOT_NIL(env.testCase)
-        ASSERT_IS_FUNCTION(env.testCase)
+        isNotNil(env.testCase)
+        isFunction(env.testCase)
 
-        ASSERT_IS_NOT_NIL(env._ignoredTest)
-        ASSERT_IS_FUNCTION(env._ignoredTest)
+        isNotNil(env._ignoredTest)
+        isFunction(env._ignoredTest)
 
-        ASSERT_IS_NOT_NIL(env.fixture)
-        ASSERT_IS_TABLE(env.fixture)
+        isNotNil(env.fixture)
+        isTable(env.fixture)
 
-        ASSERT_IS_NOT_NIL(env.fixture.setUp)
-        ASSERT_IS_FUNCTION(env.fixture.setUp)
+        isNotNil(env.fixture.setUp)
+        isFunction(env.fixture.setUp)
 
-        ASSERT_IS_NOT_NIL(env.fixture.tearDown)
-        ASSERT_IS_FUNCTION(env.fixture.tearDown)
+        isNotNil(env.fixture.tearDown)
+        isFunction(env.fixture.tearDown)
 
-        ASSERT_IS_NOT_NIL(env.fixture.fixtureTestCase)
-        ASSERT_IS_FUNCTION(env.fixture.fixtureTestCase)
+        isNotNil(env.fixture.fixtureTestCase)
+        isFunction(env.fixture.fixtureTestCase)
 
-        ASSERT_IS_NIL(env.notTestCase)
+        isNil(env.notTestCase)
     end
-    };
     
-    TEST_CASE{"testFilteringOfTestCases", function(self)
+    function testFilteringOfTestCases()
         local env = 
         {
             testCase = function() end,
@@ -648,11 +484,10 @@ TEST_SUITE("NewSyntaxTests")
         local testContainerName = 'testunit.luaunit'
         local testList = luaUnit.collectPureTestCaseList(env)
         
-        ASSERT_TRUE(table.isEqual(expectedTestList, testList))
+        isTrue(table.isEqual(expectedTestList, testList))
     end
-    };
     
-    TEST_CASE_EX{"loadTestChunk", "LuaUnitSelfTestFixture", function(self)
+    function luaUnitSelfTestFixture.loadTestChunk()
         local luaTestContainerSourceCode = 
             [[fixture =
                 {
@@ -669,25 +504,20 @@ TEST_SUITE("NewSyntaxTests")
                 ]]
         local luaTestContainerName = 'load_lua_container.t'
 
-        ASSERT_EQUAL(1, #self.testRegistry.testsuites)
-        ASSERT_EQUAL(0, #self.testRegistry.testsuites[1].testcases)
+        areEq(1, #testRegistry.testsuites)
+        areEq(0, #testRegistry.testsuites[1].testcases)
         
         local status, msg = luaUnit.loadTestChunk(luaTestContainerSourceCode, luaTestContainerName)
-        ASSERT_EQUAL(nil, msg)
-        ASSERT_TRUE(status)
+        areEq(nil, msg)
+        isTrue(status)
         
-        ASSERT_EQUAL(2, #self.testRegistry.testsuites)
-        ASSERT_EQUAL(0, #self.testRegistry.testsuites[1].testcases)
+        areEq(2, #testRegistry.testsuites)
+        areEq(0, #testRegistry.testsuites[1].testcases)
         
-        ASSERT_EQUAL(luaTestContainerName, self.testRegistry.testsuites[2].name_)
-        ASSERT_EQUAL(3, #self.testRegistry.testsuites[2].testcases)
+        areEq(luaTestContainerName, testRegistry.testsuites[2].name_)
+        areEq(3, #testRegistry.testsuites[2].testcases)
     end
-    };
-};
-
-TEST_SUITE("newSyntaxAssertFunctionTest")
-{
-    TEST_CASE{"isTrueTest", function(self)
+    function isTrueTest()
         isTrue(true);
 
         isTrue(1);
@@ -708,31 +538,27 @@ TEST_SUITE("newSyntaxAssertFunctionTest")
         isTrue(-1 == -1);
         isTrue(1 ~= -1);
     end
-    };
 
-    TEST_CASE{"isTrueFailTest", function(self)
+    function isTrueFailTest()
         willThrow(function() isTrue(false) end);
         willThrow(function() isTrue(1 < 0) end);
         willThrow(function() isTrue(1 == -1) end);
         willThrow(function() isTrue(-1 ~= -1) end);
         willThrow(function() isTrue(-1 < -2) end);
     end
-    };
 
-    TEST_CASE{"isFalseTest", function(self)
+    function isFalseTest()
         isFalse(false);
         isFalse(0 ~= 0);
         isFalse(-1 ~= -1);
     end
-    };
 
-    TEST_CASE{"isFalseFailTest", function(self)
+    function isFalseFailTest()
         willThrow(function() isFalse(true) end);
         willThrow(function() isFalse(0 == 0) end);
         willThrow(function() isFalse(-1 == -1) end);
     end
-    };
-    TEST_CASE{"areEqTest", function(self)
+    function areEqTest()
         noThrow(function() areEq(1, 1) end);
         noThrow(function() areEq(0, 0) end);
         noThrow(function() areEq(-1, -1) end);
@@ -744,9 +570,8 @@ TEST_SUITE("newSyntaxAssertFunctionTest")
         noThrow(function() areEq('\t\n\r\b', '\t\n\r\b') end);
         noThrow(function() areEq('aA12-=+[](){}: end);,./?*', 'aA12-=+[](){}: end);,./?*') end);
     end
-    };
 
-    TEST_CASE{"areEqFailTest", function(self)
+    function areEqFailTest()
         willThrow(function() areEq(-1, 'asd') end);
         willThrow(function() areEq(1, nil) end);
         willThrow(function() areEq(false, nil) end);
@@ -761,9 +586,8 @@ TEST_SUITE("newSyntaxAssertFunctionTest")
             '\ta\nA\n1\n2\n-\n=\n+\n[\n]\n(\n)\n{\n}\n:\n;\n,\n.\n/\n?\n*\n',
             '\ta\nC\n1\n2\n-\n=\n+\n[\n]\n(\n)\n{\n}\n:\n;\n,\n.\n/\n?\n*\n') end);
     end
-    };
 
-    TEST_CASE{"areNotEqTest", function(self)
+    function areNotEqTest()
         noThrow(function() areNotEq(1, 0) end);
         noThrow(function() areNotEq(-1, -2) end);
         noThrow(function() areNotEq('', 1) end);
@@ -771,9 +595,8 @@ TEST_SUITE("newSyntaxAssertFunctionTest")
         noThrow(function() areNotEq(true, 'true') end);
         noThrow(function() areNotEq({}, {}) end);
     end
-    };
 
-    TEST_CASE{"areNotEqFailTest", function(self)
+    function areNotEqFailTest()
         willThrow(function() areNotEq(1, 1) end);
         willThrow(function() areNotEq(0, 0) end);
         willThrow(function() areNotEq(-1, -1) end);
@@ -781,21 +604,18 @@ TEST_SUITE("newSyntaxAssertFunctionTest")
         willThrow(function() areNotEq(nil, nil) end);
         willThrow(function() areNotEq('', '') end);
     end
-    };
     
-    TEST_CASE{"willThrowTest", function(self)
+    function willThrowTest()
         willThrow(function() error("", 0) end);
         willThrow(function() willThrow(function() end) end);
     end
-    };
 
-    TEST_CASE{"noThrowTest", function(self)
+    function noThrowTest()
         willThrow(function() noThrow(function() error("", 0) end) end);
         noThrow(function() end);
     end
-    };
 
-    TEST_CASE{"isTypenameTest", function(self)
+    function isTypenameTest()
         noThrow(function() isNil(nil) end);
         noThrow(function() isBoolean(true) end);
         noThrow(function() isBool(true) end);
@@ -812,9 +632,8 @@ TEST_SUITE("newSyntaxAssertFunctionTest")
         willThrow(function() isTable(function() end) end);
         willThrow(function() isFunction({}) end);
     end
-    };
 
-    TEST_CASE{"isNotTypenameTest", function(self)
+    function isNotTypenameTest()
         willThrow(function() isNotNil(nil) end);
         willThrow(function() isNotBoolean(true) end);
         willThrow(function() isNotBool(true) end);
@@ -831,13 +650,10 @@ TEST_SUITE("newSyntaxAssertFunctionTest")
         noThrow(function() isNotTable(function() end) end);
         noThrow(function() isNotFunction({}) end);
     end
-    };
 
---~     TEST_CASE_EX{"assertsAtSetUp", "assertsAtSetUpFixture", function(self)
---~     end
---~     };
---~     
---~     TEST_CASE_EX{"assertsAtTearDown", "assertsAtTearDownFixture", function(self)
---~     end
---~     };
-};
+    function assertsAtSetUpFixture.assertsAtSetUp()
+    end
+    
+    function assertsAtTearDownFixture.assertsAtTearDown()
+    end
+    

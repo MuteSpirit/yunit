@@ -48,7 +48,7 @@ table.insert(lines, '};');
 
 --~ print(table.concat(lines, '\n'));
 
-hFile = io.open(file .. '.orig', 'w');
+hFile = io.open(file .. '.bak', 'w');
 hFile:write(text);
 hFile:close();
 
