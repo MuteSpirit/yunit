@@ -89,7 +89,7 @@ local aux = require("aux_test_func");
 -- This fixture save (at setUp) and restore (at tearDown) currentSuite variable at luaunit module for possibility TEST_* macro testing
 substitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir = 
 {
-    setUp = function(self)
+    setUp = function()
         testRegistry = luaUnit.TestRegistry:new();
         currentTestRegistry = luaUnit.currentTestRegistry();
         luaUnit.currentTestRegistry(testRegistry);
@@ -100,7 +100,7 @@ substitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir =
         lfs.mkdir(tmpDir);
     end
     ;
-    tearDown = function(self)
+    tearDown = function()
         luaUnit.currentSuite(currentSuite);
         luaUnit.currentTestRegistry(currentTestRegistry);
         currentSuite = nil;
