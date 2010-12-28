@@ -520,43 +520,82 @@ end
 -- New asserts
 -------------------------------------------------------
 
-function isTrue()
-end
-function isFalse()
-end
-function areEq()
-end
-function areNotEq()
-end
-function noThrow()
-end
-function willThrow()
+function isTrue(actual)
+    if not actual then
+        error("true expected but was nil or false", 0)
+    end
 end
 
-function isFunction()
-end
-function isTable()
-end
-function isNumber()
-end
-function isString()
-end
-function isBoolean()
-end
-function isNil()
+function isFalse(actual)
+    if actual then
+        error("nil or false expected but was true", 0)
+    end
 end
 
-function isNotFunction()
+function areEq(expected, actual)
+    local actualType, expectedType = type(actual), type(expected)
+
+    if actualType ~= expectedType then
+        error("expected type is " .. expectedType .. " but was a ".. actualtype, 0)
+    end
+
+	if  actual ~= expected  then
+		local errorMsg = "\nexpected: "..wrapValue(expected).."\n"..
+                         "actual  : "..wrapValue(actual).."\n";
+		error(errorMsg, 0);
+	end
 end
-function isNotTable()
+
+function areNotEq(expected, actual)
+	if  actual == expected  then
+		local errorMsg = "\nexpected: "..wrapValue(expected).."\n"..
+                         "actual  : "..wrapValue(actual).."\n";
+		error(errorMsg, 0);
+	end
 end
-function isNotNumber()
+
+function noThrow(functionForRun, ...)
+    local functype = type(functionForRun);
+    if functype ~= "function" then
+        error(string.format("expected a function as last argument but was a %s", functype), 0);
+    end
+    local ok, errmsg = pcall(functionForRun, ...);
+    if not ok then
+        error(string.format("no error expected but error was: '%s'", errmsg), 0)
+    end
 end
-function isNotString()
+
+function willThrow(functionForRun, ...)
+    local functype = type(functionForRun);
+    if functype ~= "function" then
+        error(string.format("expected a function as last argument but was a %s", functype), 0);
+    end
+    local ok, errmsg = pcall(functionForRun, ...);
+    if ok then
+        error("error expected but everything was OK", 0)
+    end
 end
-function isNotBoolean()
+
+-- isTypename functions
+for _, typename in ipairs(typenames) do
+    local assertTypename = "is" .. string.upper(string.sub(typename, 1 , 1)) .. string.sub (typename, 2);
+    _M[assertTypename] = function(actual)
+        local actualType = type(actual);
+        if actualType ~= typename then
+            error(typename.." expected but was a " .. actualType, 0)
+        end
+    end
 end
-function isNotNil()
+
+-- isNotTypename functions
+for _, typename in ipairs(typenames) do
+    local assertTypename = "isNot" .. string.upper(string.sub(typename, 1 , 1)) .. string.sub (typename, 2);
+    _M[assertTypename] = function(actual)
+        local actualType = type(actual);
+        if actualType == typename then
+            error(typename .. " not expected but was one", 0);
+        end
+    end
 end
 
 function setAssertShortNames(ns)
@@ -571,6 +610,7 @@ function setAssertShortNames(ns)
     ns.isTable = isTable
     ns.isNumber = isNumber
     ns.isString = isString
+    ns.isBool = isBoolean
     ns.isBoolean = isBoolean
     ns.isNil = isNil
 
@@ -578,6 +618,7 @@ function setAssertShortNames(ns)
     ns.isNotTable = isNotTable
     ns.isNotNumber = isNotNumber
     ns.isNotString = isNotString
+    ns.isNotBool = isNotBoolean
     ns.isNotBoolean = isNotBoolean
     ns.isNotNil = isNotNil
 end
