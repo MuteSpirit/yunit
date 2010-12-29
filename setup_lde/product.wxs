@@ -4,11 +4,14 @@
            Version="0.2.0.1" Manufacturer="Techsystem" UpgradeCode="92882211-b420-4cf1-8872-da9649f28ff4">
     <Package InstallerVersion="200" Compressed="yes" />
     <MajorUpgrade
-      DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit."/>
+      DowngradeErrorMessage="Более поздняя версия [ProductName] уже установлена. Установка будет прекращена."/>
 
     <Media Id="1" Cabinet="setup_lde.cab" EmbedCab="yes" />
 
     <?include ts_install_set.wxi?>
+
+    <Icon Id="app_lua_icon.ico" SourceFile="lua_icon.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="app_lua_icon.ico" />
 
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id='ProgramFilesFolder' Name='PFiles'>
