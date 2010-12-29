@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="72111c62-dc91-4251-8d9e-611192f78be9" Name="Lua For Development Environment" Language="1033" Version="0.1.0.0" Manufacturer="Techsystem" UpgradeCode="92882211-b420-4cf1-8872-da9649f28ff4">
+  <Product Id="310c20f9-577a-4e92-8f3a-515d2a110496" Name="Lua For Development Environment" Language="1033" 
+           Version="0.2.0.1" Manufacturer="Techsystem" UpgradeCode="92882211-b420-4cf1-8872-da9649f28ff4">
     <Package InstallerVersion="200" Compressed="yes" />
+    <MajorUpgrade
+      DowngradeErrorMessage="Более поздняя версия [ProductName] уже установлена. Установка будет прекращена."/>
 
     <Media Id="1" Cabinet="setup_lde.cab" EmbedCab="yes" />
 
     <?include ts_install_set.wxi?>
+
+    <Icon Id="app_lua_icon.ico" SourceFile="lua_icon.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="app_lua_icon.ico" />
 
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id='ProgramFilesFolder' Name='PFiles'>
@@ -19,8 +25,7 @@
               </Component>
 
               <Component Id="LuaTestEngine" Guid="DD353FCA-EDD1-41CA-90CA-A5FCAF1FBE88">
-                <File Id="lua_unit.lua" Name="lua_unit.lua" DiskId="1" Source="..\testunit\lua_unit.lua" />
-                <File Id="lua_test_sample.t.lua" Name="lua_test_sample.t.lua" DiskId="1" Source="..\testunit\lua_test_sample.t.lua" />
+                <File Id="luaunit.lua" Name="luaunit.lua" DiskId="1" Source="..\testunit\luaunit.lua" />
               </Component>
 
               <Component Id="TestRunner" Guid="E7DC4B47-1BFB-4CE8-AD5D-C0A9043E3516">
@@ -66,13 +71,12 @@
               <File Id="lua_icon.ico" Name="lua_icon.ico" DiskId="1" Source=".\lua_icon.ico" />
               <!--ассоциируем иконку-->
               <RegistryKey Root="HKCR" Key=".lua" Action="createAndRemoveOnUninstall">
-                <RegistryValue Type="string" Value="LuaForDevelopmentEnvironmet"/>
+                <RegistryValue Name="PerceivedType" Type="string" Value="Lde.lua"/>
               </RegistryKey>
-              <RegistryKey Root="HKCR" Key="LuaForDevelopmentEnvironmet" Action="createAndRemoveOnUninstall">
+              <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\SystemFileAssociations\Lde.lua" Action="createAndRemoveOnUninstall">
                 <RegistryKey Key="DefaultIcon" Action="createAndRemoveOnUninstall">
                   <RegistryValue Type="string" Value="[#lua_icon.ico]"/>
                 </RegistryKey>
-                <RegistryValue Type="string" Value="LuaForDevelopmentEnvironmet"/>
               </RegistryKey>
               <!--устанавливаем переменные среды-->
               <Environment Id='UpdatePath00' Name='PATH' Action='set' System='yes'
