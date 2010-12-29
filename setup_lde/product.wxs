@@ -71,13 +71,12 @@
               <File Id="lua_icon.ico" Name="lua_icon.ico" DiskId="1" Source=".\lua_icon.ico" />
               <!--ассоциируем иконку-->
               <RegistryKey Root="HKCR" Key=".lua" Action="createAndRemoveOnUninstall">
-                <RegistryValue Type="string" Value="LuaForDevelopmentEnvironmet"/>
+                <RegistryValue Name="PerceivedType" Type="string" Value="Lde.lua"/>
               </RegistryKey>
-              <RegistryKey Root="HKCR" Key="LuaForDevelopmentEnvironmet" Action="createAndRemoveOnUninstall">
+              <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\SystemFileAssociations\Lde.lua" Action="createAndRemoveOnUninstall">
                 <RegistryKey Key="DefaultIcon" Action="createAndRemoveOnUninstall">
                   <RegistryValue Type="string" Value="[#lua_icon.ico]"/>
                 </RegistryKey>
-                <RegistryValue Type="string" Value="LuaForDevelopmentEnvironmet"/>
               </RegistryKey>
               <!--устанавливаем переменные среды-->
               <Environment Id='UpdatePath00' Name='PATH' Action='set' System='yes'
