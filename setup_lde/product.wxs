@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Product Id="310c20f9-577a-4e92-8f3a-515d2a110496" Name="Lua For Development Environment" Language="1033"
-           Version="0.2.0.2" Manufacturer="Techsystem" UpgradeCode="92882211-b420-4cf1-8872-da9649f28ff4">
+           Version="0.2.0.3" Manufacturer="Techsystem" UpgradeCode="92882211-b420-4cf1-8872-da9649f28ff4">
     <Package InstallerVersion="200" Compressed="yes" />
     <MajorUpgrade
       DowngradeErrorMessage="Более поздняя версия [ProductName] уже установлена. Установка будет прекращена."/>
@@ -30,15 +30,17 @@
                 <File Id="aux_test_func.lua" Name="aux_test_func.lua" DiskId="1" Source="..\ts_modules\aux_test_func.lua" />
               </Component>
 
-              <Component Id="LuaTestEngine" Guid="DD353FCA-EDD1-41CA-90CA-A5FCAF1FBE88">
-                <File Id="luaunit.lua" Name="luaunit.lua" DiskId="1" Source="..\testunit\luaunit.lua" />
-              </Component>
+              <Directory Id="TestunitDir" Name="testunit">
+                <Component Id="LuaTestEngine" Guid="DD353FCA-EDD1-41CA-90CA-A5FCAF1FBE88">
+                  <File Id="luaunit.lua" Name="luaunit.lua" DiskId="1" Source="..\testunit\luaunit.lua" />
+                </Component>
 
-              <Component Id="TestRunner" Guid="E7DC4B47-1BFB-4CE8-AD5D-C0A9043E3516">
-                <File Id="test_runner.lua" Name="test_runner.lua" DiskId="1" Source="..\testunit\test_runner.lua" />
-                <File Id="test_listeners.lua" Name="test_listeners.lua" DiskId="1" Source="..\testunit\test_listeners.lua" />
-                <File Id="report.xsl" Name="report.xsl" DiskId="1" Source="..\testunit\report.xsl" />
-              </Component>
+                <Component Id="TestRunner" Guid="E7DC4B47-1BFB-4CE8-AD5D-C0A9043E3516">
+                  <File Id="test_runner.lua" Name="test_runner.lua" DiskId="1" Source="..\testunit\test_runner.lua" />
+                  <File Id="test_listeners.lua" Name="test_listeners.lua" DiskId="1" Source="..\testunit\test_listeners.lua" />
+                  <File Id="report.xsl" Name="report.xsl" DiskId="1" Source="..\testunit\report.xsl" />
+                </Component>
+              </Directory>
             </Directory>
 
             <Directory Id="IncludeDir" Name="include">
