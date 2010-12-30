@@ -112,7 +112,6 @@ set RUN_TEST_SCRIPT=$(ProjectDir)\$(IntDir)\$(ProjectName)_run_test_units.lua
 echo -- Generated in Post Build Step of project $(ProjectName) &gt; %RUN_TEST_SCRIPT%
 
 echo local fs = require('filesystem'); &gt;&gt; %RUN_TEST_SCRIPT%
-echo print(fs.currentdir()); &gt;&gt; %RUN_TEST_SCRIPT%
 echo package.path = fs.canonizePath([[../_bin/../?.lua;../_bin/../?/init.lua;]] .. package.path); &gt;&gt; %RUN_TEST_SCRIPT%
 echo package.cpath = fs.canonizePath([[../_bin/?.dll;]] .. package.cpath); &gt;&gt; %RUN_TEST_SCRIPT%
 echo local testRunner = require('testunit.test_runner'); &gt;&gt; %RUN_TEST_SCRIPT%
@@ -197,7 +196,6 @@ set RUN_TEST_SCRIPT=$(ProjectDir)\$(IntDir)\$(ProjectName)_run_test_units.lua
 echo -- Generated in Post Build Step of project $(ProjectName) &gt; %RUN_TEST_SCRIPT%
 
 echo local fs = require('filesystem'); &gt;&gt; %RUN_TEST_SCRIPT%
-echo print(fs.currentdir()); &gt;&gt; %RUN_TEST_SCRIPT%
 echo package.path = fs.canonizePath([[../_bin/../?.lua;../_bin/../?/init.lua;]] .. package.path); &gt;&gt; %RUN_TEST_SCRIPT%
 echo package.cpath = fs.canonizePath([[../_bin/?.dll;]] .. package.cpath); &gt;&gt; %RUN_TEST_SCRIPT%
 echo local testRunner = require('testunit.test_runner'); &gt;&gt; %RUN_TEST_SCRIPT%
