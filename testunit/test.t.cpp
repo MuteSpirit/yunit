@@ -129,6 +129,8 @@
 /// \brief Return collection of objects with TestCase interface ("name_", setUp, test, tearDown).
 /// Names of TestCases contains TestSuite and TestCase name, separated by '::'
 
+#include <sstream>
+
 #include "test.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -154,6 +156,11 @@ TEST_FIXTURE(SetUpCallCheck)
 
 	bool setUpCall_;
 };
+
+std::wstring getTestWstdStr()
+{
+    return L"abc";
+}
 
 TEST_SUITE(CppUnitAssertsTests)
 {
@@ -187,10 +194,13 @@ TEST_SUITE(CppUnitAssertsTests)
 
     IGNORE_TEST
 	TEST_CASE(testMustBeIgnored)
-    	//ASSERT_MESSAGE("Attention! This script must be INGNORED, but process must not crash");
         ASSERT(false);
 	TEST_CASE_END
 
+    IGNORE_TEST
+	TEST_CASE(assertMessage)
+    	ASSERT_MESSAGE("Attention! This script must be INGNORED, but process must not crash");
+	TEST_CASE_END
 
 	TEST_CASE(testBoolAssertNot)
 		ASSERT_NOT(false);
@@ -334,7 +344,31 @@ TEST_SUITE(CppUnitAssertsTests)
 		ASSERT_EQUAL(L"\n", L"\n");
 		ASSERT_EQUAL(std::string("\n"), std::string("\n"));
 		ASSERT_EQUAL(std::wstring(L"\n"), std::wstring(L"\n"));
-	TEST_CASE_END
+    TEST_CASE_END
+
+	TEST_CASE(assertEqualConstStringsAnsStlStringsTest)
+        std::wstring expected = L"abc";
+		ASSERT_EQUAL(expected, L"abc");
+		ASSERT_EQUAL(L"abc", expected);
+
+        ASSERT_EQUAL(expected, getTestWstdStr());
+        ASSERT_EQUAL(expected, getTestWstdStr().c_str());
+        ASSERT_EQUAL(getTestWstdStr(), expected);
+
+        ASSERT_EQUAL(L"abc", getTestWstdStr());
+        ASSERT_EQUAL(getTestWstdStr(), L"abc");
+
+        ASSERT_EQUAL(L"abc", getTestWstdStr().c_str());
+
+        expected = L"10";
+        std::wstringstream ss;
+        ss << 10;
+        ASSERT_EQUAL(L"10", ss.str());
+        ASSERT_EQUAL(ss.str(), L"10");
+
+        ASSERT_EQUAL(expected.data(), ss.str());
+        ASSERT_EQUAL(ss.str(), expected.data());
+    TEST_CASE_END
 };
 
 TEST_CASE_ALONE(standaloneTestCase)

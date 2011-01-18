@@ -1,0 +1,42 @@
+syntax: regexp
+
+# our folders with binary
+(^|/)_bin/
+(^|/)_lib/
+(^|/)_tmp/
+
+# VS folders with binary
+(^|/)Debug/
+(^|/)Release/
+
+# VS2008 creating them
+[Bb]uild[Ll]og
+[Tt]est[Rr]esult
+
+\.svn
+
+syntax: glob
+
+# binaries
+*.obj
+*.o
+*.exe
+*.com
+*.dll
+
+# VS databases
+*.pdb
+*.sdf
+*.opensdf
+
+# precompiled
+*.pch
+*.ipch
+
+# VS stuff
+*.suo
+*.user
+*.vspcc
+
+# logs
+*.log
