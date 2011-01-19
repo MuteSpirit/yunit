@@ -40,3 +40,14 @@ syntax: glob
 
 # logs
 *.log
+
+# TeX temporary files
+*.toc
+*.aux
+*.dvi
+*.ps
+*.log
+*.bbl
+*.blg
+*.src
+*.out
