@@ -369,6 +369,11 @@ TEST_SUITE(CppUnitAssertsTests)
         ASSERT_EQUAL(expected.data(), ss.str());
         ASSERT_EQUAL(ss.str(), expected.data());
     TEST_CASE_END
+
+ //   IGNORE_TEST
+	//TEST_CASE(notCompiledTest)
+ //   	int i[0]; // error C2466: cannot allocate an array of constant size 0
+	//TEST_CASE_END
 };
 
 TEST_CASE_ALONE(standaloneTestCase)
@@ -378,3 +383,36 @@ TEST_CASE_END
 TEST_CASE_EX_ALONE(standaloneTestCaseWithSetUpAndTeardown, SetUpCallCheck)
     ASSERT(setUpCall_);
 TEST_CASE_END
+
+TEST_SUITE(CppUnitTestEngine)
+{
+	TEST_CASE(exceptionDerivedFromStdException)
+        struct CuncreteTestException : public TESTUNIT_NS::TestException
+        {
+            CuncreteTestException(const TESTUNIT_NS::SourceLine& sourceLine)
+            : TESTUNIT_NS::TestException(sourceLine)
+            {
+            }
+            virtual void message(char* buffer, const unsigned int bufferSize) const
+            {
+                if (bufferSize)
+                    buffer[0] = '\0';
+            }
+        };
+
+        try
+        {
+            throw CuncreteTestException(TESTUNIT_SOURCELINE());
+        }
+        catch(std::exception& ex)
+        {
+            ASSERT_EQUAL("Unknown exception", ex.what());
+            return; // succesfull test execution
+        }
+        catch(...)
+        {
+            bool testMustReturnAtCatchBlockAndDontExecuteThis = false;
+            ASSERT(testMustReturnAtCatchBlockAndDontExecuteThis);
+        }
+	TEST_CASE_END
+};
