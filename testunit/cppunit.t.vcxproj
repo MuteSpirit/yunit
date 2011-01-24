@@ -102,8 +102,7 @@
     </Link>
     <PostBuildEvent>
       <Command>lua5.1.exe "$(ProjectDir)\$(IntDir)\$(ProjectName)_run_test_units.lua"</Command>
-      <Message>
-      </Message>
+      <Message>Run unit tests ...</Message>
     </PostBuildEvent>
     <PreLinkEvent>
       <Command>setlocal
@@ -192,8 +191,7 @@ endlocal</Command>
       <Command>lua5.1.exe "$(ProjectDir)\$(IntDir)\$(ProjectName)_run_test_units.lua"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
-      <Message>
-      </Message>
+      <Message>Run unit tests ...</Message>
     </PostBuildEvent>
     <PreLinkEvent>
       <Command>setlocal
