@@ -247,7 +247,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class TESTUNIT_API TestException : public std::exception
+class TestException : public std::exception
 {
 public:
     virtual ~TestException();

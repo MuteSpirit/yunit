@@ -370,6 +370,10 @@ TEST_SUITE(CppUnitAssertsTests)
         ASSERT_EQUAL(ss.str(), expected.data());
     TEST_CASE_END
 
+	//TEST_CASE(assertEqualStringCompareCrash)
+ //       ASSERT_EQUAL(L"", NULL);
+ //   TEST_CASE_END
+
  //   IGNORE_TEST
 	//TEST_CASE(notCompiledTest)
  //   	int i[0]; // error C2466: cannot allocate an array of constant size 0
@@ -387,22 +391,9 @@ TEST_CASE_END
 TEST_SUITE(CppUnitTestEngine)
 {
 	TEST_CASE(exceptionDerivedFromStdException)
-        struct CuncreteTestException : public TESTUNIT_NS::TestException
-        {
-            CuncreteTestException(const TESTUNIT_NS::SourceLine& sourceLine)
-            : TESTUNIT_NS::TestException(sourceLine)
-            {
-            }
-            virtual void message(char* buffer, const unsigned int bufferSize) const
-            {
-                if (bufferSize)
-                    buffer[0] = '\0';
-            }
-        };
-
         try
         {
-            throw CuncreteTestException(TESTUNIT_SOURCELINE());
+            ASSERT(false);
         }
         catch(std::exception& ex)
         {
