@@ -3,6 +3,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include <stdio.h>
+#include <excpt.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,98 +60,130 @@ static const char* getFuncName(Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*))
 	return "[unknown]";
 }
 
-static int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*))
+static int errorObjectTableToLuaStackTop(lua_State *L,
+                                     const TESTUNIT_NS::TestCase* testCase,
+                                     Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*),
+                                     const char* fileName,
+                                     lua_Integer lineNumber,
+                                     const char* message)
 {
-	lua_getfield(L, -1, "this");
-	TESTUNIT_NS::TestCase* testCase = static_cast<TESTUNIT_NS::TestCase*>(lua_touserdata(L, -1));
+    enum {numberOfReturnValues = 1};
+    // new Error Object (return value)
+	lua_newtable(L);
+    // function with error
+	lua_pushfstring(L, "%s::%s()", testCase->name(), getFuncName(getThunkFunc));
+	lua_setfield(L, -2, "func");		
+    // source file with error
+	lua_pushstring(L, fileName);
+	lua_setfield(L, -2, "source");		
+    // number of line with error
+	lua_pushinteger(L, lineNumber);
+	lua_setfield(L, -2, "line");		
+    // error message
+	lua_pushstring(L, message);			
+	lua_setfield(L, -2, "message");
+
+    return numberOfReturnValues;
+}
+
+static bool wereCatchedCppExceptions(lua_State *L,
+                                     Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*),
+                                     TESTUNIT_NS::TestCase* testCase,
+                                     int& countReturnValues)
+{
+    countReturnValues = 0;
     try
     {
         (*getThunkFunc)(testCase).invoke();
     }
 	catch (TESTUNIT_NS::TestException& ex)
     {
-		lua_pushboolean(L, false);			// status code
+        // status code
+		lua_pushboolean(L, false);
+        ++countReturnValues;
 
-		lua_newtable(L);					// ErrorObject table
+		enum {bufferSize = 1024 * 5};
+		char errorMessage[bufferSize] = {'\0'};
+		ex.message(errorMessage, bufferSize);
 
-		lua_pushstring(L, ex.sourceLine().fileName());
-		lua_setfield(L, -2, "source");		// source file with error
+        countReturnValues += errorObjectTableToLuaStackTop(
+            L,
+            testCase, getThunkFunc,
+            ex.sourceLine().fileName(), ex.sourceLine().lineNumber(),
+            errorMessage);
 
-		lua_pushfstring(L, "%s::%s()", testCase->name(), getFuncName(getThunkFunc));
-		lua_setfield(L, -2, "func");		// function with error
-
-		lua_pushinteger(L, ex.sourceLine().lineNumber());
-		lua_setfield(L, -2, "line");		// number of line with error
-
-		enum {bufferSize = 1024 * 10};
-		char buffer[bufferSize] = {'\0'};
-		ex.message(buffer, bufferSize);
-		lua_pushstring(L, buffer);			// error message
-		lua_setfield(L, -2, "message");
-		// now we have bool and table on the top of Lua stack
-
-		return 2;
+		return true;
     }
     catch(std::exception& ex)
     {
-		lua_pushboolean(L, false);			// status code
+		lua_pushboolean(L, false);
+        ++countReturnValues;
 
-		lua_newtable(L);					// ErrorObject table
+		enum {bufferSize = 1024 * 5};
+		char errorMessage[bufferSize] = {'\0'};
+        TS_SNPRINTF(errorMessage, bufferSize - 1, "Unexpected std::exception was caught: %s", ex.what());
 
-		lua_pushstring(L, "");
-		lua_setfield(L, -2, "source");		// source file with error
+        countReturnValues += errorObjectTableToLuaStackTop(
+            L,
+            testCase, getThunkFunc,
+            "", 0,
+            errorMessage);
 
-		lua_pushfstring(L, "%s::%s()", testCase->name(), getFuncName(getThunkFunc));
-		lua_setfield(L, -2, "func");		// function with error
-
-		lua_pushinteger(L, 0);
-		lua_setfield(L, -2, "line");		// number of line with error
-
-		lua_pushfstring(L, "Unexpected std::exception was caught: %s", ex.what());
-		lua_setfield(L, -2, "message");
-		// now we have bool and table on the top of Lua stack
-
-		return 2;
+		return true;
 	}
     catch(...)
     {
-		lua_pushboolean(L, false);			// status code
+		lua_pushboolean(L, false);
+        ++countReturnValues;
 
-		lua_newtable(L);					// ErrorObject table
+        countReturnValues += errorObjectTableToLuaStackTop(
+            L,
+            testCase, getThunkFunc,
+            "", 0,
+            "Unexpected unknown C++ exception was caught");
 
-		lua_pushstring(L, "");
-		lua_setfield(L, -2, "source");		// source file with error
-
-		lua_pushfstring(L, "%s::%s()", testCase->name(), getFuncName(getThunkFunc));
-		lua_setfield(L, -2, "func");		// function with error
-
-		lua_pushinteger(L, 0);
-		lua_setfield(L, -2, "line");		// number of line with error
-
-		lua_pushstring(L, "Unexpected unknown exception was caught");
-		lua_setfield(L, -2, "message");
-		// now we have bool and table on the top of Lua stack
-
-		return 2;
+		return true;
 	}
 
-	lua_pushboolean(L, true);			// status code
+	return false;
+}
 
-	lua_newtable(L);					// ErrorObject table
+static int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*))
+{
+	lua_getfield(L, -1, "this");
+	TESTUNIT_NS::TestCase* testCase = static_cast<TESTUNIT_NS::TestCase*>(lua_touserdata(L, -1));
+    bool thereAreCppExceptions = false;
+    int countReturnValues = 0;
+    __try
+    {
+        thereAreCppExceptions = wereCatchedCppExceptions(L, getThunkFunc, testCase, countReturnValues);
+    }
+    __except(EXCEPTION_EXECUTE_HANDLER)
+    {
+		lua_pushboolean(L, false); // status code
+        countReturnValues = 1;
 
-	lua_pushstring(L, "");
-	lua_setfield(L, -2, "source");
+        countReturnValues += errorObjectTableToLuaStackTop(
+            L,
+            testCase, getThunkFunc,
+            "", 0,
+            "Unexpected SEH exception was caught");
+    }
 
-	lua_pushfstring(L, "%s::%s()", testCase->name(), getFuncName(getThunkFunc));
-	lua_setfield(L, -2, "func");		// function with error
+    if (!thereAreCppExceptions)
+    {
+        // status code
+	    lua_pushboolean(L, true);
+        ++countReturnValues;
 
-	lua_pushinteger(L, 0);
-	lua_setfield(L, -2, "line");		// number of line with error
+        countReturnValues += errorObjectTableToLuaStackTop(
+            L,
+            testCase, getThunkFunc,
+            "", 0,
+            "");
+    }
 
-	lua_pushstring(L, "");
-	lua_setfield(L, -2, "message");
-
-	return 2;
+    return countReturnValues;
 }
 
 int luaTestCaseSetUp(lua_State *L)

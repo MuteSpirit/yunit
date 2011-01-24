@@ -346,10 +346,11 @@ TEST_SUITE(CppUnitAssertsTests)
 		ASSERT_EQUAL(std::wstring(L"\n"), std::wstring(L"\n"));
     TEST_CASE_END
 
-	TEST_CASE(assertEqualConstStringsAnsStlStringsTest)
+	TEST_CASE(assertEqualWideCharConstStringsAnsStlStringsTest)
         std::wstring expected = L"abc";
 		ASSERT_EQUAL(expected, L"abc");
 		ASSERT_EQUAL(L"abc", expected);
+        ASSERT_EQUAL(expected, expected);
 
         ASSERT_EQUAL(expected, getTestWstdStr());
         ASSERT_EQUAL(expected, getTestWstdStr().c_str());
@@ -365,14 +366,31 @@ TEST_SUITE(CppUnitAssertsTests)
         ss << 10;
         ASSERT_EQUAL(L"10", ss.str());
         ASSERT_EQUAL(ss.str(), L"10");
+        ASSERT_EQUAL(ss.str(), ss.str());
 
         ASSERT_EQUAL(expected.data(), ss.str());
         ASSERT_EQUAL(ss.str(), expected.data());
+        ASSERT_EQUAL(expected.data(), expected.data());
     TEST_CASE_END
 
-	//TEST_CASE(assertEqualStringCompareCrash)
- //       ASSERT_EQUAL(L"", NULL);
- //   TEST_CASE_END
+	TEST_CASE(assertEqualMultiByteCharConstStringsAnsStlStringsTest)
+        std::string expectedStlStr = "abc";
+		ASSERT_EQUAL(expectedStlStr, "abc");
+		ASSERT_EQUAL("abc", expectedStlStr);
+        ASSERT_EQUAL(expectedStlStr, expectedStlStr);
+        ASSERT_EQUAL(expectedStlStr.data(), expectedStlStr.data());
+        ASSERT_EQUAL(expectedStlStr.c_str(), expectedStlStr.c_str());
+
+        const char* expectedStr = "abc";
+        ASSERT_EQUAL(expectedStr, "abc");
+        ASSERT_EQUAL("abc", expectedStr);
+        ASSERT_EQUAL(expectedStr, expectedStr);
+    TEST_CASE_END
+
+	TEST_CASE(assertEqualStringCompareCrash)
+        ASSERT_NOT_EQUAL(L"", reinterpret_cast<const wchar_t*>(NULL));
+        ASSERT_NOT_EQUAL("", reinterpret_cast<const char*>(NULL));
+    TEST_CASE_END
 
  //   IGNORE_TEST
 	//TEST_CASE(notCompiledTest)
