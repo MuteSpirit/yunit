@@ -41,20 +41,14 @@
 /// \class template<typename T> class TestDoubleEqualException
 /// \brief User exception type for throw during assert check of equaling two float-point numbers
 
-/// \class IgnoreTestCaseGuard
-/// \brief Say 'testSuite', reaching as argument, that next added test cases must be marked as ignored
-
-/// \class NotIgnoreTestCaseGuard
-/// \brief Say 'testSuite', reaching as argument, that next added test cases must not be disabled
+/// \def UNIQUE_TEST_NAMESPACE(name)
+/// \brief Generate "unique" namespace name. 
 
 /// \def TESTUNIT_SOURCELINE()
 /// \brief Create temporary object of SourceLine type. Need for saving file name and line of assert crash
 
 /// \def TEST_SUITE(testSuiteName)
 /// \brief Declare concrete class 'testSuiteName', derived from TestSuite
-
-/// \def IGNORE_TEST
-/// \brief Mark next test case as 'ignored', and it will not be executed during run tests
 
 /// \def TEST_CASE(testName)
 /// \brief Declare class 'testName', derived from TestCase. This test case will be added into previously test suite,
@@ -77,6 +71,18 @@
 
 /// \def TEST_CASE_ALONE_END
 /// \brief Close test case, begun with TEST_CASE_ALONE or TEST_CASE_EX_ALONE
+
+/// \def IGNORE_TEST_CASE(testName)
+/// \brief Add ignored test. It's code may be uncompiled.
+
+/// \def IGNORE_TEST_CASE_ALONE(testName)
+/// \brief Add ignored test. It's code may be uncompiled.
+
+/// \def IGNORE_TEST_CASE_EX(testName, fixtureName)
+/// \brief Add ignored test. It's code may be uncompiled.
+
+/// \def IGNORE_TEST_CASE_EX_ALONE(testName, fixtureName)
+/// \brief Add ignored test. It's code may be uncompiled.
 
 /// \def ASSERT(condition)
 /// \brief Check condition for 'true' value, otherwise it throw an exception of TestException type

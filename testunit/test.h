@@ -209,20 +209,24 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename TestSuiteClass>
-class RegisterTestSuite
+struct RegisterTestSuite
 {
-public:
 	RegisterTestSuite(const char* name);
-
 	TestSuite* testsuite_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename TestCaseClass>
-class RegisterTestCase
+struct RegisterTestCase
 {
-public:
 	RegisterTestCase(const char* name, TestSuite* testSuite);
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<typename TestCaseClass>
+struct RegisterIgnoredTestCase
+{
+	RegisterIgnoredTestCase(const char* name, TestSuite* testSuite);
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -279,29 +283,19 @@ RegisterTestSuite<TestSuiteClass>::RegisterTestSuite(const char* name)
 template<typename TestCaseClass>
 RegisterTestCase<TestCaseClass>::RegisterTestCase(const char* name, TestSuite* testSuite)
 {
-	static TestCaseClass testcase(name, testSuite->ignoreAddingTestCases());
+    const bool ignore = true;
+	static TestCaseClass testcase(name, !ignore);
 	testSuite->addTestCase(&testcase);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class IgnoreTestCaseGuard
+template<typename TestCaseClass>
+RegisterIgnoredTestCase<TestCaseClass>::RegisterIgnoredTestCase(const char* name, TestSuite* testSuite)
 {
-public:
-    TESTUNIT_API IgnoreTestCaseGuard(TestSuite* testSuite)
-    {
-        testSuite->ignoreAddingTestCases(true);
-    }
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class NotIgnoreTestCaseGuard
-{
-public:
-    TESTUNIT_API NotIgnoreTestCaseGuard(TestSuite* testSuite)
-    {
-        testSuite->ignoreAddingTestCases(false);
-    }
-};
+    const bool ignore = true;
+	static TestCaseClass testcase(name, ignore);
+	testSuite->addTestCase(&testcase);
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Macro
@@ -311,7 +305,7 @@ public:
 #define TESTUNIT_SOURCELINE()   TESTUNIT_NS::SourceLine(__FILE__, __LINE__)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_FIXTURE_NAME(name) name##TestFixture
+#define TEST_FIXTURE_NAME(name) name ## TestFixture
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_FIXTURE(fixtureName)\
@@ -328,21 +322,13 @@ class TEST_FIXTURE_NAME(fixtureName) : public virtual TESTUNIT_NS::Fixture\
 		virtual void tearDown()
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_FUNCTION(functionName)\
-\
-class functionName##TestCase : public TESTUNIT_NS::TestCase\
-{\
-public:\
-    virtual void test();\
-};\
-static functionName##TestCase functionName##TestCase##StaticObject;\
-void functionName##TestCase::test()
+#define CONCAT(a, b) a ## b
+#define CONCAT2(x, y) CONCAT(x, y)
+#define UNIQUENAME(prefix) CONCAT2(prefix, __COUNTER__)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//#define UNIQUE_TEST_SUITE_NAME(name) name ## TestSuite
 #define UNIQUE_REGISTER_NAME(name) Register ## name
-#define UNIQUE_TEST_SUITE_OBJECT_NAME name ## Object
-#define UNIQUE_TEST_SUITE_NAMESPACE(name) name ## Namespace
+#define UNIQUE_TEST_NAMESPACE(name) name ## Namespace
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_SUITE(testSuiteName)\
@@ -355,55 +341,41 @@ void functionName##TestCase::test()
 		}\
 	};\
 	TESTUNIT_NS::RegisterTestSuite<testSuiteName> UNIQUE_REGISTER_NAME(testSuiteName)(#testSuiteName);\
-	namespace UNIQUE_TEST_SUITE_NAMESPACE(testSuiteName)\
+	namespace UNIQUE_TEST_NAMESPACE(testSuiteName)\
 	{\
 		static TESTUNIT_NS::TestSuite* localTestSuite = UNIQUE_REGISTER_NAME(testSuiteName).testsuite_;\
 	}\
-	namespace UNIQUE_TEST_SUITE_NAMESPACE(testSuiteName)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define CONCAT(a, b) a ## b
-#define CONCAT2(x, y) CONCAT(x, y)
-#define UNIQUENAME(prefix) CONCAT2(prefix, __COUNTER__)
-
-#define IGNORE_TEST \
-    TESTUNIT_NS::IgnoreTestCaseGuard UNIQUENAME(ignore)(localTestSuite);
+	namespace UNIQUE_TEST_NAMESPACE(testSuiteName)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_CASE_(testName, testSuite)\
-    namespace UNIQUE_TEST_SUITE_NAMESPACE(testName)\
-    {\
-        static TESTUNIT_NS::TestSuite* usingTestSuite = testSuite;\
-	    class TestCase##testName;\
-	    TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, usingTestSuite);\
-	    class TestCase##testName : public TESTUNIT_NS::TestCase\
-	    {\
-	    public:\
-		    TestCase##testName(const char* name, bool isIgnored)\
-		    : TESTUNIT_NS::TestCase(name, isIgnored)\
-		    {\
-		    }\
-		    SETUP {}\
-		    TEARDOWN {}\
-		    virtual void test()\
-		    {
+	class TestCase##testName;\
+	TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, testSuite);\
+	class TestCase##testName : public TESTUNIT_NS::TestCase\
+	{\
+	public:\
+		TestCase##testName(const char* name, bool isIgnored)\
+		: TESTUNIT_NS::TestCase(name, isIgnored)\
+		{\
+		}\
+		SETUP {}\
+		TEARDOWN {}\
+		virtual void test()\
+		{
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_CASE_EX_(testName, fixtureName, testSuite)\
-    namespace UNIQUE_TEST_SUITE_NAMESPACE(testName)\
-    {\
-        static TESTUNIT_NS::TestSuite* usingTestSuite = testSuite;\
-	    class TestCase##testName;\
-	    TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, usingTestSuite);\
-	    class TestCase##testName : public TESTUNIT_NS::TestCase, public TEST_FIXTURE_NAME(fixtureName)\
-	    {\
-	    public:\
-		    TestCase##testName(const char* name, bool isIgnored)\
-		    : TESTUNIT_NS::TestCase(name, isIgnored)\
-		    {\
-		    }\
-		    virtual void test()\
-		    {
+	class TestCase##testName;\
+	TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, testSuite);\
+	class TestCase##testName : public TESTUNIT_NS::TestCase, public TEST_FIXTURE_NAME(fixtureName)\
+	{\
+	public:\
+		TestCase##testName(const char* name, bool isIgnored)\
+		: TESTUNIT_NS::TestCase(name, isIgnored)\
+		{\
+		}\
+		virtual void test()\
+		{
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_CASE(testName)\
@@ -424,43 +396,35 @@ void functionName##TestCase::test()
    
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define IGNORE_TEST_CASE_(testName, testSuite)\
-    TESTUNIT_NS::IgnoreTestCaseGuard UNIQUENAME(ignore)(testSuite);\
-    namespace UNIQUE_TEST_SUITE_NAMESPACE(testName)\
-    {\
-        static TESTUNIT_NS::TestSuite* usingTestSuite = testSuite;\
-	    class TestCase##testName;\
-	    TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, usingTestSuite);\
-	    class TestCase##testName : public TESTUNIT_NS::TestCase\
-	    {\
-	    public:\
-		    TestCase##testName(const char* name, bool isIgnored)\
-		    : TESTUNIT_NS::TestCase(name, isIgnored)\
-		    {\
-		    }\
-		    SETUP {}\
-		    TEARDOWN {}\
-            virtual void test() {}\
-		    template<typename T> void ignoredTest()\
-            {
+	class TestCase##testName;\
+	TESTUNIT_NS::RegisterIgnoredTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, testSuite);\
+	class TestCase##testName : public TESTUNIT_NS::TestCase\
+	{\
+	public:\
+		TestCase##testName(const char* name, bool isIgnored)\
+		: TESTUNIT_NS::TestCase(name, isIgnored)\
+		{\
+		}\
+		SETUP {}\
+		TEARDOWN {}\
+        virtual void test() {}\
+		template<typename T> void ignoredTest()\
+        {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define IGNORE_TEST_CASE_EX_(testName, fixtureName, testSuite)\
-    TESTUNIT_NS::IgnoreTestCaseGuard UNIQUENAME(ignore)(testSuite);\
-    namespace UNIQUE_TEST_SUITE_NAMESPACE(testName)\
-    {\
-        static TESTUNIT_NS::TestSuite* usingTestSuite = testSuite;\
-	    class TestCase##testName;\
-	    TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, usingTestSuite);\
-	    class TestCase##testName : public TESTUNIT_NS::TestCase, public TEST_FIXTURE_NAME(fixtureName)\
-	    {\
-	    public:\
-		    TestCase##testName(const char* name, bool isIgnored)\
-		    : TESTUNIT_NS::TestCase(name, isIgnored)\
-		    {\
-		    }\
-            virtual void test() {}\
-		    template<typename T> void ignoredTest()\
-            {
+	class TestCase##testName;\
+	TESTUNIT_NS::RegisterIgnoredTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, testSuite);\
+	class TestCase##testName : public TESTUNIT_NS::TestCase, public TEST_FIXTURE_NAME(fixtureName)\
+	{\
+	public:\
+		TestCase##testName(const char* name, bool isIgnored)\
+		: TESTUNIT_NS::TestCase(name, isIgnored)\
+		{\
+		}\
+        virtual void test() {}\
+		template<typename T> void ignoredTest()\
+        {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define IGNORE_TEST_CASE(testName)\
@@ -478,12 +442,11 @@ void functionName##TestCase::test()
 #define IGNORE_TEST_CASE_EX_ALONE(testName, fixtureName)\
     IGNORE_TEST_CASE_EX_(testName, fixtureName, TESTUNIT_NS::TestRegistry::defaultTestSuite())
 
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_CASE_END   \
-		    }\
+#define TEST_CASE_END \
 	    };\
-	    TESTUNIT_NS::NotIgnoreTestCaseGuard UNIQUENAME(notIgnore)(usingTestSuite);\
-	};
+    };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool TESTUNIT_API cppunitAssert(const bool condition);
