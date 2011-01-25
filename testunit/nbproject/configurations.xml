@@ -28,6 +28,7 @@
         <developmentServer>localhost</developmentServer>
         <compilerSet>GNU|GNU</compilerSet>
         <platform>2</platform>
+        <rebuildPropChanged>true</rebuildPropChanged>
       </toolsSet>
       <compileType>
         <ccTool>
@@ -36,7 +37,12 @@
             <pElem>/usr/include</pElem>
             <pElem>/usr/include/c++/4.5.1</pElem>
           </incDir>
+          <warningLevel>2</warningLevel>
         </ccTool>
+        <linkerTool>
+          <output>${CND_DISTDIR}/_bin/libcppunit.so</output>
+          <stripSymbols>true</stripSymbols>
+        </linkerTool>
       </compileType>
     </conf>
     <conf name="Release" type="2">
@@ -44,6 +50,7 @@
         <developmentServer>localhost</developmentServer>
         <compilerSet>GNU|GNU</compilerSet>
         <platform>2</platform>
+        <rebuildPropChanged>true</rebuildPropChanged>
       </toolsSet>
       <compileType>
         <cTool>
@@ -53,7 +60,10 @@
           <developmentMode>5</developmentMode>
           <incDir>
             <pElem>..</pElem>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/c++/4.5.1</pElem>
           </incDir>
+          <warningLevel>2</warningLevel>
         </ccTool>
         <fortranCompilerTool>
           <developmentMode>5</developmentMode>
@@ -61,7 +71,23 @@
         <asmTool>
           <developmentMode>5</developmentMode>
         </asmTool>
+        <linkerTool>
+          <output>${CND_DISTDIR}/_bin/libcppunit.so</output>
+          <stripSymbols>true</stripSymbols>
+        </linkerTool>
       </compileType>
+      <packaging>
+        <packType>Tar</packType>
+        <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/libtestunit.so.tar</output>
+        <packFileList>
+          <packFileListElem type="File"
+                            to="${PACKAGE_TOP_DIR}lib/${OUTPUT_BASENAME}"
+                            from="${OUTPUT_PATH}"
+                            perm="644"
+                            owner="root"
+                            group="bin"/>
+        </packFileList>
+      </packaging>
     </conf>
   </confs>
 </configurationDescriptor>

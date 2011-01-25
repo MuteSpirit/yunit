@@ -61,6 +61,7 @@ private:
 
 public:
     TestEqualException(const SourceLine& sourceLine, const T1 expected, const T2 actual, bool mustBeEqual);
+    ~TestEqualException() throw();
     virtual void message(char* buffer, const unsigned int bufferSize) const;
 
 private:
@@ -307,7 +308,7 @@ TestException::TestException(const SourceLine& sourceLine)
 {
 }
 
-TestException::~TestException()
+TestException::~TestException() throw()
 {
 }
 
@@ -382,15 +383,42 @@ void TestMessageException<wchar_t>::message(char* buffer, const unsigned int buf
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void makeEqualMessage(char* dst, const unsigned int dstSize,
+                  const bool mustBeEqual,
+                  const wchar_t* expected,
+                  const wchar_t* actual)
+{
+    size_t writtenBytes = ::wcstombs(dst, expected, dstSize);
+    size_t offset = writtenBytes;
+
+    if (offset >= dstSize)
+        return;
+
+    const char* equalSign = mustBeEqual ? "!=" : "==";
+    const size_t equalSignLen = sizeof(equalSign);
+    ::strncpy(dst + offset, equalSign, equalSignLen);
+    offset += equalSignLen;
+
+    if (offset >= dstSize)
+        return;
+
+    writtenBytes = ::wcstombs(dst + offset, actual, dstSize - offset);
+}
+
 template<typename T1, typename T2>
 TestEqualException<T1, T2>::TestEqualException(const SourceLine& sourceLine,
-											   const T1 expected,
-											   const T2 actual,
-											   bool mustBeEqual)
+                                               const T1 expected,
+                                               const T2 actual,
+                                               bool mustBeEqual)
 : BaseClassType(sourceLine)
 , expected_(expected)
 , actual_(actual)
 , mustBeEqual_(mustBeEqual)
+{
+}
+
+template<typename T1, typename T2>
+TestEqualException<T1, T2>::~TestEqualException() throw()
 {
 }
 
@@ -409,21 +437,13 @@ void TestEqualException<const char*, const char*>::message(char* buffer, const u
 template<>
 void TestEqualException<const wchar_t*, const wchar_t*>::message(char* buffer, const unsigned int bufferSize) const
 {
-    size_t writtenBytes = ::wcstombs(buffer, expected_, bufferSize);
-    size_t offset = writtenBytes;
-    const char* equalSign = mustBeEqual_ ? "!=" : "==";
-    const size_t equalSignLen = sizeof(equalSign);
-    ::strncpy(buffer + writtenBytes, equalSign, equalSignLen);
-    offset += equalSignLen;
-    writtenBytes = ::wcstombs(buffer + offset, actual_, bufferSize - offset);
-    
-//	TS_SNPRINTF(buffer, bufferSize - 1, mustBeEqual_ ? "\"%ws\" != \"%ws\"" : "\"%ws\" == \"%ws\"", expected_, actual_);
+    makeEqualMessage(buffer, bufferSize, mustBeEqual_, expected_, actual_);
 }
 
 template<>
 void TestEqualException<std::wstring, std::wstring>::message(char* buffer, const unsigned int bufferSize) const
 {
-	TS_SNPRINTF(buffer, bufferSize - 1, mustBeEqual_ ? "\"%ws\" != \"%ws\"" : "\"%ws\" == \"%ws\"", expected_.c_str(), actual_.c_str());
+    makeEqualMessage(buffer, bufferSize, mustBeEqual_, expected_.c_str(), actual_.c_str());
 }
 
 template<>

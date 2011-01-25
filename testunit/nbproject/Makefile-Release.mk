@@ -56,26 +56,26 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-Release.mk dist/Release/GNU-Linux-x86/libtestunit.so
+	"${MAKE}"  -f nbproject/Makefile-Release.mk dist/_bin/libcppunit.so
 
-dist/Release/GNU-Linux-x86/libtestunit.so: ${OBJECTFILES}
-	${MKDIR} -p dist/Release/GNU-Linux-x86
-	${LINK.cc} -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libtestunit.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
+dist/_bin/libcppunit.so: ${OBJECTFILES}
+	${MKDIR} -p dist/_bin
+	${LINK.cc} -shared -o ${CND_DISTDIR}/_bin/libcppunit.so -s -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-${OBJECTDIR}/thunk.o: thunk.cpp 
+${OBJECTDIR}/thunk.o: nbproject/Makefile-${CND_CONF}.mk thunk.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -I.. -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/thunk.o thunk.cpp
+	$(COMPILE.cc) -O2 -Wall -I.. -I/usr/include -I/usr/include/c++/4.5.1 -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/thunk.o thunk.cpp
 
-${OBJECTDIR}/test.o: test.cpp 
+${OBJECTDIR}/test.o: nbproject/Makefile-${CND_CONF}.mk test.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -I.. -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cpp
+	$(COMPILE.cc) -O2 -Wall -I.. -I/usr/include -I/usr/include/c++/4.5.1 -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cpp
 
-${OBJECTDIR}/ltest.o: ltest.cpp 
+${OBJECTDIR}/ltest.o: nbproject/Makefile-${CND_CONF}.mk ltest.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -I.. -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/ltest.o ltest.cpp
+	$(COMPILE.cc) -O2 -Wall -I.. -I/usr/include -I/usr/include/c++/4.5.1 -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/ltest.o ltest.cpp
 
 # Subprojects
 .build-subprojects:
@@ -83,7 +83,7 @@ ${OBJECTDIR}/ltest.o: ltest.cpp
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r build/Release
-	${RM} dist/Release/GNU-Linux-x86/libtestunit.so
+	${RM} dist/_bin/libcppunit.so
 
 # Subprojects
 .clean-subprojects:
