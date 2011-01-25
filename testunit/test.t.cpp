@@ -192,17 +192,7 @@ TEST_SUITE(CppUnitAssertsTests)
         ASSERT_THROW(ASSERT(false), TESTUNIT_NS::TestException);
 	TEST_CASE_END
 
-    IGNORE_TEST
-	TEST_CASE(testMustBeIgnored)
-        ASSERT(false);
-	TEST_CASE_END
-
-    IGNORE_TEST
-	TEST_CASE(assertMessage)
-    	ASSERT_MESSAGE("Attention! This script must be INGNORED, but process must not crash");
-	TEST_CASE_END
-
-	TEST_CASE(testBoolAssertNot)
+    TEST_CASE(testBoolAssertNot)
 		ASSERT_NOT(false);
 		ASSERT_NOT(!true);
 
@@ -391,11 +381,6 @@ TEST_SUITE(CppUnitAssertsTests)
         ASSERT_NOT_EQUAL(L"", reinterpret_cast<const wchar_t*>(NULL));
         ASSERT_NOT_EQUAL("", reinterpret_cast<const char*>(NULL));
     TEST_CASE_END
-
- //   IGNORE_TEST
-	//TEST_CASE(notCompiledTest)
- //   	int i[0]; // error C2466: cannot allocate an array of constant size 0
-	//TEST_CASE_END
 };
 
 TEST_CASE_ALONE(standaloneTestCase)
@@ -425,3 +410,38 @@ TEST_SUITE(CppUnitTestEngine)
         }
 	TEST_CASE_END
 };
+
+TEST_SUITE(IgnoreTestCases)
+{
+    IGNORE_TEST_CASE(ignoredButCompiledTest)
+        ASSERT(false);
+	TEST_CASE_END
+
+	IGNORE_TEST_CASE(ignoredAndNotCompiledTest)
+        int emptyArrayNotAllowed[0];// error C2466: cannot allocate an array of constant size 0
+	TEST_CASE_END
+
+	IGNORE_TEST_CASE_EX(ignoredButCompiledTestWithFixture, SetUpCallCheck)
+    	ASSERT_MESSAGE("Attention! This script must be INGNORED, but process must not crash");
+	TEST_CASE_END
+
+    IGNORE_TEST_CASE_EX(ignoredAndNotCompiledTestWithFixture, SetUpCallCheck)
+        int emptyArrayNotAllowed[0];// error C2466: cannot allocate an array of constant size 0
+	TEST_CASE_END
+};
+
+IGNORE_TEST_CASE_ALONE(standaloneAndIgnoredButCompiledTest)
+    ASSERT(true);
+TEST_CASE_END
+
+IGNORE_TEST_CASE_ALONE(standaloneAndIgnoredAndNotCompiledTest)
+    unsigned int emptyArrayNotAllowed[0];
+TEST_CASE_END
+
+IGNORE_TEST_CASE_EX_ALONE(standaloneAndIgnoredButCompiledTestWithFixture, SetUpCallCheck)
+    ASSERT(true);
+TEST_CASE_END
+
+IGNORE_TEST_CASE_EX_ALONE(standaloneAndIgnoredAndNotCompiledTestWithFixture, SetUpCallCheck)
+    int emptyArrayNotAllowed[0];// error C2466: cannot allocate an array of constant size 0
+TEST_CASE_END

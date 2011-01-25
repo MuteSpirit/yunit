@@ -421,6 +421,63 @@ void functionName##TestCase::test()
 #define TEST_CASE_EX_ALONE(testName, fixtureName)\
     TEST_CASE_EX_(testName, fixtureName, TESTUNIT_NS::TestRegistry::defaultTestSuite())
 
+   
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define IGNORE_TEST_CASE_(testName, testSuite)\
+    TESTUNIT_NS::IgnoreTestCaseGuard UNIQUENAME(ignore)(testSuite);\
+    namespace UNIQUE_TEST_SUITE_NAMESPACE(testName)\
+    {\
+        static TESTUNIT_NS::TestSuite* usingTestSuite = testSuite;\
+	    class TestCase##testName;\
+	    TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, usingTestSuite);\
+	    class TestCase##testName : public TESTUNIT_NS::TestCase\
+	    {\
+	    public:\
+		    TestCase##testName(const char* name, bool isIgnored)\
+		    : TESTUNIT_NS::TestCase(name, isIgnored)\
+		    {\
+		    }\
+		    SETUP {}\
+		    TEARDOWN {}\
+            virtual void test() {}\
+		    template<typename T> void ignoredTest()\
+            {
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define IGNORE_TEST_CASE_EX_(testName, fixtureName, testSuite)\
+    TESTUNIT_NS::IgnoreTestCaseGuard UNIQUENAME(ignore)(testSuite);\
+    namespace UNIQUE_TEST_SUITE_NAMESPACE(testName)\
+    {\
+        static TESTUNIT_NS::TestSuite* usingTestSuite = testSuite;\
+	    class TestCase##testName;\
+	    TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, usingTestSuite);\
+	    class TestCase##testName : public TESTUNIT_NS::TestCase, public TEST_FIXTURE_NAME(fixtureName)\
+	    {\
+	    public:\
+		    TestCase##testName(const char* name, bool isIgnored)\
+		    : TESTUNIT_NS::TestCase(name, isIgnored)\
+		    {\
+		    }\
+            virtual void test() {}\
+		    template<typename T> void ignoredTest()\
+            {
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define IGNORE_TEST_CASE(testName)\
+    IGNORE_TEST_CASE_(testName, localTestSuite)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define IGNORE_TEST_CASE_ALONE(testName)\
+    IGNORE_TEST_CASE_(testName, TESTUNIT_NS::TestRegistry::defaultTestSuite())
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define IGNORE_TEST_CASE_EX(testName, fixtureName)\
+    IGNORE_TEST_CASE_EX_(testName, fixtureName, localTestSuite)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define IGNORE_TEST_CASE_EX_ALONE(testName, fixtureName)\
+    IGNORE_TEST_CASE_EX_(testName, fixtureName, TESTUNIT_NS::TestRegistry::defaultTestSuite())
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_CASE_END   \
 		    }\
