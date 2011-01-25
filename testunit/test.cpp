@@ -12,6 +12,9 @@
 #include <string.h>
 #endif
 
+#include <stdlib.h>
+
+
 TESTUNIT_NS_BEGIN
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -369,13 +372,13 @@ TestMessageException<CharType>& TestMessageException<CharType>::operator=(const 
 template<typename CharType>
 void TestMessageException<CharType>::message(char* buffer, const unsigned int bufferSize) const
 {
-	::strncpy(buffer, message_, bufferSize);
+    ::strncpy(buffer, message_, bufferSize);
 }
 
 template<>
 void TestMessageException<wchar_t>::message(char* buffer, const unsigned int bufferSize) const
 {
-    TS_SNPRINTF(buffer, bufferSize - 1, "%ws", message_);
+    ::wcstombs(buffer, message_, bufferSize);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -406,7 +409,15 @@ void TestEqualException<const char*, const char*>::message(char* buffer, const u
 template<>
 void TestEqualException<const wchar_t*, const wchar_t*>::message(char* buffer, const unsigned int bufferSize) const
 {
-	TS_SNPRINTF(buffer, bufferSize - 1, mustBeEqual_ ? "\"%ws\" != \"%ws\"" : "\"%ws\" == \"%ws\"", expected_, actual_);
+    size_t writtenBytes = ::wcstombs(buffer, expected_, bufferSize);
+    size_t offset = writtenBytes;
+    const char* equalSign = mustBeEqual_ ? "!=" : "==";
+    const size_t equalSignLen = sizeof(equalSign);
+    ::strncpy(buffer + writtenBytes, equalSign, equalSignLen);
+    offset += equalSignLen;
+    writtenBytes = ::wcstombs(buffer + offset, actual_, bufferSize - offset);
+    
+//	TS_SNPRINTF(buffer, bufferSize - 1, mustBeEqual_ ? "\"%ws\" != \"%ws\"" : "\"%ws\" == \"%ws\"", expected_, actual_);
 }
 
 template<>
