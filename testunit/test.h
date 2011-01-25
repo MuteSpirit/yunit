@@ -254,7 +254,7 @@ private:
 class TestException : public std::exception
 {
 public:
-    virtual ~TestException();
+    virtual ~TestException() throw();
     const SourceLine& sourceLine() const;
 
     virtual void message(char* buffer, const unsigned int bufferSize) const = 0;

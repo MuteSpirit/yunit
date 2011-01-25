@@ -3,14 +3,17 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include <stdio.h>
+
+#ifdef _MSC_VER
 #include <excpt.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "lua\lauxlib.h"
-#include "lua\lualib.h"
+#include "lua/lauxlib.h"
+#include "lua/lualib.h"
 
 #ifdef __cplusplus
 }
@@ -158,7 +161,11 @@ static int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::Te
     {
         thereAreCppExceptions = wereCatchedCppExceptions(L, getThunkFunc, testCase, countReturnValues);
     }
+#ifdef _MSC_VER
     __except(EXCEPTION_EXECUTE_HANDLER)
+#else
+    __catch(...)
+#endif
     {
 		lua_pushboolean(L, false); // status code
         countReturnValues = 1;

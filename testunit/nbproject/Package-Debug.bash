@@ -11,8 +11,8 @@ CND_CONF=Debug
 CND_DISTDIR=dist
 NBTMPDIR=build/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libtestunit.so
-OUTPUT_BASENAME=libtestunit.so
+OUTPUT_PATH=${CND_DISTDIR}/_bin/libcppunit.so
+OUTPUT_BASENAME=libcppunit.so
 PACKAGE_TOP_DIR=libtestunit.so/
 
 # Functions
