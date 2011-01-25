@@ -225,7 +225,7 @@ bool TestSuite::ignoreAddingTestCases() const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TestRegistry* TestRegistry::thisPtr_ = 0;
-TestSuite TestRegistry::defaultTestSuite_ = TestSuite("Default");
+TestSuite TestRegistry::defaultTestSuite_ = TestSuite("");
 
 TestRegistry::TestRegistry()
 : testSuiteList_()
