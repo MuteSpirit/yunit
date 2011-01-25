@@ -1,0 +1,4 @@
+..\_lib\lua5.1.exp
+..\_lib\lua5.1.lib
+..\_lib\lua51.exp
+..\_lib\lua51.lib
