@@ -1,5 +1,4 @@
 #include "thunk.h"
-//#include "signal.h"
 
 Thunk::Thunk() throw()
 : thunkPtr_(0), thisPtr_(0)
