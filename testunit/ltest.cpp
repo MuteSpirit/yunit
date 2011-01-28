@@ -72,19 +72,19 @@ static int errorObjectTableToLuaStackTop(lua_State *L,
 {
     enum {numberOfReturnValues = 1};
     // new Error Object (return value)
-	lua_newtable(L);
+    lua_newtable(L);
     // function with error
-	lua_pushfstring(L, "%s::%s()", testCase->name(), getFuncName(getThunkFunc));
-	lua_setfield(L, -2, "func");		
+    lua_pushfstring(L, "%s::%s()", testCase->name(), getFuncName(getThunkFunc));
+    lua_setfield(L, -2, "func");
     // source file with error
-	lua_pushstring(L, fileName);
-	lua_setfield(L, -2, "source");		
+    lua_pushstring(L, fileName);
+    lua_setfield(L, -2, "source");
     // number of line with error
-	lua_pushinteger(L, lineNumber);
-	lua_setfield(L, -2, "line");		
+    lua_pushinteger(L, lineNumber);
+    lua_setfield(L, -2, "line");
     // error message
-	lua_pushstring(L, message);			
-	lua_setfield(L, -2, "message");
+    lua_pushstring(L, message);
+    lua_setfield(L, -2, "message");
 
     return numberOfReturnValues;
 }
@@ -119,11 +119,11 @@ static bool wereCatchedCppExceptions(lua_State *L,
     }
     catch(std::exception& ex)
     {
-		lua_pushboolean(L, false);
+        lua_pushboolean(L, false);
         ++countReturnValues;
 
-		enum {bufferSize = 1024 * 5};
-		char errorMessage[bufferSize] = {'\0'};
+        enum {bufferSize = 1024 * 5};
+        char errorMessage[bufferSize] = {'\0'};
         TS_SNPRINTF(errorMessage, bufferSize - 1, "Unexpected std::exception was caught: %s", ex.what());
 
         countReturnValues += errorObjectTableToLuaStackTop(
@@ -133,10 +133,10 @@ static bool wereCatchedCppExceptions(lua_State *L,
             errorMessage);
 
 		return true;
-	}
+    }
     catch(...)
     {
-		lua_pushboolean(L, false);
+        lua_pushboolean(L, false);
         ++countReturnValues;
 
         countReturnValues += errorObjectTableToLuaStackTop(
@@ -157,15 +157,12 @@ static int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::Te
 	TESTUNIT_NS::TestCase* testCase = static_cast<TESTUNIT_NS::TestCase*>(lua_touserdata(L, -1));
     bool thereAreCppExceptions = false;
     int countReturnValues = 0;
+#ifdef _MSC_VER
     __try
     {
         thereAreCppExceptions = wereCatchedCppExceptions(L, getThunkFunc, testCase, countReturnValues);
     }
-#ifdef _MSC_VER
     __except(EXCEPTION_EXECUTE_HANDLER)
-#else
-    __catch(...)
-#endif
     {
 		lua_pushboolean(L, false); // status code
         countReturnValues = 1;
@@ -176,7 +173,9 @@ static int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::Te
             "", 0,
             "Unexpected SEH exception was caught");
     }
-
+#else // not defined _MSC_VER
+    thereAreCppExceptions = wereCatchedCppExceptions(L, getThunkFunc, testCase, countReturnValues);
+#endif
     if (!thereAreCppExceptions)
     {
         // status code

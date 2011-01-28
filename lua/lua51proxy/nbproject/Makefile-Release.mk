@@ -33,9 +33,7 @@ OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/thunk.o \
-	${OBJECTDIR}/test.o \
-	${OBJECTDIR}/ltest.o
+	${OBJECTDIR}/_ext/1472/lua_proxy.o
 
 
 # C Compiler Flags
@@ -52,41 +50,35 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=-Wl,-rpath ../lua51lib/../../_bin -L../lua51lib/../../_bin -llua5.1
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-Release.mk dist/_bin/libcppunit.so
+	"${MAKE}"  -f nbproject/Makefile-Release.mk ../../_bin/liblua51.so
 
-dist/_bin/libcppunit.so: ${OBJECTFILES}
-	${MKDIR} -p dist/_bin
-	${LINK.cc} -shared -o ${CND_DISTDIR}/_bin/libcppunit.so -s -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
+../../_bin/liblua51.so: ../lua51lib/../../_bin/liblua5.1.so
 
-${OBJECTDIR}/thunk.o: nbproject/Makefile-${CND_CONF}.mk thunk.cpp 
-	${MKDIR} -p ${OBJECTDIR}
+../../_bin/liblua51.so: ${OBJECTFILES}
+	${MKDIR} -p ../../_bin
+	${LINK.c} -shared -o ../../_bin/liblua51.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
+
+${OBJECTDIR}/_ext/1472/lua_proxy.o: ../lua_proxy.c 
+	${MKDIR} -p ${OBJECTDIR}/_ext/1472
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -Wall -I.. -I/usr/include -I/usr/include/c++/4.5.1 -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/thunk.o thunk.cpp
-
-${OBJECTDIR}/test.o: nbproject/Makefile-${CND_CONF}.mk test.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.cc) -O2 -Wall -I.. -I/usr/include -I/usr/include/c++/4.5.1 -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cpp
-
-${OBJECTDIR}/ltest.o: nbproject/Makefile-${CND_CONF}.mk ltest.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.cc) -O2 -Wall -I.. -I/usr/include -I/usr/include/c++/4.5.1 -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/ltest.o ltest.cpp
+	$(COMPILE.c) -O2 -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/1472/lua_proxy.o ../lua_proxy.c
 
 # Subprojects
 .build-subprojects:
+	cd ../lua51lib && ${MAKE}  -f Makefile CONF=Release
 
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r build/Release
-	${RM} dist/_bin/libcppunit.so
+	${RM} ../../_bin/liblua51.so
 
 # Subprojects
 .clean-subprojects:
+	cd ../lua51lib && ${MAKE}  -f Makefile CONF=Release clean
 
 # Enable dependency checking
 .dep.inc: .depcheck-impl

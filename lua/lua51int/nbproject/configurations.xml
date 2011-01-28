@@ -12,45 +12,42 @@
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>Makefile</itemPath>
     </logicalFolder>
-    <itemPath>ltest.cpp</itemPath>
-    <itemPath>test.cpp</itemPath>
-    <itemPath>test.h</itemPath>
-    <itemPath>thunk.cpp</itemPath>
-    <itemPath>thunk.h</itemPath>
+    <itemPath>../lua.c</itemPath>
   </logicalFolder>
-  <sourceRootList>
-    <Elem>.</Elem>
-  </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
-    <conf name="Debug" type="2">
+    <conf name="Debug" type="1">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
         <compilerSet>GNU|GNU</compilerSet>
         <platform>2</platform>
-        <rebuildPropChanged>true</rebuildPropChanged>
       </toolsSet>
       <compileType>
-        <ccTool>
-          <incDir>
-            <pElem>..</pElem>
-            <pElem>/usr/include</pElem>
-            <pElem>/usr/include/c++/4.5.1</pElem>
-          </incDir>
-          <warningLevel>2</warningLevel>
-        </ccTool>
         <linkerTool>
-          <output>${CND_DISTDIR}/_bin/libcppunit.so</output>
-          <stripSymbols>true</stripSymbols>
+          <output>../../_bin/lua5.1</output>
+          <linkerLibItems>
+            <linkerLibProjectItem>
+              <makeArtifact PL="../lua51lib"
+                            CT="2"
+                            CN="Debug"
+                            AC="true"
+                            BL="true"
+                            WD="../lua51lib"
+                            BC="${MAKE}  -f Makefile CONF=Debug"
+                            CC="${MAKE}  -f Makefile CONF=Debug clean"
+                            OP="../../_bin/liblua5.1.so">
+              </makeArtifact>
+            </linkerLibProjectItem>
+            <linkerLibStdlibItem>Mathematics</linkerLibStdlibItem>
+          </linkerLibItems>
         </linkerTool>
       </compileType>
     </conf>
-    <conf name="Release" type="2">
+    <conf name="Release" type="1">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
         <compilerSet>GNU|GNU</compilerSet>
         <platform>2</platform>
-        <rebuildPropChanged>true</rebuildPropChanged>
       </toolsSet>
       <compileType>
         <cTool>
@@ -58,12 +55,6 @@
         </cTool>
         <ccTool>
           <developmentMode>5</developmentMode>
-          <incDir>
-            <pElem>..</pElem>
-            <pElem>/usr/include</pElem>
-            <pElem>/usr/include/c++/4.5.1</pElem>
-          </incDir>
-          <warningLevel>2</warningLevel>
         </ccTool>
         <fortranCompilerTool>
           <developmentMode>5</developmentMode>
@@ -72,22 +63,24 @@
           <developmentMode>5</developmentMode>
         </asmTool>
         <linkerTool>
-          <output>${CND_DISTDIR}/_bin/libcppunit.so</output>
-          <stripSymbols>true</stripSymbols>
+          <output>../../_bin/lua5.1</output>
+          <linkerLibItems>
+            <linkerLibProjectItem>
+              <makeArtifact PL="../lua51lib"
+                            CT="2"
+                            CN="Release"
+                            AC="false"
+                            BL="true"
+                            WD="../lua51lib"
+                            BC="${MAKE}  -f Makefile CONF=Release"
+                            CC="${MAKE}  -f Makefile CONF=Release clean"
+                            OP="../../_bin/liblua5.1.so">
+              </makeArtifact>
+            </linkerLibProjectItem>
+            <linkerLibStdlibItem>Mathematics</linkerLibStdlibItem>
+          </linkerLibItems>
         </linkerTool>
       </compileType>
-      <packaging>
-        <packType>Tar</packType>
-        <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/libtestunit.so.tar</output>
-        <packFileList>
-          <packFileListElem type="File"
-                            to="${PACKAGE_TOP_DIR}lib/${OUTPUT_BASENAME}"
-                            from="${OUTPUT_PATH}"
-                            perm="644"
-                            owner="root"
-                            group="bin"/>
-        </packFileList>
-      </packaging>
     </conf>
   </confs>
 </configurationDescriptor>
