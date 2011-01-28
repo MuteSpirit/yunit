@@ -1,0 +1,224 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="test.t.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>cppunit.t</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\_bin\</OutDir>
+    <IntDir>_tmp\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\_bin\</OutDir>
+    <IntDir>_tmp\$(ProjectName)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>
+      </TreatWarningAsError>
+      <Optimization>Disabled</Optimization>
+      <OmitFramePointers>
+      </OmitFramePointers>
+      <PreprocessorDefinitions>
+      </PreprocessorDefinitions>
+      <MinimalRebuild>
+      </MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FloatingPointModel>
+      </FloatingPointModel>
+      <TreatWChar_tAsBuiltInType>
+      </TreatWChar_tAsBuiltInType>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
+      <PrecompiledHeaderOutputFile>
+      </PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>
+      </AssemblerListingLocation>
+      <CallingConvention>
+      </CallingConvention>
+      <ErrorReporting>None</ErrorReporting>
+      <AdditionalOptions>
+      </AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>..\_lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>lua5.1.lib;cppunit.lib</AdditionalDependencies>
+      <AllowIsolation>
+      </AllowIsolation>
+      <EnableUAC>
+      </EnableUAC>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>
+      </ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <SwapRunFromCD>true</SwapRunFromCD>
+      <SwapRunFromNET>true</SwapRunFromNET>
+      <ProfileGuidedDatabase>
+      </ProfileGuidedDatabase>
+      <TypeLibraryResourceID>
+      </TypeLibraryResourceID>
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <LinkErrorReporting>NoErrorReport</LinkErrorReporting>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <ImportLibrary>..\_lib\$(TargetName).lib</ImportLibrary>
+    </Link>
+    <PostBuildEvent>
+      <Command>lua5.1.exe "$(ProjectDir)\$(IntDir)\$(ProjectName)_run_test_units.lua"</Command>
+      <Message>Run unit tests ...</Message>
+    </PostBuildEvent>
+    <PreLinkEvent>
+      <Command>setlocal
+set RUN_TEST_SCRIPT=$(ProjectDir)\$(IntDir)\$(ProjectName)_run_test_units.lua
+echo -- Generated in Post Build Step of project $(ProjectName) &gt; %RUN_TEST_SCRIPT%
+
+echo local fs = require('filesystem'); &gt;&gt; %RUN_TEST_SCRIPT%
+echo package.path = fs.canonizePath([[../_bin/../?.lua;../_bin/../?/init.lua;]] .. package.path); &gt;&gt; %RUN_TEST_SCRIPT%
+echo package.cpath = fs.canonizePath([[../_bin/?.dll;]] .. package.cpath); &gt;&gt; %RUN_TEST_SCRIPT%
+echo local testRunner = require('testunit.test_runner'); &gt;&gt; %RUN_TEST_SCRIPT%
+echo local testListeners = require('testunit.test_listeners'); &gt;&gt; %RUN_TEST_SCRIPT%
+echo testRunner.loadTestContainers{fs.canonizePath([[$(OutDir)/$(TargetFileName)]])}; &gt;&gt; %RUN_TEST_SCRIPT%
+echo local testObserver = testRunner.TestObserver:new(); &gt;&gt; %RUN_TEST_SCRIPT%
+echo testObserver:addTestListener(testListeners.TextTestProgressListener:new()); &gt;&gt; %RUN_TEST_SCRIPT%
+echo testRunner.runAllTestCases(testObserver); &gt;&gt; %RUN_TEST_SCRIPT%
+endlocal</Command>
+    </PreLinkEvent>
+    <PreLinkEvent>
+      <Message>Generate test runner script ...</Message>
+    </PreLinkEvent>
+  </ItemDefinitionGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LocalDebuggerCommand>lua5.1.exe</LocalDebuggerCommand>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LocalDebuggerCommandArguments>"$(ProjectDir)\$(IntDir)\$(ProjectName)_run_test_units.lua"</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>
+      </TreatWarningAsError>
+      <PreprocessorDefinitions>NDEBUG</PreprocessorDefinitions>
+      <MinimalRebuild>
+      </MinimalRebuild>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FloatingPointModel>
+      </FloatingPointModel>
+      <TreatWChar_tAsBuiltInType>
+      </TreatWChar_tAsBuiltInType>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
+      <PrecompiledHeaderOutputFile>
+      </PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>
+      </AssemblerListingLocation>
+      <CallingConvention>
+      </CallingConvention>
+      <ErrorReporting>None</ErrorReporting>
+      <AdditionalOptions>
+      </AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>..\_lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>lua5.1.lib;cppunit.lib</AdditionalDependencies>
+      <AllowIsolation>
+      </AllowIsolation>
+      <EnableUAC>
+      </EnableUAC>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>
+      </ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <SwapRunFromCD>true</SwapRunFromCD>
+      <SwapRunFromNET>true</SwapRunFromNET>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProfileGuidedDatabase>
+      </ProfileGuidedDatabase>
+      <TypeLibraryResourceID>
+      </TypeLibraryResourceID>
+      <SetChecksum>true</SetChecksum>
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <LinkErrorReporting>NoErrorReport</LinkErrorReporting>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <ImportLibrary>..\_lib\$(TargetName).lib</ImportLibrary>
+    </Link>
+    <PostBuildEvent>
+      <Command>lua5.1.exe "$(ProjectDir)\$(IntDir)\$(ProjectName)_run_test_units.lua"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Run unit tests ...</Message>
+    </PostBuildEvent>
+    <PreLinkEvent>
+      <Command>setlocal
+set RUN_TEST_SCRIPT=$(ProjectDir)\$(IntDir)\$(ProjectName)_run_test_units.lua
+echo -- Generated in Post Build Step of project $(ProjectName) &gt; %RUN_TEST_SCRIPT%
+
+echo local fs = require('filesystem'); &gt;&gt; %RUN_TEST_SCRIPT%
+echo package.path = fs.canonizePath([[../_bin/../?.lua;../_bin/../?/init.lua;]] .. package.path); &gt;&gt; %RUN_TEST_SCRIPT%
+echo package.cpath = fs.canonizePath([[../_bin/?.dll;]] .. package.cpath); &gt;&gt; %RUN_TEST_SCRIPT%
+echo local testRunner = require('testunit.test_runner'); &gt;&gt; %RUN_TEST_SCRIPT%
+echo local testListeners = require('testunit.test_listeners'); &gt;&gt; %RUN_TEST_SCRIPT%
+echo testRunner.loadTestContainers{fs.canonizePath([[$(OutDir)/$(TargetFileName)]])}; &gt;&gt; %RUN_TEST_SCRIPT%
+echo local testObserver = testRunner.TestObserver:new(); &gt;&gt; %RUN_TEST_SCRIPT%
+echo testObserver:addTestListener(testListeners.TextTestProgressListener:new()); &gt;&gt; %RUN_TEST_SCRIPT%
+echo testRunner.runAllTestCases(testObserver); &gt;&gt; %RUN_TEST_SCRIPT%
+endlocal</Command>
+      <Message>Generate test runner script ...</Message>
+    </PreLinkEvent>
+  </ItemDefinitionGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerCommand>lua5.1.exe</LocalDebuggerCommand>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerCommandArguments>"$(ProjectDir)\$(IntDir)\$(ProjectName)_run_test_units.lua"</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
