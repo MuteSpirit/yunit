@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="310c20f9-577a-4e92-8f3a-515d2a110496" Name="Lua For Development Environment" Language="1033"
-           Version="0.2.0.3" Manufacturer="Techsystem" UpgradeCode="92882211-b420-4cf1-8872-da9649f28ff4">
+  <Product Id="6324492D-9CFB-4D77-B07D-6E940FAAC366" Name="Lua For Development Environment" Language="1033"
+           Version="0.2.1.1" Manufacturer="Techsystem" UpgradeCode="92882211-b420-4cf1-8872-da9649f28ff4">
     <Package InstallerVersion="200" Compressed="yes" />
     <MajorUpgrade
       DowngradeErrorMessage="Более поздняя версия [ProductName] уже установлена. Установка будет прекращена."/>
@@ -77,7 +77,11 @@
 
             <Component Id="LuaBinaries" Guid="FD368DA0-EB2D-4E21-9118-F016B84C0980">
               <File Id="lua5.1.dll" Name="lua5.1.dll" DiskId="1" Source="..\_bin\lua5.1.dll" />
+              <File Id="lua5.1_lib.pdb" Name="lua5.1_lib.pdb" DiskId="1" Source="..\_bin\lua5.1_lib.pdb" />
+              <File Id="lua51.dll" Name="lua51.dll" DiskId="1" Source="..\_bin\lua51.dll" />
+              <File Id="lua51.pdb" Name="lua51.pdb" DiskId="1" Source="..\_bin\lua51.pdb" />
               <File Id="lua5.1.exe" Name="lua5.1.exe" DiskId="1" Source="..\_bin\lua5.1.exe" />
+              <File Id="lua5.1_int.pdb" Name="lua5.1_int.pdb" DiskId="1" Source="..\_bin\lua5.1_int.pdb" />
               <File Id="lua_icon.ico" Name="lua_icon.ico" DiskId="1" Source=".\lua_icon.ico" />
               <!--ассоциируем иконку-->
               <RegistryKey Root="HKCR" Key=".lua" Action="createAndRemoveOnUninstall">
@@ -99,6 +103,7 @@
 
             <Component Id="CppTestEngineBinaries" Guid="5C65A91D-FB7C-4ACE-B910-D6ECE5DC1A88">
               <File Id="cppunit.dll" Name="cppunit.dll" DiskId="1" Source="..\_bin\cppunit.dll" />
+              <File Id="cppunit.pdb" Name="cppunit.pdb" DiskId="1" Source="..\_bin\cppunit.pdb" />
             </Component>
           </Directory>
         </Directory>
