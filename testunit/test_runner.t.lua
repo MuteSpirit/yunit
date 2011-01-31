@@ -409,8 +409,8 @@ function globalTestCaseListFixturePlusUseTmpDir.runSomeTestContainer(self)
     areEq(1, #self.testRegistry.testsuites)
     areEq(0, #self.testRegistry.testsuites[1].testcases)
 
-    require('test_runner')
-    test_runner.runTestContainer(testContainerPath)
+    require('default_test_run')
+    run(testContainerPath)
     
     areEq(2, #self.testRegistry.testsuites)
     areEq(1, #self.testRegistry.testsuites[2].testcases)
