@@ -1,8 +1,9 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-
+#ifdef _MSC_VER
 #define Naked __declspec(naked)
+#endif
 
 
 /*
@@ -59,11 +60,14 @@ const void     *(lua_topointer_p) (lua_State *L, int idx) {return lua_topointer(
 ** push functions (C -> stack)
 */
 void  (lua_pushnil_p) (lua_State *L) {lua_pushnil(L);}
-/*Naked void  (lua_pushnumber_p) (lua_State *L, lua_Number n) {lua_pushnumber(L, n);}*/
-/*Naked void  (lua_pushinteger_p) (lua_State *L, lua_Integer n) {lua_pushinteger(L, n);}*/
-
+#ifdef _MSC_VER
 Naked void  (lua_pushnumber_p) (lua_State *L, lua_Number n) {__asm jmp DWORD PTR lua_pushnumber}
 Naked void  (lua_pushinteger_p) (lua_State *L, lua_Integer n) {__asm jmp DWORD PTR lua_pushinteger}
+#else
+void  (lua_pushnumber_p) (lua_State *L, lua_Number n) {lua_pushnumber(L, n);}
+void  (lua_pushinteger_p) (lua_State *L, lua_Integer n) {lua_pushinteger(L, n);}
+#endif
+
 
 void  (lua_pushlstring_p) (lua_State *L, const char *s, size_t l) {lua_pushlstring(L, s, l);}
 void  (lua_pushstring_p) (lua_State *L, const char *s) {lua_pushstring(L, s);}
@@ -148,9 +152,11 @@ const char *(luaL_checklstring_p) (lua_State *L, int numArg, size_t *l) {return 
 const char *(luaL_optlstring_p) (lua_State *L, int numArg, const char *def, size_t *l) {return luaL_optlstring(L, numArg, def, l);}
 lua_Number (luaL_checknumber_p) (lua_State *L, int numArg) {return luaL_checknumber(L, numArg);}
 
-/*lua_Number (luaL_optnumber_p) (lua_State *L, int nArg, lua_Number def) {return luaL_optnumber(L, nArg, def);}*/
-Naked lua_Number (luaL_optnumber_p) (lua_State *L, int nArg, lua_Number def) {__asm jmp DWORD PTR luaL_optnumber}
-
+#ifdef _MSC_VER
+Naked lua_Number (luaL_optnumber_p) (lua_State *L, int nArg, lua_Number def) {_asm jmp DWORD PTR luaL_optnumber}
+#else
+lua_Number (luaL_optnumber_p) (lua_State *L, int nArg, lua_Number def) {return luaL_optnumber(L, nArg, def);}
+#endif
 lua_Integer (luaL_checkinteger_p) (lua_State *L, int numArg) {return luaL_checkinteger(L, numArg);}
 lua_Integer (luaL_optinteger_p) (lua_State *L, int nArg, lua_Integer def) {return luaL_optinteger(L, nArg, def);}
 
