@@ -101,7 +101,7 @@
       <ImportLibrary>..\_lib\$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>lua5.1.exe "$(ProjectDir)\$(IntDir)\$(ProjectName)_run_test_units.lua"</Command>
+      <Command>..\_bin\lua5.1.exe -e "package.path=[[..\?.lua;$(ProjectDir)?.lua;$(ProjectDir)..\ts_modules\?.lua;]] .. package.path" -l test_runner -e "test_runner.runTestContainer([[$(TargetPath)]])"</Command>
       <Message>Run unit tests ...</Message>
     </PostBuildEvent>
     <PreLinkEvent>
@@ -191,27 +191,16 @@ endlocal</Command>
       <ImportLibrary>..\_lib\$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>lua5.1.exe "$(ProjectDir)\$(IntDir)\$(ProjectName)_run_test_units.lua"</Command>
+      <Command>..\_bin\lua5.1.exe -e "package.path=[[..\?.lua;$(ProjectDir)?.lua;$(ProjectDir)..\ts_modules\?.lua;]] .. package.path" -l test_runner -e "test_runner.runTestContainer([[$(TargetPath)]])"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Run unit tests ...</Message>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>setlocal
-set RUN_TEST_SCRIPT=$(ProjectDir)\$(IntDir)\$(ProjectName)_run_test_units.lua
-echo -- Generated in Post Build Step of project $(ProjectName) &gt; %RUN_TEST_SCRIPT%
-
-echo local fs = require('filesystem'); &gt;&gt; %RUN_TEST_SCRIPT%
-echo package.path = fs.canonizePath([[../_bin/../?.lua;../_bin/../?/init.lua;]] .. package.path); &gt;&gt; %RUN_TEST_SCRIPT%
-echo package.cpath = fs.canonizePath([[../_bin/?.dll;]] .. package.cpath); &gt;&gt; %RUN_TEST_SCRIPT%
-echo local testRunner = require('testunit.test_runner'); &gt;&gt; %RUN_TEST_SCRIPT%
-echo local testListeners = require('testunit.test_listeners'); &gt;&gt; %RUN_TEST_SCRIPT%
-echo testRunner.loadTestContainers{fs.canonizePath([[$(OutDir)/$(TargetFileName)]])}; &gt;&gt; %RUN_TEST_SCRIPT%
-echo local testObserver = testRunner.TestObserver:new(); &gt;&gt; %RUN_TEST_SCRIPT%
-echo testObserver:addTestListener(testListeners.TextTestProgressListener:new()); &gt;&gt; %RUN_TEST_SCRIPT%
-echo testRunner.runAllTestCases(testObserver); &gt;&gt; %RUN_TEST_SCRIPT%
-endlocal</Command>
-      <Message>Generate test runner script ...</Message>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

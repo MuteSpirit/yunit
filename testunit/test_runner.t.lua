@@ -106,6 +106,7 @@ substitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir =
         currentSuite = nil;
         testRegistry = nil;
         
+        -- delete tmpDir recursively
         isNotNil(tmpDir);
         isTrue(lfs.chdir(tmpDir .. fs.osSlash() .. '..'))
         local status, msg = fs.rmdir(tmpDir)
@@ -138,6 +139,42 @@ globalTestCaseListFixture =
     end
     ;
 };
+
+globalTestCaseListFixturePlusUseTmpDir =
+{
+    setUp = function(self)
+        self.testRegistry = luaUnit.TestRegistry:new();
+        self.currentTestRegistry = luaUnit.currentTestRegistry();
+        luaUnit.currentTestRegistry(self.testRegistry);
+        
+        self.currentSuite = luaUnit.currentSuite();
+        luaUnit.currentSuite(self.testRegistry.testsuites[1]);
+
+        self.globalTestCaseList = luaUnit.copyTable(testRunner.GlobalTestCaseList);
+        testRunner.GlobalTestCaseList = {};
+
+        self.tmpDir = fs.tmpDirName();
+        lfs.mkdir(self.tmpDir);
+    end
+    ;
+    tearDown = function(self)
+        luaUnit.currentSuite(self.currentSuite);
+        luaUnit.currentTestRegistry(self.currentTestRegistry);
+        self.currentSuite = nil;
+        self.testRegistry = nil;
+
+        testRunner.GlobalTestCaseList = luaUnit.copyTable(self.globalTestCaseList);
+
+        -- delete tmpDir recursively
+        isNotNil(self.tmpDir);
+        isTrue(lfs.chdir(self.tmpDir .. fs.osSlash() .. '..'))
+        local status, msg = fs.rmdir(self.tmpDir)
+        areEq(nil, msg)
+        isTrue(status)
+    end
+    ;
+};
+
     function testTestListenerCreation()
         isNotNil(testRunner.TestListener:new());
     end
@@ -364,3 +401,18 @@ globalTestCaseListFixture =
         areEq(luaTestContainerFilename, testRegistry.testsuites[2].name_)
     end
 
+function globalTestCaseListFixturePlusUseTmpDir.runSomeTestContainer(self)
+    local testContainerPath = self.tmpDir .. fs.osSlash() .. 'lua_test_container.t.lua'
+    local testContainerText = [[function someTestCase() end]]
+    isTrue(aux.createTextFileWithContent(testContainerPath, testContainerText))
+   
+    areEq(1, #self.testRegistry.testsuites)
+    areEq(0, #self.testRegistry.testsuites[1].testcases)
+
+    require('test_runner')
+    test_runner.runTestContainer(testContainerPath)
+    
+    areEq(2, #self.testRegistry.testsuites)
+    areEq(1, #self.testRegistry.testsuites[2].testcases)
+    areEq("someTestCase", self.testRegistry.testsuites[2].testcases[1].name_)
+end
