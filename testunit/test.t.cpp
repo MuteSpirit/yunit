@@ -230,24 +230,14 @@ TEST_SUITE(CppUnitAssertsTests)
 	TEST_CASE_END
 
 	TEST_CASE(testAssertEqualWithTypedefs)
-        typedef unsigned int uint_max_t;
-		ASSERT_EQUAL((uint_max_t)1, (uint_max_t)1);
-		ASSERT_EQUAL((uint_max_t)0, (uint_max_t)0);
-
-        typedef unsigned __int32 uint_max_t;
-		ASSERT_EQUAL((uint_max_t)1, (uint_max_t)1);
-		ASSERT_EQUAL((uint_max_t)0, (uint_max_t)0);
-
-        typedef int int_max_t;
-		ASSERT_EQUAL((int_max_t)1, (int_max_t)1);
-		ASSERT_EQUAL((int_max_t)0, (int_max_t)0);
-        ASSERT_EQUAL((int_max_t)-1, (int_max_t)-1);
-
-        typedef __int32 int_max_t;
-		ASSERT_EQUAL((int_max_t)1, (int_max_t)1);
-		ASSERT_EQUAL((int_max_t)0, (int_max_t)0);
-        ASSERT_EQUAL((int_max_t)-1, (int_max_t)-1);
-    TEST_CASE_END
+            typedef unsigned int uint_max_t;
+            ASSERT_EQUAL((uint_max_t)1, (uint_max_t)1);
+            ASSERT_EQUAL((uint_max_t)0, (uint_max_t)0);
+            typedef int int_max_t;
+            ASSERT_EQUAL((int_max_t)1, (int_max_t)1);
+            ASSERT_EQUAL((int_max_t)0, (int_max_t)0);
+            ASSERT_EQUAL((int_max_t)-1, (int_max_t)-1);
+        TEST_CASE_END
 
 	TEST_CASE(testAssertEqualNot)
 		ASSERT_NOT_EQUAL(1, 0);

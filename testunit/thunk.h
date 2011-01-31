@@ -5,6 +5,8 @@
 // thunk.h
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#ifndef _TESTUNIT_THUNK_HEADER_
+#define _TESTUNIT_THUNK_HEADER_
 
 #ifndef TESTUNIT_API
 #	if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
@@ -56,3 +58,5 @@ void Thunk::thunk(void* thisPtr) throw()
 {
     (static_cast<T*>(thisPtr)->*funcPtr)();
 }
+
+#endif // _TESTUNIT_THUNK_HEADER_
