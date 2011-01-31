@@ -322,3 +322,18 @@ function runAllTestCases(testObserver)
     end
     testObserver:endTests();
 end
+
+-------------------------------------------------------------------------------------------------------------
+function runTestContainer(path)
+    local fs = require('filesystem')
+--~     package.path = fs.canonizePath([[../_bin/../?.lua;../_bin/../?/init.lua;]] .. package.path)
+--~     package.cpath = fs.canonizePath([[../_bin/?.dll;]] .. package.cpath)
+    local testRunner = require('testunit.test_runner')
+    local testListeners = require('testunit.test_listeners')
+    testRunner.loadTestContainers{fs.canonizePath(path)}
+    local testObserver = testRunner.TestObserver:new()
+    testObserver:addTestListener(testListeners.TextTestProgressListener:new())
+    testRunner.runAllTestCases(testObserver)
+end
+
+_G["runTestContainer"] = runTestContainer
