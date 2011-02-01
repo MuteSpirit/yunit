@@ -27,8 +27,17 @@ function fakeFunction()
 end
 
 ------------------------------------------------------
-TestListener = {};
-------------------------------------------------------
+TestListener = {
+    addSuccessful = function(testCaseName) end
+    addFailure = function(testCaseName, errorObject) end
+    addError = function(testCaseName, errorObject) end
+    addIgnore = function(testCaseName, errorObject) end
+    startTest = function(testCaseName) end
+    endTest = function(testCaseName) end
+    startTests = function() end
+    endTests = function() end
+    outputMessage = function(message) end
+};
 
 function TestListener:new(o)
     o = o or {};
@@ -37,37 +46,11 @@ function TestListener:new(o)
     return o;
 end
 
--- ??? Why succefsul or other test result doesn't indicate the end of tests
-function TestListener:addSuccessful(testCaseName)
-end
-
-function TestListener:addFailure(testCaseName, errorObject)
-end
-
-function TestListener:addError(testCaseName, errorObject)
-end
-
-function TestListener:addIgnore(testCaseName, errorObject)
-end
-
-function TestListener:startTest(testCaseName)
-end
-
-function TestListener:endTest(testCaseName)
-end
-
-function TestListener:startTests()
-end
-
-function TestListener:endTests()
-end
-
-function TestListener:outputMessage(message)
-end
-
-
 ------------------------------------------------------
-TestObserver = {testListeners = {}};
+TestObserver = 
+{
+    testListeners = {}
+};
 ------------------------------------------------------
 
 function TestObserver:new(o)
@@ -88,51 +71,35 @@ function TestObserver:callListenersFunction(functionName, ...)
 end
 
 function TestObserver:addSuccessful(testCaseName)
-    self:callListenersFunction("addSuccessful", testCaseName);
+    self:callListenersFunction('addSuccessful', testCaseName);
 end
 
 function TestObserver:addFailure(testCaseName, errorObject)
-    self:callListenersFunction("addFailure", testCaseName, errorObject);
+    self:callListenersFunction('addFailure', testCaseName, errorObject);
 end
 
 function TestObserver:addError(testCaseName, errorObject)
-    self:callListenersFunction("addError", testCaseName, errorObject);
+    self:callListenersFunction('addError', testCaseName, errorObject);
 end
 
 function TestObserver:addIgnore(testCaseName)
-    self:callListenersFunction("addIgnore", testCaseName);
+    self:callListenersFunction('addIgnore', testCaseName);
 end
 
 function TestObserver:startTest(testCaseName)
-    self:callListenersFunction("startTest", testCaseName);
+    self:callListenersFunction('startTest', testCaseName);
 end
 
 function TestObserver:endTest(testCaseName)
-    self:callListenersFunction("endTest", testCaseName);
+    self:callListenersFunction('endTest', testCaseName);
 end
 
 function TestObserver:startTests()
-    self:callListenersFunction("startTests");
+    self:callListenersFunction('startTests');
 end
 
 function TestObserver:endTests()
-    self:callListenersFunction("endTests");
-end
-
-------------------------------------------------------
-function isTestFunction(functionName)
-------------------------------------------------------
-    local exception = {"TEST_FIXTURE", "TEST_SUITE", "TEST_CASE", "TEST_CASE_EX", };
-    for _, v in ipairs(exception) do
-        if v == functionName then
-            return false;
-        end
-    end
-    functionName = string.lower(functionName);
-    if string.find(functionName, "^test") or string.find(functionName, "test$") then
-        return true;
-    end
-    return false;
+    self:callListenersFunction('endTests');
 end
 
 ------------------------------------------------------
@@ -145,36 +112,36 @@ function runTestCase(testCaseName, testcase, testResult)
         line = 0;
         message = "";
     };
-    local statusCode, errorObject = true, errorObjectDefault;
+    local status, errorObject = true, errorObjectDefault;
 
     testResult:startTest(testCaseName);
 
     if not testcase.isIgnored_ then
         if testcase.setUp and isFunction(testcase.setUp) then
-            statusCode, errorObject = testcase:setUp();
+            status, errorObject = testcase:setUp();
         else
-            statusCode, errorObject = true, errorObjectDefault;
+            status, errorObject = true, errorObjectDefault;
         end
 
-        if statusCode then
-            statusCode, errorObject = testcase:test();
+        if status then
+            status, errorObject = testcase:test();
 
-            if not statusCode then
+            if not status then
                 testResult:addFailure(testCaseName, errorObject or errorObjectDefault);
             else
                 testResult:addSuccessful(testCaseName);
             end
 
             if testcase.tearDown and isFunction(testcase.tearDown) then
-                statusCode, errorObject = testcase:tearDown();
+                status, errorObject = testcase:tearDown();
             else
-                statusCode, errorObject = true, errorObjectDefault;
+                status, errorObject = true, errorObjectDefault;
             end
 
-            if not statusCode then
+            if not status then -- if tearDown failed
                 testResult:addError(testCaseName, errorObject or errorObjectDefault);
             end
-        else
+        else -- if setUp failed
             testResult:addError(testCaseName, errorObject or errorObjectDefault);
         end
     else

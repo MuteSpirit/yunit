@@ -331,27 +331,6 @@ globalTestCaseListFixturePlusUseTmpDir =
         isTrue(ttpl2.endTestsCall);
     end
 
-
-    function isTestFunctionTest()
-        local isTestFunction = testRunner.isTestFunction;
-        isTrue(isTestFunction("test"));
-        isTrue(isTestFunction("Test"));
-        isTrue(isTestFunction("test1"));
-        isTrue(isTestFunction("Test1"));
-        isTrue(isTestFunction("sometest"));
-        isTrue(isTestFunction("SomeTest"));
-
-        isFalse(isTestFunction("TEST_FIXTURE"));
-        isFalse(isTestFunction("TEST_SUITE"));
-        isFalse(isTestFunction("TEST_CASE"));
-        isFalse(isTestFunction("TEST_CASE_EX"));
-
-        isTrue(isTestFunction("test_fixture"));
-        isTrue(isTestFunction("test_suite"));
-        isTrue(isTestFunction("test_case"));
-        isTrue(isTestFunction("test_case_ex"));
-    end
-
     function isLuaTestContainerTest()
         isTrue(testRunner.isLuaTestContainer("unit.t.lua"));
         isTrue(testRunner.isLuaTestContainer(" .t.lua"));

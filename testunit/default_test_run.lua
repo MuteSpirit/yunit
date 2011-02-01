@@ -1,8 +1,9 @@
 local fs = require('filesystem')
 local testRunner = require('testunit.test_runner')
-local testListeners = require('testunit.test_listeners')
 
 local testObserver = testRunner.TestObserver:new()
+
+local testListeners = require('testunit.test_listeners')
 testObserver:addTestListener(testListeners.TextTestProgressListener:new())
 
 function run(path)
