@@ -30,9 +30,9 @@ TESTUNIT_NS_BEGIN
 
 // TestCase at Lua code:
 // {
-//		setUp = setUpCFunction,
+//		innerSetUp = setUpCFunction,
 //		test = testCFunction,
-//		tearDown = tearDownCFunction,
+//		innerTearDown = tearDownCFunction,
 //		this = userdata,	// pointer to C++ object of class TestCase
 // }
 
@@ -54,11 +54,11 @@ static Thunk getTearDownThunk(TESTUNIT_NS::TestCase* testCase)
 static const char* getFuncName(Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*))
 {
 	if (&getSetUpThunk == getThunkFunc)
-		return "setUp";
+		return "innerSetUp";
 	else if (&getTestThunk == getThunkFunc)
 		return "test";
 	else if (&getTearDownThunk == getThunkFunc)
-		return "tearDown";
+		return "innerTearDown";
 
 	return "[unknown]";
 }

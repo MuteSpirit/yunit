@@ -93,7 +93,7 @@ private:
 Test::Test()
 : testThunk_()
 {
-	testThunk_ = Thunk::create<Test, &Test::test>(this);
+	testThunk_ = Thunk::create<Test, &Test::execute>(this);
 }
 
 Test::~Test()
@@ -111,8 +111,8 @@ Fixture::Fixture()
 : setUpThunk_()
 , tearDownThunk_()
 {
-	setUpThunk_ = Thunk::create<Fixture, &Fixture::setUp>(this);
-	tearDownThunk_ = Thunk::create<Fixture, &Fixture::tearDown>(this);
+	setUpThunk_ = Thunk::create<Fixture, &Fixture::innerSetUp>(this);
+	tearDownThunk_ = Thunk::create<Fixture, &Fixture::innerTearDown>(this);
 }
 
 Fixture::~Fixture()
