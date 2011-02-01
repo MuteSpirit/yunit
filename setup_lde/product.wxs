@@ -37,6 +37,7 @@
 
                 <Component Id="TestRunner" Guid="E7DC4B47-1BFB-4CE8-AD5D-C0A9043E3516">
                   <File Id="test_runner.lua" Name="test_runner.lua" DiskId="1" Source="..\testunit\test_runner.lua" />
+                  <File Id="default_test_run.lua" Name="default_test_run.lua" DiskId="1" Source="..\testunit\default_test_run.lua" />
                   <File Id="test_listeners.lua" Name="test_listeners.lua" DiskId="1" Source="..\testunit\test_listeners.lua" />
                   <File Id="report.xsl" Name="report.xsl" DiskId="1" Source="..\testunit\report.xsl" />
                 </Component>
