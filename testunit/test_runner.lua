@@ -28,15 +28,15 @@ end
 
 ------------------------------------------------------
 TestListener = {
-    addSuccessful = function(testCaseName) end
-    addFailure = function(testCaseName, errorObject) end
-    addError = function(testCaseName, errorObject) end
-    addIgnore = function(testCaseName, errorObject) end
-    startTest = function(testCaseName) end
-    endTest = function(testCaseName) end
-    startTests = function() end
-    endTests = function() end
-    outputMessage = function(message) end
+    addSuccessful = function(testCaseName) end;
+    addFailure = function(testCaseName, errorObject) end;
+    addError = function(testCaseName, errorObject) end;
+    addIgnore = function(testCaseName, errorObject) end;
+    startTest = function(testCaseName) end;
+    endTest = function(testCaseName) end;
+    startTests = function() end;
+    endTests = function() end;
+    outputMessage = function(message) end;
 };
 
 function TestListener:new(o)

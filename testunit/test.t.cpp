@@ -447,15 +447,9 @@ TEST_CASE_END
 // some_test.t.cpp
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//#include <testunit/test.h>
+#include <testunit/test.h>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-test(test1)
-{
-    isTrue(true);
-    isFalse(false);
-}
-
 fixture(fixtureA)
 {
     setUp()
@@ -469,34 +463,91 @@ fixture(fixtureA)
     int a_;
 };
 
-//fixture(fixtureB)
-//{
-//    setUp()
-//    {
-//        b_ = 11;
-//    }
-//    tearDown()
-//    {
-//        b_ = 0;
-//    }
-//    int b_;
-//};
+fixture(fixtureB)
+{
+    setUp()
+    {
+        b_ = 11;
+    }
+    tearDown()
+    {
+        b_ = 0;
+    }
+    int b_;
+};
 
-//test1(test2, fixtureA)
-//{
-//    areEq(10, a_); 
-//}
-//
-//test2(test3, fixtureA, fixtureB)
-//{
-//    areEq(10, a_); 
-//    areEq(11, b_); 
-//}
-//
-//_test(test4)
-//{
-//    // ignored test case
-//    int uncompiledCode[0] = {1};
-//}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+test(test1)
+{
+    isTrue(true);
+    isFalse(false);
+}
+
+test1(test2, fixtureA)
+{
+    areEq(10, a_); 
+}
+
+test2(test3, fixtureA, fixtureB)
+{
+    areEq(10, a_); 
+    areEq(11, b_); 
+}
+
+_test(test4)
+{
+    // ignored test case
+    int uncompiledCode[0] = {1};
+}
+
+_test1(test5, fixtureA)
+{
+    // ignored test case
+    int uncompiledCode[0] = {1};
+}
+
+_test2(test6, fixtureA, fixtureB)
+{
+    // ignored test case
+    int uncompiledCode[0] = {1};
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// test macro multiple using in one t.cpp file
+
+test(test1bis)
+{
+    isTrue(true);
+    isFalse(false);
+}
+
+test1(test2bis, fixtureA)
+{
+    areEq(10, a_); 
+}
+
+test2(test3bis, fixtureA, fixtureB)
+{
+    areEq(10, a_); 
+    areEq(11, b_); 
+}
+
+_test(test4bis)
+{
+    // ignored test case
+    int uncompiledCode[0] = {1};
+}
+
+_test1(test5bis, fixtureA)
+{
+    // ignored test case
+    int uncompiledCode[0] = {1};
+}
+
+_test2(test6bis, fixtureA, fixtureB)
+{
+    // ignored test case
+    int uncompiledCode[0] = {1};
+}
 
 #endif // NEW_TEST_SYNTAX
