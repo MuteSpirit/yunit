@@ -441,3 +441,62 @@ TEST_CASE_END
 IGNORE_TEST_CASE_EX_ALONE(standaloneAndIgnoredAndNotCompiledTestWithFixture, SetUpCallCheck)
     int emptyArrayNotAllowed[0];// error C2466: cannot allocate an array of constant size 0
 TEST_CASE_END
+
+#ifndef NEW_TEST_SYNTAX
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// some_test.t.cpp
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#include <testunit/test.h>
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+test(test1)
+{
+    isTrue(true);
+    isFalse(false);
+}
+
+fixture(fixtureA)
+{
+    setUp()
+    {
+        a_ = 10;
+    }
+    tearDown()
+    {
+        a_ = 0;
+    }
+    int a_;
+};
+
+//fixture(fixtureB)
+//{
+//    setUp()
+//    {
+//        b_ = 11;
+//    }
+//    tearDown()
+//    {
+//        b_ = 0;
+//    }
+//    int b_;
+//};
+
+//test1(test2, fixtureA)
+//{
+//    areEq(10, a_); 
+//}
+//
+//test2(test3, fixtureA, fixtureB)
+//{
+//    areEq(10, a_); 
+//    areEq(11, b_); 
+//}
+//
+//_test(test4)
+//{
+//    // ignored test case
+//    int uncompiledCode[0] = {1};
+//}
+
+#endif // NEW_TEST_SYNTAX

@@ -95,7 +95,7 @@ TESTUNIT_NS_BEGIN
 class TESTUNIT_API Test
 {
 public:
-	virtual void test() = 0;
+	virtual void execute() = 0;
 	virtual Thunk testThunk();
 	virtual ~Test();
 
@@ -110,8 +110,8 @@ private:
 class TESTUNIT_API Fixture
 {
 public:
-	virtual void setUp() = 0;
-	virtual void tearDown() = 0;
+	virtual void innerSetUp() = 0;
+	virtual void innerTearDown() = 0;
 
 	virtual Thunk setUpThunk();
 	virtual Thunk tearDownThunk();
@@ -314,12 +314,12 @@ class TEST_FIXTURE_NAME(fixtureName) : public virtual TESTUNIT_NS::Fixture\
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define SETUP\
 	public:\
-		virtual void setUp()
+		virtual void innerSetUp()
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEARDOWN\
 	public:\
-		virtual void tearDown()
+		virtual void innerTearDown()
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define CONCAT(a, b) a ## b
@@ -360,7 +360,7 @@ class TEST_FIXTURE_NAME(fixtureName) : public virtual TESTUNIT_NS::Fixture\
 		}\
 		SETUP {}\
 		TEARDOWN {}\
-		virtual void test()\
+		virtual void execute()\
 		{
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -374,7 +374,7 @@ class TEST_FIXTURE_NAME(fixtureName) : public virtual TESTUNIT_NS::Fixture\
 		: TESTUNIT_NS::TestCase(name, isIgnored)\
 		{\
 		}\
-		virtual void test()\
+		virtual void execute()\
 		{
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -407,7 +407,7 @@ class TEST_FIXTURE_NAME(fixtureName) : public virtual TESTUNIT_NS::Fixture\
 		}\
 		SETUP {}\
 		TEARDOWN {}\
-        virtual void test() {}\
+        virtual void execute() {}\
 		template<typename T> void ignoredTest()\
         {
 
@@ -422,7 +422,7 @@ class TEST_FIXTURE_NAME(fixtureName) : public virtual TESTUNIT_NS::Fixture\
 		: TESTUNIT_NS::TestCase(name, isIgnored)\
 		{\
 		}\
-        virtual void test() {}\
+        virtual void execute() {}\
 		template<typename T> void ignoredTest()\
         {
 
@@ -585,6 +585,42 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
 	{																										\
 		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), "Unwanted SEH exception has been thrown.", true);		\
 	}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define test_(name, testSuite)\
+	struct TestCase##name;\
+	TESTUNIT_NS::RegisterTestCase<TestCase##name> UNIQUE_REGISTER_NAME(name)(#name, testSuite);\
+	struct TestCase##name : public TESTUNIT_NS::TestCase\
+	{\
+		TestCase##name(const char* name, bool isIgnored)\
+		: TESTUNIT_NS::TestCase(name, isIgnored)\
+		{}\
+		virtual void innerSetUp() {}\
+        virtual void execute();\
+		virtual void innerTearDown() {}\
+    };\
+	void TestCase##name::execute()
+
+#define test(name)\
+    test_(name, TESTUNIT_NS::TestRegistry::defaultTestSuite())
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define fixtureName(name) name ## Fixture
+
+#define fixture(name)\
+    struct fixtureName(name) : public virtual TESTUNIT_NS::Fixture
+
+#define setUp()\
+    virtual void innerSetUp()
+
+#define tearDown()\
+    virtual void innerTearDown()
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define isTrue(condition) ASSERT(condition)
+#define isFalse(condition) ASSERT_NOT(condition)
+#define areEq(expected, actual) ASSERT_EQUAL(expected, actual)
 
 TESTUNIT_NS_END
 
