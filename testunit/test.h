@@ -588,9 +588,36 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define test_(name, testSuite)\
-	struct TestCase##name;\
-	TESTUNIT_NS::RegisterTestCase<TestCase##name> UNIQUE_REGISTER_NAME(name)(#name, testSuite);\
+#define fixtureName(name) name ## Fixture
+#define fixtureName2(name, name1, name2) fixtureName(name ## name1 ## name2)
+
+#define fixture(name)\
+    struct fixtureName(name) : public virtual TESTUNIT_NS::Fixture
+
+#define fixture2(derived, base1, base2)\
+    struct derived : public base1,\
+                     public base2 \
+    {\
+		virtual void innerSetUp()\
+        {\
+            base1::innerSetUp();\
+            base2::innerSetUp();\
+        }\
+		virtual void innerTearDown()\
+        {\
+            base1::innerTearDown();\
+            base2::innerTearDown();\
+        }\
+    };
+
+#define setUp()\
+    virtual void innerSetUp()
+
+#define tearDown()\
+    virtual void innerTearDown()
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define test_(name)\
 	struct TestCase##name : public TESTUNIT_NS::TestCase\
 	{\
 		TestCase##name(const char* name, bool isIgnored)\
@@ -599,23 +626,66 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
 		virtual void innerSetUp() {}\
         virtual void execute();\
 		virtual void innerTearDown() {}\
-    };\
-	void TestCase##name::execute()
+    };
+
+#define test1_(name, usedFixture)\
+	struct TestCase##name : public TESTUNIT_NS::TestCase, public usedFixture\
+	{\
+		TestCase##name(const char* name, bool isIgnored)\
+		: TESTUNIT_NS::TestCase(name, isIgnored)\
+		{}\
+		virtual void execute();\
+    };
+
+#define registerTest(name, testSuite)\
+    TESTUNIT_NS::RegisterTestCase<TestCase##name> UNIQUENAME(name)(#name, testSuite);
+
+#define registerIgnoredTest(name, testSuite)\
+    TESTUNIT_NS::RegisterIgnoredTestCase<TestCase##name> UNIQUENAME(name)(#name, testSuite);
+
+#define testBodyDef(name)\
+    void TestCase##name::execute()
+
+#define ignoredTestBodyDef(name)\
+    void TestCase##name::execute() {}\
+    template<typename T> void TestCase ## name ## Fake()
+
+#define defaultUsedTestSuite\
+    TESTUNIT_NS::TestRegistry::defaultTestSuite()
+
 
 #define test(name)\
-    test_(name, TESTUNIT_NS::TestRegistry::defaultTestSuite())
+    test_(name)\
+    registerTest(name, defaultUsedTestSuite)\
+    testBodyDef(name)
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define fixtureName(name) name ## Fixture
+#define test1(name, usedFixture)\
+    test1_(name, fixtureName(usedFixture))\
+    registerTest(name, defaultUsedTestSuite)\
+    testBodyDef(name)
 
-#define fixture(name)\
-    struct fixtureName(name) : public virtual TESTUNIT_NS::Fixture
+#define test2(name, usedFixture1, usedFixture2)\
+    fixture2(fixtureName2(name, usedFixture1, usedFixture2),\
+             fixtureName(usedFixture1),\
+             fixtureName(usedFixture2))\
+    test1_(name, fixtureName2(name, usedFixture1, usedFixture2))\
+    registerTest(name, defaultUsedTestSuite)\
+    testBodyDef(name)
 
-#define setUp()\
-    virtual void innerSetUp()
+#define _test(name)\
+    test_(name)\
+    registerIgnoredTest(name, defaultUsedTestSuite)\
+    ignoredTestBodyDef(name)
 
-#define tearDown()\
-    virtual void innerTearDown()
+#define _test1(name, usedFixture)\
+    test_(name)\
+    registerIgnoredTest(name, defaultUsedTestSuite)\
+    ignoredTestBodyDef(name)
+
+#define _test2(name, usedFixture1, usedFixture2)\
+    test_(name)\
+    registerIgnoredTest(name, defaultUsedTestSuite)\
+    ignoredTestBodyDef(name)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define isTrue(condition) ASSERT(condition)
