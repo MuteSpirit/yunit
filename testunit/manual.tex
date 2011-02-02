@@ -151,11 +151,11 @@ TDD (Test Driven Development) переводиться как <<разработка через тестирование>>
 \subsubsection{Первый тест на Lua}
 
 \begin{enumerate}
-\item Создайте файл с расширением \path{*.t.lua}.
+\item Создайте файл с расширением \path{*.t.lua}, например, \path{lua_sample.t.lua}
 %
 \item Добавьте в него следующий текст при помощи SciTE:
 \begin{lstlisting}[language=lua]
-function test()
+function testA()
     isTrue(false ~= true);
 end
 \end{lstlisting}
@@ -169,6 +169,7 @@ end
 command.go.*.t.lua=lua5.1.exe  -l load_scite_listener
 -l testunit.default_test_run -e "run('$(FileNameExt)')"
 \end{verbatim}
+Более подробно о нормальной настройке параметров запуска см. \ref{sec:run_test_properties}.
 %
 \item Сохраните.
 %
@@ -188,7 +189,7 @@ Execution of tests has been completed:
 \end{verbatim}
 Тест был успешно пройден.
 %
-\item Добавим в файл еще несколько тестов:
+\item Добавим в конец файл еще несколько тестов:
 \begin{lstlisting}[language=lua]
 function failedTest()
     isTrue(false)
@@ -221,6 +222,52 @@ lua_sample.t.lua::_ignoredTest
 lua_sample.t.lua(6) : true expected but was nil or false
 \end{verbatim}
 Вы переместитесь на строку со сработавшим assert-ом
+\end{enumerate}
+
+%---------------------------------------------------------------------
+\subsubsection{Первый тест на C++}
+\begin{enumerate}
+\item Создайте папку
+\item Скопируйте в нее проектник из \url{http://scm.til.int:8080/research2011/vs_projects/cppunit_template.t.vcxproj}
+\item Переименуйте в \path{cpp_sample.t.dll}
+\item Откройте его в Visual Studio
+\item Добавьте в него новый файл с расширением \path{*.t.cpp}, например, \path{cpp_sample.t.cpp}
+\item 
+Добавьте в него следующий текст:
+\begin{lstlisting}[language=c++]
+#include <tesunit/test.h>
+
+test(testA)
+{
+    isTrue(false != true);
+}
+\end{lstlisting}
+\item 
+Соберите этот проект
+\item 
+В окне Output Вы увидите результат выполнения теста:
+\begin{verbatim}
+[.]
+Execution of tests has been completed:
+			Failed:      0
+			Errors:       0
+			Ignored:     0
+			Successful:  1
+			Total:       1
+\end{verbatim}
+Тест был успешно пройден.
+\item 
+Добавьте в конец файла еще тестов:
+\begin{lstlisting}[language=c++]
+test(failedTest)
+    isTrue(false)
+end
+
+_test(ignoredTest)
+    isTrue(false)
+end
+\end{lstlisting}
+
 \end{enumerate}
 
 %-----------------------------------------------------------------------------------------
@@ -435,6 +482,7 @@ end
 
 %-----------------------------------------------------------------------------------------
 \subsection{Запуск тестов}
+\label{sec:run_test_properties}
 
 Для запуска тестов одного тестового контейнера можно использовать отдельный модуль \path{default_test_run.lua}. Командная строка запуска будет выглядеть примерно так:
 \begin{verbatim}
@@ -449,7 +497,7 @@ lua5.1.exe  -l load_scite_listener -l testunit.default_test_run -e "run([[TEST_C
 
 В качестве скрипта загрузки TestListner можно указывать:
 \begin{itemize}
-\item SciTE: \verb`-l load_vc_listener`
+\item SciTE: \verb`-l load_vs_listener`
 \item Visual Studio 2010: \verb`-l load_scite_listener`
 \end{itemize}
 
@@ -463,15 +511,19 @@ lua5.1.exe
 
 В SciTE составленную командную строку можно задать, например, в настройках пользователя, прописав:
 \begin{verbatim}
-command.go.*.t.lua=lua5.1.exe -l load_scite_listener -l default_test_run -e "run([[$(FileNameExt)]])"
+command.go.*.t.lua=lua5.1.exe 
+-l load_scite_listener -l default_test_run -e "run([[$(FileNameExt)]])"
 \end{verbatim}
 
 В Visual Studio 2010 нужно добавить ее в настройки проектника, например:
 \begin{itemize}
-\item Debugging $to$ Command = \path{lua5.1.exe}
-\item Debugging $to$ Command Arguments = \verb`-l load_vc_listener -l default_test_run -e "[[$(TargetPath)]]"`
-\item Build Events $to$ Post-Build Event $to$ Command Line = \verb`lua5.1.exe -l load_vc_listener -l default_test_run -e "[[$(TargetPath)]]"`
-\item Build Events $to$ Post-Build Event $to$ Description = Run unit tests \ldots
+\item Debugging $\to$ Command = \path{lua5.1.exe}
+\item Debugging $\to$ Command Arguments = \\
+\verb`-l load_vs_listener -l default_test_run -e "[[$(TargetPath)]]"`
+\item Build Events $\to$ Post-Build Event $\to$ Command Line = \\
+\verb`lua5.1.exe -l load_vs_listener -l default_test_run`\\
+\verb` -e "[[$(TargetPath)]]"`
+\item Build Events $\to$ Post-Build Event $\to$ Description = Run unit tests \ldots
 \end{itemize}
 
 %%-------------------------------------------------------------------------
