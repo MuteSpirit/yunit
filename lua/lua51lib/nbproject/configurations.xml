@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="69">
+  <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+    <itemPath>../lapi.c</itemPath>
+    <itemPath>../lapi.h</itemPath>
+    <itemPath>../lauxlib.c</itemPath>
+    <itemPath>../lauxlib.h</itemPath>
+    <itemPath>../lbaselib.c</itemPath>
+    <itemPath>../lcode.c</itemPath>
+    <itemPath>../lcode.h</itemPath>
+    <itemPath>../ldblib.c</itemPath>
+    <itemPath>../ldebug.c</itemPath>
+    <itemPath>../ldebug.h</itemPath>
+    <itemPath>../ldo.c</itemPath>
+    <itemPath>../ldo.h</itemPath>
+    <itemPath>../ldump.c</itemPath>
+    <itemPath>../lfunc.c</itemPath>
+    <itemPath>../lfunc.h</itemPath>
+    <itemPath>../lgc.c</itemPath>
+    <itemPath>../lgc.h</itemPath>
+    <itemPath>../linit.c</itemPath>
+    <itemPath>../liolib.c</itemPath>
+    <itemPath>../llex.c</itemPath>
+    <itemPath>../llex.h</itemPath>
+    <itemPath>../llimits.h</itemPath>
+    <itemPath>../lmathlib.c</itemPath>
+    <itemPath>../lmem.c</itemPath>
+    <itemPath>../lmem.h</itemPath>
+    <itemPath>../loadlib.c</itemPath>
+    <itemPath>../lobject.c</itemPath>
+    <itemPath>../lobject.h</itemPath>
+    <itemPath>../lopcodes.c</itemPath>
+    <itemPath>../lopcodes.h</itemPath>
+    <itemPath>../loslib.c</itemPath>
+    <itemPath>../lparser.c</itemPath>
+    <itemPath>../lparser.h</itemPath>
+    <itemPath>../lstate.c</itemPath>
+    <itemPath>../lstate.h</itemPath>
+    <itemPath>../lstring.c</itemPath>
+    <itemPath>../lstring.h</itemPath>
+    <itemPath>../lstrlib.c</itemPath>
+    <itemPath>../ltable.c</itemPath>
+    <itemPath>../ltable.h</itemPath>
+    <itemPath>../ltablib.c</itemPath>
+    <itemPath>../ltm.c</itemPath>
+    <itemPath>../ltm.h</itemPath>
+    <itemPath>../lua.h</itemPath>
+    <itemPath>../luaconf.h</itemPath>
+    <itemPath>../lualib.h</itemPath>
+    <itemPath>../lundump.c</itemPath>
+    <itemPath>../lundump.h</itemPath>
+    <itemPath>../lvm.c</itemPath>
+    <itemPath>../lvm.h</itemPath>
+    <itemPath>../lzio.c</itemPath>
+    <itemPath>../lzio.h</itemPath>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="2">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>GNU|GNU</compilerSet>
+        <platform>2</platform>
+      </toolsSet>
+      <compileType>
+        <linkerTool>
+          <output>../../_bin/liblua5.1.so</output>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="Release" type="2">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>GNU|GNU</compilerSet>
+        <platform>2</platform>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
+        <linkerTool>
+          <output>../../_bin/liblua5.1.so</output>
+        </linkerTool>
+      </compileType>
+    </conf>
+  </confs>
+</configurationDescriptor>
