@@ -88,6 +88,27 @@ namespace TestUnit {
 TESTUNIT_NS_BEGIN
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class SourceLine
+{
+public:
+	TESTUNIT_API SourceLine(const char* fileName, const int lineNumber);
+
+	const char* fileName() const;
+	int lineNumber() const;
+
+public:
+	static const char* unknownFileName_;
+	static const int unknownLineNumber_;
+
+protected:
+    SourceLine();
+
+private:
+	const char* fileName_;
+	int lineNumber_;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class TESTUNIT_API Test
 {
 public:
@@ -130,15 +151,17 @@ public:
 
 	const char* name() const;
     bool isIgnored() const;
+    const SourceLine& source() const;
 
 protected:
-	TestCase(const char* name, const bool isIgnored);
+	TestCase(const char* name, const bool isIgnored, const SourceLine& source);
 	TestCase(const TestCase& rhs);
 	TestCase& operator=(const TestCase& rhs);
 
 private:
 	const char* name_;
 	bool isIgnored_;
+    SourceLine source_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -155,21 +178,16 @@ public:
 	TestSuite& operator=(const TestSuite& rhs);
 	virtual ~TestSuite();
 
-	const char* name();
+	const char* name() const;
 
 	TestCaseIter beginTestCases();
 	TestCaseIter endTestCases();
 
 	void addTestCase(TestCase* testCase);
 
-    void ignoreAddingTestCases(bool value);
-    bool ignoreAddingTestCases() const;
-
 private:
 	const char* name_;
 	TestCaseList testCases_;
-
-	bool ignoreAddingTestCases_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -184,7 +202,7 @@ public:
 	static TESTUNIT_API TestRegistry* initialize();
 	static TESTUNIT_API void reinitialize(TestRegistry* newValue);	// for tests
 
-	void TESTUNIT_API addTestSuite(TestSuite* testSuite);
+    void TESTUNIT_API addTestCase(TestCase* testCase);
 
 	TESTUNIT_API TestSuiteIter beginTestSuites();
 	TESTUNIT_API TestSuiteIter endTestSuites();
@@ -195,6 +213,10 @@ public:
 
 protected:
 	TestRegistry();
+	~TestRegistry();
+
+    TESTUNIT_API void addTestSuite(TestSuite* testSuite);
+    TESTUNIT_API TestSuite* getTestSuite(const SourceLine& source);
 
 private:
 	static TESTUNIT_API TestRegistry* thisPtr_;
@@ -215,35 +237,14 @@ struct RegisterTestSuite
 template<typename TestCaseClass>
 struct RegisterTestCase
 {
-	RegisterTestCase(const char* name, TestSuite* testSuite);
+	RegisterTestCase(const char* name, const SourceLine& source);
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename TestCaseClass>
 struct RegisterIgnoredTestCase
 {
-	RegisterIgnoredTestCase(const char* name, TestSuite* testSuite);
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class SourceLine
-{
-public:
-	TESTUNIT_API SourceLine(const char* fileName, const int lineNumber);
-
-	const char* fileName() const;
-	int lineNumber() const;
-
-public:
-	static const char* unknownFileName_;
-	static const int unknownLineNumber_;
-
-protected:
-    SourceLine();
-
-private:
-	const char* fileName_;
-	int lineNumber_;
+	RegisterIgnoredTestCase(const char* name, const SourceLine& source);
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -277,172 +278,27 @@ RegisterTestSuite<TestSuiteClass>::RegisterTestSuite(const char* name)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename TestCaseClass>
-RegisterTestCase<TestCaseClass>::RegisterTestCase(const char* name, TestSuite* testSuite)
+RegisterTestCase<TestCaseClass>::RegisterTestCase(const char* name,
+                                                  const SourceLine& source)
 {
     const bool ignore = true;
-	static TestCaseClass testcase(name, !ignore);
-	testSuite->addTestCase(&testcase);
+	static TestCaseClass testcase(name, !ignore, source);
+	TestRegistry::initialize()->addTestCase(&testcase);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename TestCaseClass>
-RegisterIgnoredTestCase<TestCaseClass>::RegisterIgnoredTestCase(const char* name, TestSuite* testSuite)
+RegisterIgnoredTestCase<TestCaseClass>::RegisterIgnoredTestCase(const char* name,
+                                                                const SourceLine& source)
 {
     const bool ignore = true;
-	static TestCaseClass testcase(name, ignore);
-	testSuite->addTestCase(&testcase);
+	static TestCaseClass testcase(name, ignore, source);
+	TestRegistry::initialize()->addTestCase(&testcase);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Macro
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TESTUNIT_SOURCELINE()   TESTUNIT_NS::SourceLine(__FILE__, __LINE__)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_FIXTURE_NAME(name) name ## TestFixture
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_FIXTURE(fixtureName)\
-class TEST_FIXTURE_NAME(fixtureName) : public virtual TESTUNIT_NS::Fixture\
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define SETUP\
-	public:\
-		virtual void innerSetUp()
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEARDOWN\
-	public:\
-		virtual void innerTearDown()
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define CONCAT(a, b) a ## b
-#define CONCAT2(x, y) CONCAT(x, y)
-#define UNIQUENAME(prefix) CONCAT2(prefix, __COUNTER__)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define UNIQUE_REGISTER_NAME(name) Register ## name
-#define UNIQUE_TEST_NAMESPACE(name) name ## Namespace
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_SUITE(testSuiteName)\
-	class testSuiteName : public TESTUNIT_NS::TestSuite\
-	{\
-	public:\
-		testSuiteName(const char* name)\
-		: TESTUNIT_NS::TestSuite(name)\
-		{\
-		}\
-	};\
-	TESTUNIT_NS::RegisterTestSuite<testSuiteName> UNIQUE_REGISTER_NAME(testSuiteName)(#testSuiteName);\
-	namespace UNIQUE_TEST_NAMESPACE(testSuiteName)\
-	{\
-		static TESTUNIT_NS::TestSuite* localTestSuite = UNIQUE_REGISTER_NAME(testSuiteName).testsuite_;\
-	}\
-	namespace UNIQUE_TEST_NAMESPACE(testSuiteName)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_CASE_(testName, testSuite)\
-	class TestCase##testName;\
-	TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, testSuite);\
-	class TestCase##testName : public TESTUNIT_NS::TestCase\
-	{\
-	public:\
-		TestCase##testName(const char* name, bool isIgnored)\
-		: TESTUNIT_NS::TestCase(name, isIgnored)\
-		{\
-		}\
-		SETUP {}\
-		TEARDOWN {}\
-		virtual void execute()\
-		{
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_CASE_EX_(testName, fixtureName, testSuite)\
-	class TestCase##testName;\
-	TESTUNIT_NS::RegisterTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, testSuite);\
-	class TestCase##testName : public TESTUNIT_NS::TestCase, public TEST_FIXTURE_NAME(fixtureName)\
-	{\
-	public:\
-		TestCase##testName(const char* name, bool isIgnored)\
-		: TESTUNIT_NS::TestCase(name, isIgnored)\
-		{\
-		}\
-		virtual void execute()\
-		{
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_CASE(testName)\
-    TEST_CASE_(testName, localTestSuite)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_CASE_ALONE(testName)\
-    TEST_CASE_(testName, TESTUNIT_NS::TestRegistry::defaultTestSuite())
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_CASE_EX(testName, fixtureName)\
-    TEST_CASE_EX_(testName, fixtureName, localTestSuite)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_CASE_EX_ALONE(testName, fixtureName)\
-    TEST_CASE_EX_(testName, fixtureName, TESTUNIT_NS::TestRegistry::defaultTestSuite())
-
-   
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define IGNORE_TEST_CASE_(testName, testSuite)\
-	class TestCase##testName;\
-	TESTUNIT_NS::RegisterIgnoredTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, testSuite);\
-	class TestCase##testName : public TESTUNIT_NS::TestCase\
-	{\
-	public:\
-		TestCase##testName(const char* name, bool isIgnored)\
-		: TESTUNIT_NS::TestCase(name, isIgnored)\
-		{\
-		}\
-		SETUP {}\
-		TEARDOWN {}\
-        virtual void execute() {}\
-		template<typename T> void ignoredTest()\
-        {
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define IGNORE_TEST_CASE_EX_(testName, fixtureName, testSuite)\
-	class TestCase##testName;\
-	TESTUNIT_NS::RegisterIgnoredTestCase<TestCase##testName> UNIQUE_REGISTER_NAME(testName)(#testName, testSuite);\
-	class TestCase##testName : public TESTUNIT_NS::TestCase, public TEST_FIXTURE_NAME(fixtureName)\
-	{\
-	public:\
-		TestCase##testName(const char* name, bool isIgnored)\
-		: TESTUNIT_NS::TestCase(name, isIgnored)\
-		{\
-		}\
-        virtual void execute() {}\
-		template<typename T> void ignoredTest()\
-        {
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define IGNORE_TEST_CASE(testName)\
-    IGNORE_TEST_CASE_(testName, localTestSuite)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define IGNORE_TEST_CASE_ALONE(testName)\
-    IGNORE_TEST_CASE_(testName, TESTUNIT_NS::TestRegistry::defaultTestSuite())
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define IGNORE_TEST_CASE_EX(testName, fixtureName)\
-    IGNORE_TEST_CASE_EX_(testName, fixtureName, localTestSuite)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define IGNORE_TEST_CASE_EX_ALONE(testName, fixtureName)\
-    IGNORE_TEST_CASE_EX_(testName, fixtureName, TESTUNIT_NS::TestRegistry::defaultTestSuite())
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_CASE_END \
-	    };\
-    };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool TESTUNIT_API cppunitAssert(const bool condition);
@@ -495,10 +351,6 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const std::string
 							bool mustBeEqual);
 void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expected, const double actual,
 							const double delta, bool mustBeEqual);
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define ASSERT_MESSAGE(message)
-	//TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), message, true)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define ASSERT(condition)\
@@ -584,9 +436,16 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TestSourceLine()   TESTUNIT_NS::SourceLine(__FILE__, __LINE__)
+#define CONCAT(a, b) a ## b
+#define CONCAT2(x, y) CONCAT(x, y)
+#define UNIQUENAME(prefix) CONCAT2(prefix, __COUNTER__)
+
+#define UNIQUE_REGISTER_NAME(name) Register ## name
+#define UNIQUE_TEST_NAMESPACE(name) name ## Namespace
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define TESTUNIT_SOURCELINE()   TESTUNIT_NS::SourceLine(__FILE__, __LINE__)
+
 #define fixtureName(name) name ## Fixture
 #define fixtureName2(name, name1, name2) fixtureName(name ## name1 ## name2)
 
@@ -619,8 +478,8 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
 #define test_(name)\
 	struct TestCase##name : public TESTUNIT_NS::TestCase\
 	{\
-		TestCase##name(const char* name, bool isIgnored)\
-		: TESTUNIT_NS::TestCase(name, isIgnored)\
+		TestCase##name(const char* name, bool isIgnored, const TESTUNIT_NS::SourceLine& source)\
+		: TESTUNIT_NS::TestCase(name, isIgnored, source)\
 		{}\
 		virtual void innerSetUp() {}\
         virtual void execute();\
@@ -630,17 +489,17 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
 #define test1_(name, usedFixture)\
 	struct TestCase##name : public TESTUNIT_NS::TestCase, public usedFixture\
 	{\
-		TestCase##name(const char* name, bool isIgnored)\
-		: TESTUNIT_NS::TestCase(name, isIgnored)\
+		TestCase##name(const char* name, bool isIgnored, const TESTUNIT_NS::SourceLine& source)\
+		: TESTUNIT_NS::TestCase(name, isIgnored, source)\
 		{}\
 		virtual void execute();\
     };
 
-#define registerTest(name, testSuite)\
-    TESTUNIT_NS::RegisterTestCase<TestCase##name> UNIQUENAME(name)(#name, testSuite);
+#define registerTest(name, source)\
+    TESTUNIT_NS::RegisterTestCase<TestCase##name> UNIQUENAME(name)(#name, source);
 
-#define registerIgnoredTest(name, testSuite)\
-    TESTUNIT_NS::RegisterIgnoredTestCase<TestCase##name> UNIQUENAME(name)(#name, testSuite);
+#define registerIgnoredTest(name, source)\
+    TESTUNIT_NS::RegisterIgnoredTestCase<TestCase##name> UNIQUENAME(name)(#name, source);
 
 #define testBodyDef(name)\
     void TestCase##name::execute()
@@ -649,18 +508,14 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
     void TestCase##name::execute() {}\
     template<typename T> void TestCase ## name ## Fake()
 
-#define defaultUsedTestSuite\
-    TESTUNIT_NS::TestRegistry::defaultTestSuite()
-
-
 #define test(name)\
     test_(name)\
-    registerTest(name, defaultUsedTestSuite)\
+    registerTest(name, TESTUNIT_SOURCELINE())\
     testBodyDef(name)
 
 #define test1(name, usedFixture)\
     test1_(name, fixtureName(usedFixture))\
-    registerTest(name, defaultUsedTestSuite)\
+    registerTest(name, TESTUNIT_SOURCELINE())\
     testBodyDef(name)
 
 #define test2(name, usedFixture1, usedFixture2)\
@@ -668,22 +523,22 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
              fixtureName(usedFixture1),\
              fixtureName(usedFixture2))\
     test1_(name, fixtureName2(name, usedFixture1, usedFixture2))\
-    registerTest(name, defaultUsedTestSuite)\
+    registerTest(name, TESTUNIT_SOURCELINE())\
     testBodyDef(name)
 
 #define _test(name)\
     test_(name)\
-    registerIgnoredTest(name, defaultUsedTestSuite)\
+    registerIgnoredTest(name, TESTUNIT_SOURCELINE())\
     ignoredTestBodyDef(name)
 
 #define _test1(name, usedFixture)\
     test_(name)\
-    registerIgnoredTest(name, defaultUsedTestSuite)\
+    registerIgnoredTest(name, TESTUNIT_SOURCELINE())\
     ignoredTestBodyDef(name)
 
 #define _test2(name, usedFixture1, usedFixture2)\
     test_(name)\
-    registerIgnoredTest(name, defaultUsedTestSuite)\
+    registerIgnoredTest(name, TESTUNIT_SOURCELINE())\
     ignoredTestBodyDef(name)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -691,12 +546,10 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
 	if(!TESTUNIT_NS::cppunitAssert(condition))\
 		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), #condition)
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define isFalse(condition)\
 	if(TESTUNIT_NS::cppunitAssert(condition))\
 		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), #condition " != false", false)
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define areEq(expected, actual)\
 	if(!TESTUNIT_NS::cppunitAssert((expected), (actual)))\
 		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), (expected), (actual), true)
