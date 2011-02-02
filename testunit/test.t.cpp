@@ -503,7 +503,38 @@ test(checkForUnreachableCodeWarningWhenUseWillThrow)
 
 test(thisTestMustFail)
 {
-    wchar_t t[] = L"abcfdgdfgdfgsfdfgsdsgsfsf";
-    areEq(t, L"fgsfddddddddddddddddddddddddddddddddddddddddcde");
+    wchar_t t[] = L"a";
+    try
+    {
+        areEq(t, L"b");
+    }
+    catch(TESTUNIT_NS::TestException& ex)
+    {
+        char buf[512];
+        ex.message(buf, 512);
+        //areEq(buf, buf);
+        areEq("a!=b", buf);
+    }
 }
 
+test(compareConstAndNonConstCharPointer)
+{
+    char a[] = "abc";
+    char b[] = "abcd";
+
+    areNotEq("ab", "abc");
+    areEq(a, "abc");
+    areEq("abc", a);
+    areNotEq(a, b);
+}
+
+test(compareConstAndNonConstWcharPointer)
+{
+    wchar_t a[] = L"abc";
+    wchar_t b[] = L"abcd";
+
+    areNotEq(L"ab", L"abc");
+    areEq(a, L"abc");
+    areEq(L"abc", a);
+    areNotEq(a, b);
+}

@@ -305,7 +305,15 @@ bool TESTUNIT_API cppunitAssert(const double expected, const double actual, cons
 bool TESTUNIT_API cppunitAssert(const long double expected, const long double actual, const long double delta);
 
 bool TESTUNIT_API cppunitAssert(const char *expected, const char *actual);
+bool TESTUNIT_API cppunitAssert(const char *expected, char *actual);
+bool TESTUNIT_API cppunitAssert(char *expected, const char *actual);
+bool TESTUNIT_API cppunitAssert(char *expected, char *actual);
+
 bool TESTUNIT_API cppunitAssert(const wchar_t *expected, const wchar_t *actual);
+bool TESTUNIT_API cppunitAssert(const wchar_t *expected, wchar_t *actual);
+bool TESTUNIT_API cppunitAssert(wchar_t *expected, const wchar_t *actual);
+bool TESTUNIT_API cppunitAssert(wchar_t *expected, wchar_t *actual);
+
 bool TESTUNIT_API cppunitAssert(const std::wstring& expected, const std::wstring& actual);
 bool TESTUNIT_API cppunitAssert(const std::string& expected, const std::string& actual);
 
