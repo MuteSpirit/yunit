@@ -71,10 +71,6 @@ namespace TestUnit {
 #ifndef _TESTUNIT_TEST_HEADER_
 #define _TESTUNIT_TEST_HEADER_
 
-#ifdef _MSC_VER
-	#define _CRT_SECURE_NO_WARNINGS 1
-#endif
-
 #ifndef _STL_LIST_HEADER_
 #define _STL_LIST_HEADER_
 #include <list>
@@ -586,6 +582,9 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
 		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), "Unwanted SEH exception has been thrown.", true);		\
 	}
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define TestSourceLine()   TESTUNIT_NS::SourceLine(__FILE__, __LINE__)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define fixtureName(name) name ## Fixture

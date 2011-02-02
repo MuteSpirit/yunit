@@ -6,6 +6,7 @@
 
 #ifdef _MSC_VER
 #include <excpt.h>
+#define _CRT_SECURE_NO_WARNINGS 1
 #endif
 
 #ifdef __cplusplus
