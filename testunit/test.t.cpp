@@ -147,6 +147,7 @@ fixture(fixtureB)
     setUp()
     {
         b_ = 11;
+        isTrue(false);
     }
     tearDown()
     {
