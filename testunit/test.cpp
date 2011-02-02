@@ -2,11 +2,11 @@
 // unit_test_sample.cpp
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#include "test.h"
-
 #ifdef _MSC_VER
 	#define _CRT_SECURE_NO_WARNINGS 1
 #endif
+
+#include "test.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -135,15 +135,17 @@ Thunk Fixture::tearDownThunk()
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-TestCase::TestCase(const char* name, const bool isIgnored)
+TestCase::TestCase(const char* name, const bool isIgnored, const SourceLine& source)
 : name_(name)
 , isIgnored_(isIgnored)
+, source_(source)
 {
 }
 
 TestCase::TestCase(const TestCase& rhs)
 : name_(rhs.name_)
 , isIgnored_(rhs.isIgnored_)
+, source_(rhs.source_)
 {
 }
 
@@ -153,6 +155,7 @@ TestCase& TestCase::operator=(const TestCase& rhs)
         return *this;
     name_ = rhs.name_;
     isIgnored_ = rhs.isIgnored_;
+    source_ = rhs.source_;
     return *this;
 }
 
@@ -170,11 +173,15 @@ bool TestCase::isIgnored() const
 	return isIgnored_;
 }
 
+const SourceLine& TestCase::source() const
+{
+    return source_;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TestSuite::TestSuite(const char *name)
 : name_(name)
 , testCases_()
-, ignoreAddingTestCases_(false)
 {
 	if (0 == name_)
 		name_ = "";
@@ -183,7 +190,6 @@ TestSuite::TestSuite(const char *name)
 TestSuite::TestSuite(const TestSuite& rhs)
 : name_(rhs.name_)
 , testCases_(rhs.testCases_)
-, ignoreAddingTestCases_(rhs.ignoreAddingTestCases_)
 {
 }
 
@@ -193,7 +199,6 @@ TestSuite& TestSuite::operator=(const TestSuite& rhs)
         return *this;
     name_ = rhs.name_;
     testCases_ = rhs.testCases_;
-    ignoreAddingTestCases_ = rhs.ignoreAddingTestCases_;
     return *this;
 }
 
@@ -201,7 +206,7 @@ TestSuite::~TestSuite()
 {
 }
 
-const char* TestSuite::name()
+const char* TestSuite::name() const
 {
 	return name_;
 }
@@ -221,16 +226,6 @@ TestSuite::TestCaseIter TestSuite::endTestCases()
     return testCases_.end();
 }
 
-void TestSuite::ignoreAddingTestCases(bool value)
-{
-    ignoreAddingTestCases_ = value;
-}
-
-bool TestSuite::ignoreAddingTestCases() const
-{
-    return ignoreAddingTestCases_;
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TestRegistry* TestRegistry::thisPtr_ = 0;
 TestSuite TestRegistry::defaultTestSuite_ = TestSuite("");
@@ -238,8 +233,19 @@ TestSuite TestRegistry::defaultTestSuite_ = TestSuite("");
 TestRegistry::TestRegistry()
 : testSuiteList_()
 {
-	// Add default TestSuite for TestCases, whitch have not owner.
-	addTestSuite(&defaultTestSuite_);
+}
+
+TestRegistry::~TestRegistry()
+{
+    struct Delete
+    {
+        void operator()(TestSuite* testSuite)
+        {
+            delete testSuite;
+        }
+    };
+    std::for_each(testSuiteList_.begin(), testSuiteList_.end(), Delete());
+    testSuiteList_.clear();
 }
 
 TestRegistry* TestRegistry::initialize()
@@ -253,6 +259,12 @@ TestRegistry* TestRegistry::initialize()
 void TestRegistry::reinitialize(TestRegistry* newValue)
 {
 	thisPtr_ = newValue;
+}
+
+void TESTUNIT_API TestRegistry::addTestCase(TestCase* testCase)
+{
+    TestSuite* testSuite = getTestSuite(testCase->source());
+    testSuite->addTestCase(testCase);
 }
 
 TestRegistry::TestSuiteIter TestRegistry::beginTestSuites()
@@ -272,7 +284,26 @@ TestRegistry::TestSuiteList& TestRegistry::testSuiteList()
 
 void TestRegistry::addTestSuite(TestSuite* testSuite)
 {
-	testSuiteList().push_back(testSuite);
+	testSuiteList_.push_back(testSuite);
+}
+
+TestSuite* TestRegistry::getTestSuite(const SourceLine& source)
+{
+    TestSuiteIter it = testSuiteList_.begin();
+    TestSuiteIter itEnd = testSuiteList_.end();
+    for (; it != itEnd; ++it)
+    {
+        if (0 == strcmp((*it)->name(), source.fileName()))
+            break;
+    }
+
+    if (it == itEnd)
+    {
+        testSuiteList_.push_back(new TestSuite(source.fileName()));
+        it = ++itEnd;
+    }
+
+    return *it;
 }
 
 TestSuite* TestRegistry::defaultTestSuite()
