@@ -246,7 +246,15 @@ int getTestList(lua_State *L)
 			lua_pushboolean(L, (*itTc)->isIgnored());
 			lua_setfield(L, -2, "isIgnored_");
 
-			// add table of TestCase into common list
+			// t["lineNumber_"] =
+            lua_pushinteger(L, (*itTc)->source().lineNumber());
+			lua_setfield(L, -2, "lineNumber_");
+
+			// t["fileName_"] =
+            lua_pushstring(L, (*itTc)->source().fileName());
+			lua_setfield(L, -2, "fileName_");
+
+            // add table of TestCase into common list
 			// t[i] = testcase
 			lua_settable(L, -3);
 		}
