@@ -139,6 +139,7 @@
 
 #include "test.h"
 
+#ifdef OLD_SYNTAX
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TEST_FIXTURE(EmptyFixture)
 {
@@ -442,7 +443,7 @@ IGNORE_TEST_CASE_EX_ALONE(standaloneAndIgnoredAndNotCompiledTestWithFixture, Set
     int emptyArrayNotAllowed[0];// error C2466: cannot allocate an array of constant size 0
 TEST_CASE_END
 
-#ifndef NEW_TEST_SYNTAX
+#else // i.e. not defined OLD_SYNTAX
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // some_test.t.cpp
 //
@@ -550,4 +551,4 @@ _test2(test6bis, fixtureA, fixtureB)
     int uncompiledCode[0] = {1};
 }
 
-#endif // NEW_TEST_SYNTAX
+#endif // OLD_SYNTAX
