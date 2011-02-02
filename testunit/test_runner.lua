@@ -103,7 +103,7 @@ function TestObserver:endTests()
 end
 
 ------------------------------------------------------
-function runTestCase(testCaseName, testcase, testResult)
+function runTestCase(testcase, testResult)
 ------------------------------------------------------
     local errorObjectDefault =
     {
@@ -113,8 +113,9 @@ function runTestCase(testCaseName, testcase, testResult)
         message = "";
     };
     local status, errorObject = true, errorObjectDefault;
+    local testName = testcase.name_ or 'unknownTestCase';
 
-    testResult:startTest(testCaseName);
+    testResult:startTest(testName);
 
     if not testcase.isIgnored_ then
         if testcase.setUp and isFunction(testcase.setUp) then
@@ -127,9 +128,9 @@ function runTestCase(testCaseName, testcase, testResult)
             status, errorObject = testcase:test();
 
             if not status then
-                testResult:addFailure(testCaseName, errorObject or errorObjectDefault);
+                testResult:addFailure(testName, errorObject or errorObjectDefault);
             else
-                testResult:addSuccessful(testCaseName);
+                testResult:addSuccessful(testName);
             end
 
             if testcase.tearDown and isFunction(testcase.tearDown) then
@@ -139,42 +140,22 @@ function runTestCase(testCaseName, testcase, testResult)
             end
 
             if not status then -- if tearDown failed
-                testResult:addError(testCaseName, errorObject or errorObjectDefault);
+                testResult:addError(testName, errorObject or errorObjectDefault);
             end
         else -- if setUp failed
-            testResult:addError(testCaseName, errorObject or errorObjectDefault);
+            testResult:addError(testName, errorObject or errorObjectDefault);
         end
     else
-        testResult:addIgnore(testCaseName);
+        testResult:addIgnore(testName);
     end
 
-    testResult:endTest(testCaseName);
+    testResult:endTest(testName);
 end
 
 ------------------------------------------------------
 GlobalTestCaseList = {};
 
-TestCaseRecord = {};
 ------------------------------------------------------
-
-function TestCaseRecord:new(name, object)
-    local o = {
-            ["name_"] = name,
-            ["test"] = object,
-        };
-    setmetatable(o, self);
-    self.__index = self;
-    return o;
-end
-
-function TestCaseRecord:name()
-    return self.name;
-end
-
-function TestCaseRecord:run(testResult)
-    runTestCase(self.name_, self.test, testResult);
-end
-
 function isWin()
     local envVar = os.getenv('WINDIR') or os.getenv('HOME') or os.getenv('PWD');
     return nil ~= string.match(envVar, '^%w:');
@@ -261,15 +242,11 @@ function loadTestContainers(filePathList)
 end
 
 ------------------------------------------------------
-local function addTestCaseToGlobalList(name, object)
-    table.insert(GlobalTestCaseList, TestCaseRecord:new(name, object));
-end
-
 function copyAllLuaTestCasesToGlobalTestList()
     local luaUnit = require("testunit.luaunit");
     local testcases = luaUnit.getTestList();
     for _, testcase in ipairs(testcases) do
-        addTestCaseToGlobalList(testcase.name_, testcase);
+        table.insert(GlobalTestCaseList, testcase);
     end
 end
 
@@ -277,15 +254,16 @@ function copyAllCppTestCasesToGlobalTestList()
     local cppUnit = require("cppunit");
     local testcases = cppUnit.getTestList();
     for _, testcase in ipairs(testcases) do
-        addTestCaseToGlobalList(testcase.name_, testcase);
+        table.insert(GlobalTestCaseList, testcase);
     end
 end
 
-function runAllTestCases(testObserver)
-    testObserver = testObserver or TestObserver;
-    testObserver:startTests();
-    for _, testRecord in ipairs(GlobalTestCaseList) do
-        testRecord:run(testObserver);
+function runAllTestCases(testResult)
+    testResult = testResult or TestObserver;
+    
+    testResult:startTests();
+    for _, test in ipairs(GlobalTestCaseList) do
+        runTestCase(test, testResult);
     end
-    testObserver:endTests();
+    testResult:endTests();
 end

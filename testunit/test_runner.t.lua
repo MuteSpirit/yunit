@@ -21,16 +21,13 @@
 --- \return boolean
 
 --- \fn runTestCase(testcase, testResult)
---- \brief This is "Frame of Test". Run setUp(), test() and tearDown() function of testcase.
+--- \brief This is "Frame of Test". Run setUp(), test() and tearDown() function of testcase (if thay are present, i.e. it may not use fixture).
 --- \param[in] testcase TestCase for run
 --- \param[in] testResult TesObserver for log events
 --- \return None
 
 --- \var GlobalTestCaseList
---- \brief Global list of TestCaseRecord
-
---- \class TestCaseRecord
---- \brief Class, containing link to TestCase object and some additional info for active test list management
+--- \brief Global list of TestCases
 
 --- \fn loadLuaContainer(filePath)
 --- \brief Load tests from Lua file
