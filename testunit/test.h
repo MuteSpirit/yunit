@@ -180,8 +180,8 @@ public:
 
 	const char* name() const;
 
-	TestCaseIter beginTestCases();
-	TestCaseIter endTestCases();
+	TestCaseIter begin();
+	TestCaseIter end();
 
 	void addTestCase(TestCase* testCase);
 
@@ -204,33 +204,19 @@ public:
 
     void TESTUNIT_API addTestCase(TestCase* testCase);
 
-	TESTUNIT_API TestSuiteIter beginTestSuites();
-	TESTUNIT_API TestSuiteIter endTestSuites();
-
-	TESTUNIT_API TestSuiteList& testSuiteList();
-
-    static TESTUNIT_API TestSuite* defaultTestSuite();
+	TESTUNIT_API TestSuiteIter begin();
+	TESTUNIT_API TestSuiteIter end();
 
 protected:
 	TestRegistry();
 	~TestRegistry();
 
-    TESTUNIT_API void addTestSuite(TestSuite* testSuite);
     TESTUNIT_API TestSuite* getTestSuite(const SourceLine& source);
 
 private:
 	static TESTUNIT_API TestRegistry* thisPtr_;
-	static TESTUNIT_API TestSuite defaultTestSuite_;
 
 	TestSuiteList testSuiteList_;
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename TestSuiteClass>
-struct RegisterTestSuite
-{
-	RegisterTestSuite(const char* name);
-	TestSuite* testsuite_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -266,15 +252,6 @@ private:
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Templates realization
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-template<typename TestSuiteClass>
-RegisterTestSuite<TestSuiteClass>::RegisterTestSuite(const char* name)
-: testsuite_(0)
-{
-	static TestSuiteClass testsuite(name);
-	testsuite_ = &testsuite;
-	TestRegistry::initialize()->addTestSuite(&testsuite);
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename TestCaseClass>
@@ -351,89 +328,6 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const std::string
 							bool mustBeEqual);
 void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expected, const double actual,
 							const double delta, bool mustBeEqual);
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define ASSERT(condition)\
-	if(!TESTUNIT_NS::cppunitAssert(condition))\
-		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), #condition)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define ASSERT_NOT(condition)\
-	if(TESTUNIT_NS::cppunitAssert(condition))\
-		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), #condition " != false", false)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define ASSERT_EQUAL(expected, actual)\
-	if(!TESTUNIT_NS::cppunitAssert((expected), (actual)))\
-		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), (expected), (actual), true)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define ASSERT_NOT_EQUAL(expected, actual)\
-	if(TESTUNIT_NS::cppunitAssert((expected), (actual)))\
-		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), (expected), (actual), false)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define ASSERT_DOUBLES_EQUAL(expected, actual, delta)\
-	if(!TESTUNIT_NS::cppunitAssert((expected), (actual), (delta)))\
-		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), (expected), (actual), (delta), true)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define ASSERT_DOUBLES_NOT_EQUAL(expected, actual, delta)\
-	if(TESTUNIT_NS::cppunitAssert((expected), (actual), (delta)))\
-		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), (expected), (actual), (delta), false)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define ASSERT_THROW(expression, exceptionType)																\
-	for(;;)																									\
-	{																										\
-		try																									\
-		{																									\
-			expression;																						\
-		}																									\
-		catch(const exceptionType&)																			\
-		{																									\
-			break;																							\
-		}																									\
-																											\
-		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(),													\
-			"Expected exception \"" #exceptionType "\" hasn't been not thrown.", true);						\
-	}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define ASSERT_NO_CPP_EXCEPTION(expression, exceptionType)														\
-	try																									\
-	{																									\
-		expression;																						\
-	}																									\
-	catch(const exceptionType&)																			\
-	{																									\
-		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(),													\
-			"Not expected exception \"" #exceptionType "\" has been thrown.", true);			\
-	}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define ASSERT_NO_ANY_CPP_EXCEPTION(expression)														\
-	try																									\
-	{																									\
-		expression;																						\
-	}																									\
-	catch(...)																			\
-	{																									\
-		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(),													\
-			"Unwanted C++ exception has been thrown.", true);			\
-	}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define ASSERT_NO_SEH_THROW(expression)																	\
-	__try																									\
-	{																										\
-		expression;																							\
-	}																										\
-	__except(EXCEPTION_EXECUTE_HANDLER)																		\
-	{																										\
-		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), "Unwanted SEH exception has been thrown.", true);		\
-	}
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define CONCAT(a, b) a ## b
@@ -571,19 +465,21 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define willThrow(expression, exceptionType)																\
-	for(;;)																									\
-	{																										\
+	{                                                                                                       \
+        bool catched = false;                                                                               \
 		try																									\
 		{																									\
-			expression;																						\
+			expression;																			            \
 		}																									\
 		catch(const exceptionType&)																			\
 		{																									\
-			break;																							\
+			catched = true;																					\
 		}																									\
-																											\
-		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(),													\
-			"Expected exception \"" #exceptionType "\" hasn't been not thrown.", true);						\
+		if (!catched)																						\
+		{                                                                                                   \
+            TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(),												\
+			"Expected exception "" #exceptionType "" hasn't been not thrown.", true);						\
+        }                                                                                                   \
 	}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

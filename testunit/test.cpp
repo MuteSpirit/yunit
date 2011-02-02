@@ -216,19 +216,18 @@ void TestSuite::addTestCase(TestCase* testCase)
     testCases_.push_back(testCase);
 }
 
-TestSuite::TestCaseIter TestSuite::beginTestCases()
+TestSuite::TestCaseIter TestSuite::begin()
 {
     return testCases_.begin();
 }
 
-TestSuite::TestCaseIter TestSuite::endTestCases()
+TestSuite::TestCaseIter TestSuite::end()
 {
     return testCases_.end();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TestRegistry* TestRegistry::thisPtr_ = 0;
-TestSuite TestRegistry::defaultTestSuite_ = TestSuite("");
 
 TestRegistry::TestRegistry()
 : testSuiteList_()
@@ -267,24 +266,14 @@ void TESTUNIT_API TestRegistry::addTestCase(TestCase* testCase)
     testSuite->addTestCase(testCase);
 }
 
-TestRegistry::TestSuiteIter TestRegistry::beginTestSuites()
+TestRegistry::TestSuiteIter TestRegistry::begin()
 {
-    return testSuiteList().begin();
+    return testSuiteList_.begin();
 }
 
-TestRegistry::TestSuiteIter TestRegistry::endTestSuites()
+TestRegistry::TestSuiteIter TestRegistry::end()
 {
-    return testSuiteList().end();
-}
-
-TestRegistry::TestSuiteList& TestRegistry::testSuiteList()
-{
-    return testSuiteList_;
-}
-
-void TestRegistry::addTestSuite(TestSuite* testSuite)
-{
-	testSuiteList_.push_back(testSuite);
+    return testSuiteList_.end();
 }
 
 TestSuite* TestRegistry::getTestSuite(const SourceLine& source)
@@ -304,11 +293,6 @@ TestSuite* TestRegistry::getTestSuite(const SourceLine& source)
     }
 
     return *it;
-}
-
-TestSuite* TestRegistry::defaultTestSuite()
-{
-    return &defaultTestSuite_;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

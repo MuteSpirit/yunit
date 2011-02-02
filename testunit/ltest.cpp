@@ -216,12 +216,12 @@ int getTestList(lua_State *L)
 	lua_newtable(L); // table of all test cases
 	lua_Number i = 1;
 
-	TESTUNIT_NS::TestRegistry::TestSuiteIter it = TESTUNIT_NS::TestRegistry::initialize()->beginTestSuites();
-	TESTUNIT_NS::TestRegistry::TestSuiteIter itEnd = TESTUNIT_NS::TestRegistry::initialize()->endTestSuites();
+	TESTUNIT_NS::TestRegistry::TestSuiteIter it = TESTUNIT_NS::TestRegistry::initialize()->begin();
+	TESTUNIT_NS::TestRegistry::TestSuiteIter itEnd = TESTUNIT_NS::TestRegistry::initialize()->end();
 	for(; it != itEnd; ++it)
 	{
-		TESTUNIT_NS::TestSuite::TestCaseIter itTc = (*it)->beginTestCases();
-		TESTUNIT_NS::TestSuite::TestCaseIter itTcEnd = (*it)->endTestCases();
+		TESTUNIT_NS::TestSuite::TestCaseIter itTc = (*it)->begin();
+		TESTUNIT_NS::TestSuite::TestCaseIter itTcEnd = (*it)->end();
 		for(; itTc != itTcEnd; ++itTc)
 		{
 			lua_pushnumber(L, i++);	// order number of TestCase
