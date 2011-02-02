@@ -140,7 +140,6 @@ function TextTestProgressListener:endTests()
 
     local str = self:totalIgnoreStr()
     if string.len(str) > 0 then 
-        table.insert(res, '----Ignored tests----')
         table.insert(res, str)
     end
 
@@ -150,6 +149,12 @@ end
 function TextTestProgressListener:totalErrorStr()
     local res = {}
     local testName, errorObject
+
+    local prefix = ''
+    if #self.tableWithErrors > 0 then
+        prefix = '----Errors----\n'
+    end
+
     for _, record in ipairs(self.tableWithErrors) do
         testName, errorObject = unpack(record)
         
@@ -161,12 +166,18 @@ function TextTestProgressListener:totalErrorStr()
         table.insert(res, testName .. funcName .. '\n\t' .. self:editorSpecifiedErrorLine(errorObject))
     end;
     
-    return table.concat(res, '\n------------------------------------------------------------------------------------------------------\n')
+    return prefix .. table.concat(res, '\n------------------------------------------------------------------------------------------------------\n')
 end
 
 function TextTestProgressListener:totalFailureStr()
     local res = {}
     local testName, errorObject
+
+    local prefix = ''
+    if #self.tableWithFailures > 0 then
+        prefix = '----Failures----\n'
+    end
+    
     for _, record in ipairs(self.tableWithFailures) do
         testName, errorObject = unpack(record)
 
@@ -178,18 +189,24 @@ function TextTestProgressListener:totalFailureStr()
         table.insert(res, testName .. funcName .. '\n\t' .. self:editorSpecifiedErrorLine(errorObject))
     end;
     
-    return table.concat(res, '\n------------------------------------------------------------------------------------------------------\n')
+    return prefix .. table.concat(res, '\n------------------------------------------------------------------------------------------------------\n')
 end
 
 function TextTestProgressListener:totalIgnoreStr()
     local res = {}
     local testName
+
+    local prefix = ''
+    if #self.tableWithIgnores > 0 then
+        prefix = '----Ignored----\n'
+    end
+    
     for _, record in ipairs(self.tableWithIgnores) do
         testName, errorObject = unpack(record)
         table.insert(res, self:editorSpecifiedErrorLine(errorObject) ..  testName)
     end;
     
-    return table.concat(res, '\n')
+    return prefix .. table.concat(res, '\n')
 end
 
 

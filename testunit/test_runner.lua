@@ -125,6 +125,7 @@ function runTestCase(testCaseName, testcase, testResult)
 
         if status then
             status, errorObject = testcase:test();
+            errorObject.func = ''
 
             if not status then
                 testResult:addFailure(testCaseName, errorObject or errorObjectDefault);
