@@ -500,3 +500,10 @@ test(checkForUnreachableCodeWarningWhenUseWillThrow)
     willThrow(ThrowException::foo(), Exception);
     willThrow(ThrowException::foo(), Exception);
 }
+
+test(thisTestMustFail)
+{
+    wchar_t t[] = L"abcfdgdfgdfgsfdfgsdsgsfsf";
+    areEq(t, L"fgsfddddddddddddddddddddddddddddddddddddddddcde");
+}
+

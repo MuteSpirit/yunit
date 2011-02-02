@@ -414,7 +414,7 @@ void makeEqualMessage(char* dst, const unsigned int dstSize,
         return;
 
     const char* equalSign = mustBeEqual ? "!=" : "==";
-    const size_t equalSignLen = sizeof(equalSign);
+    const size_t equalSignLen = strlen(equalSign);
     ::strncpy(dst + offset, equalSign, equalSignLen);
     offset += equalSignLen;
 
