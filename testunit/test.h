@@ -687,9 +687,88 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
     ignoredTestBodyDef(name)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define isTrue(condition) ASSERT(condition)
-#define isFalse(condition) ASSERT_NOT(condition)
-#define areEq(expected, actual) ASSERT_EQUAL(expected, actual)
+#define isTrue(condition)\
+	if(!TESTUNIT_NS::cppunitAssert(condition))\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), #condition)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define isFalse(condition)\
+	if(TESTUNIT_NS::cppunitAssert(condition))\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), #condition " != false", false)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define areEq(expected, actual)\
+	if(!TESTUNIT_NS::cppunitAssert((expected), (actual)))\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), (expected), (actual), true)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define areNotEq(expected, actual)\
+	if(TESTUNIT_NS::cppunitAssert((expected), (actual)))\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), (expected), (actual), false)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define areDoubleEq(expected, actual, delta)\
+	if(!TESTUNIT_NS::cppunitAssert((expected), (actual), (delta)))\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), (expected), (actual), (delta), true)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define areDoubleNotEq(expected, actual, delta)\
+	if(TESTUNIT_NS::cppunitAssert((expected), (actual), (delta)))\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), (expected), (actual), (delta), false)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define willThrow(expression, exceptionType)																\
+	for(;;)																									\
+	{																										\
+		try																									\
+		{																									\
+			expression;																						\
+		}																									\
+		catch(const exceptionType&)																			\
+		{																									\
+			break;																							\
+		}																									\
+																											\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(),													\
+			"Expected exception \"" #exceptionType "\" hasn't been not thrown.", true);						\
+	}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define noSpecificThrow(expression, exceptionType)														\
+	try																									\
+	{																									\
+		expression;																						\
+	}																									\
+	catch(const exceptionType&)																			\
+	{																									\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(),													\
+			"Not expected exception \"" #exceptionType "\" has been thrown.", true);			\
+	}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define noAnyCppThrow(expression)														\
+	try																									\
+	{																									\
+		expression;																						\
+	}																									\
+	catch(...)																			\
+	{																									\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(),													\
+			"Unwanted C++ exception has been thrown.", true);			\
+	}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define noSehThrow(expression)																	\
+	__try																									\
+	{																										\
+		expression;																							\
+	}																										\
+	__except(EXCEPTION_EXECUTE_HANDLER)																		\
+	{																										\
+		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), "Unwanted SEH exception has been thrown.", true);		\
+	}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 TESTUNIT_NS_END
 
