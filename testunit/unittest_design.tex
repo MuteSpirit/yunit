@@ -354,42 +354,75 @@ lua5.1.exe
 // component.t.cpp
 //
 ////////////////////////////////////////////////////////////
-#include "test.h"
+#include <tesunit/test.h>
 
-
-TEST_FIXTURE(SetUpCallCheck)
+test(testA)
 {
-    SETUP
-	{
-		setUpCall_ = true;
-	}
+    isTrue(true);
+    isFalse(false);
+}
 
-    TEARDOWN
-	{
-		setUpCall_ = false;
-	}
-    // private value, used with fixture
-	bool setUpCall_;
+fixture(fixtureA)
+{
+    setUp()         // will be executed BEFORE every test, used this fixture
+    {
+        a_ = 10;
+    }
+    tearDown()  // will be executed AFTER every test, used this fixture
+    {
+        a_ = 0;
+    }
+    
+    // fixture members:
+    // they are used by tests. Every test use it's own copy of them
+    int a_;         
 };
 
-TEST_SUITE(SimpleTestSuite)
+// fixtureA::setUp() will be called before testB and fixtureA::tearDown() - after.
+test1(testB, fixtureA)
 {
-	TEST_CASE(simpleTest)
-		ASSERT_EQUAL(1, 1);
-	TEST_CASE_END
+    areEq(10, a_); 
+}
 
-	TEST_CASE_EX(testCheckSetUpCall, SetUpCallCheck)
-		ASSERT(setUpCall_);
-	TEST_CASE_END
+fixture(fixtureB)
+{
+    setUp()
+    {
+        b_ = 11;
+    }
+    tearDown()
+    {
+        b_ = 0;
+    }
+    int b_;
 };
 
-TEST_CASE_ALONE(standaloneTestCase)
-    ASSERT(true);
-TEST_CASE_END
+// fixtureA::setUp() and fixtureB::setUp() will be executed before testC
+// fixtureB::tearDown() and fixtureA::tearDown() will be executed after testC
+test2(testC, fixtureA, fixtureB)
+{
+    areEq(10, a_); 
+    areEq(11, b_); 
+}
 
-TEST_CASE_EX_ALONE(standaloneTestCaseWithSetUpAndTeardown, SetUpCallCheck)
-    ASSERT(setUpCall_);
-TEST_CASE_END
+// ignored test case (may have uncompiled code in body)
+_test(testD)
+{
+    int uncompiledCode[0] = {1};
+}
+
+// ignored test case (may have uncompiled code in body)
+_test1(testE, fixtureA)
+{
+    int uncompiledCode[0] = {1};
+}
+
+// ignored test case (may have uncompiled code in body)
+_test2(testF, fixtureA, fixtureB)
+{
+    int uncompiledCode[0] = {1};
+}
+
 \end{lstlisting}
 
 %-------------------------------------------
