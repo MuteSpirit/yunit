@@ -109,8 +109,8 @@ function TextTestProgressListener:addError(testCaseName, errorObject)
     self:outputMessage('E');
 end
 
-function TextTestProgressListener:addIgnore(testCaseName)
-    table.insert(self.tableWithIgnores, {testCaseName});
+function TextTestProgressListener:addIgnore(testCaseName, errorObject)
+    table.insert(self.tableWithIgnores, {testCaseName, errorObject});
     self:outputMessage("I");
 end
 
@@ -140,6 +140,7 @@ function TextTestProgressListener:endTests()
 
     local str = self:totalIgnoreStr()
     if string.len(str) > 0 then 
+        table.insert(res, '----Ignored tests----')
         table.insert(res, str)
     end
 
@@ -172,8 +173,8 @@ function TextTestProgressListener:totalIgnoreStr()
     local res = {}
     local testName
     for _, record in ipairs(self.tableWithIgnores) do
-        testName = unpack(record)
-        table.insert(res, testName)
+        testName, errorObject = unpack(record)
+        table.insert(res, self:editorSpecifiedErrorLine(errorObject) ..  testName)
     end;
     
     return table.concat(res, '\n')

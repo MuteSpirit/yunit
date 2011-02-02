@@ -82,8 +82,8 @@ function TestObserver:addError(testCaseName, errorObject)
     self:callListenersFunction('addError', testCaseName, errorObject);
 end
 
-function TestObserver:addIgnore(testCaseName)
-    self:callListenersFunction('addIgnore', testCaseName);
+function TestObserver:addIgnore(testCaseName, errorObject)
+    self:callListenersFunction('addIgnore', testCaseName, errorObject);
 end
 
 function TestObserver:startTest(testCaseName)
@@ -145,7 +145,9 @@ function runTestCase(testCaseName, testcase, testResult)
             testResult:addError(testCaseName, errorObject or errorObjectDefault);
         end
     else
-        testResult:addIgnore(testCaseName);
+        errorObject.line = testcase.lineNumber_
+        errorObject.source = testcase.fileName_
+        testResult:addIgnore(testCaseName, errorObject);
     end
 
     testResult:endTest(testCaseName);

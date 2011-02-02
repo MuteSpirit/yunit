@@ -91,12 +91,11 @@ sciteTextTestProgressListenerFixture =
         local ttpl = testListeners.SciteTextTestProgressListener:new();
 
         ttpl.outputMessage = function(self, msg) end
-        ttpl:addIgnore(fakeTestCaseName .. '2')
-        ttpl:addIgnore(fakeTestCaseName .. '1')
+        ttpl:addIgnore(fakeTestCaseName .. '2', fakeErrorObject)
+        ttpl:addIgnore(fakeTestCaseName .. '1', fakeErrorObject)
         
-        local desiredString = fakeTestCaseName .. "2" .. 
-                                       "\n" .. 
-                                       fakeTestCaseName .. "1"
+        local desiredString = ttpl:sciteErrorLine(fakeErrorObject) .. fakeTestCaseName .. "2\n" ..
+                                       ttpl:sciteErrorLine(fakeErrorObject) .. fakeTestCaseName .. "1" 
         areEq(desiredString, ttpl:totalIgnoreStr())
     end
 
@@ -142,7 +141,7 @@ sciteTextTestProgressListenerFixture =
         ttpl:startTest(fakeTestCaseName, fakeTestName);
         
         ttpl.outputMessage = ignoredOutput;
-        ttpl:addIgnore(fakeTestCaseName);
+        ttpl:addIgnore(fakeTestCaseName, fakeErrorObject);
         
         ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
         ttpl:endTest(fakeTestCaseName, fakeTestName);
