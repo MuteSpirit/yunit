@@ -19,7 +19,7 @@ errorObjectFixture =
         fakeErrorObject = 
         {
             source = 'test_runner.t.lua';
-            func = 'testTextTestProgressListenerCallAllFunctions';
+            func = 'setUp';
             line = 113;
             message = fakeFailureMessage;
         }
@@ -66,10 +66,10 @@ sciteTextTestProgressListenerFixture =
         ttpl.outputMessage = function(self, msg) end
         ttpl:addError(fakeTestCaseName .. '2', fakeErrorObject)
         ttpl:addError(fakeTestCaseName .. '1', fakeErrorObject)
-        
-        local desiredString = fakeTestCaseName .. "2\n\t" .. ttpl:sciteErrorLine(fakeErrorObject) .. 
+        funcName = ' (' ..  fakeErrorObject.func .. ')'
+        local desiredString = fakeTestCaseName .. "2" .. funcName .. "\n\t" .. ttpl:sciteErrorLine(fakeErrorObject) .. 
                                        "\n------------------------------------------------------------------------------------------------------\n" .. 
-                                       fakeTestCaseName .. "1\n\t" .. ttpl:sciteErrorLine(fakeErrorObject)
+                                       fakeTestCaseName .. "1" .. funcName .. "\n\t" .. ttpl:sciteErrorLine(fakeErrorObject)
         areEq(desiredString, ttpl:totalErrorStr())
     end
 
@@ -80,9 +80,10 @@ sciteTextTestProgressListenerFixture =
         ttpl:addFailure(fakeTestCaseName .. '2', fakeErrorObject)
         ttpl:addFailure(fakeTestCaseName .. '1', fakeErrorObject)
         
-        local desiredString = fakeTestCaseName .. "2\n\t" .. ttpl:sciteErrorLine(fakeErrorObject) .. 
+        funcName = ' (' ..  fakeErrorObject.func .. ')'
+        local desiredString = fakeTestCaseName .. "2" .. funcName .. "\n\t" .. ttpl:sciteErrorLine(fakeErrorObject) .. 
                                        "\n------------------------------------------------------------------------------------------------------\n" .. 
-                                       fakeTestCaseName .. "1\n\t" .. ttpl:sciteErrorLine(fakeErrorObject)
+                                       fakeTestCaseName .. "1" .. funcName .. "\n\t" .. ttpl:sciteErrorLine(fakeErrorObject)
         
         areEq(desiredString, ttpl:totalFailureStr())
     end

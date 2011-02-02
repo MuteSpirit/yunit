@@ -139,9 +139,11 @@ function runTestCase(testCaseName, testcase, testResult)
             end
 
             if not status then -- if tearDown failed
+                errorObject.func = 'tearDown'
                 testResult:addError(testCaseName, errorObject or errorObjectDefault);
             end
         else -- if setUp failed
+            errorObject.func = 'setUp'
             testResult:addError(testCaseName, errorObject or errorObjectDefault);
         end
     else

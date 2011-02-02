@@ -55,21 +55,7 @@ static Thunk getTearDownThunk(TESTUNIT_NS::TestCase* testCase)
 	return testCase->tearDownThunk();
 }
 
-static const char* getFuncName(Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*))
-{
-	if (&getSetUpThunk == getThunkFunc)
-		return "innerSetUp";
-	else if (&getTestThunk == getThunkFunc)
-		return "test";
-	else if (&getTearDownThunk == getThunkFunc)
-		return "innerTearDown";
-
-	return "[unknown]";
-}
-
 static int errorObjectTableToLuaStackTop(lua_State *L,
-                                     const TESTUNIT_NS::TestCase* testCase,
-                                     Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*),
                                      const char* fileName,
                                      lua_Integer lineNumber,
                                      const char* message)
@@ -77,9 +63,6 @@ static int errorObjectTableToLuaStackTop(lua_State *L,
     enum {numberOfReturnValues = 1};
     // new Error Object (return value)
     lua_newtable(L);
-    // function with error
-    lua_pushfstring(L, "%s::%s()", testCase->name(), getFuncName(getThunkFunc));
-    lua_setfield(L, -2, "func");
     // source file with error
     lua_pushstring(L, fileName);
     lua_setfield(L, -2, "source");
@@ -115,7 +98,6 @@ static bool wereCatchedCppExceptions(lua_State *L,
 
         countReturnValues += errorObjectTableToLuaStackTop(
             L,
-            testCase, getThunkFunc,
             ex.sourceLine().fileName(), ex.sourceLine().lineNumber(),
             errorMessage);
 
@@ -132,7 +114,6 @@ static bool wereCatchedCppExceptions(lua_State *L,
 
         countReturnValues += errorObjectTableToLuaStackTop(
             L,
-            testCase, getThunkFunc,
             "", 0,
             errorMessage);
 
@@ -145,7 +126,6 @@ static bool wereCatchedCppExceptions(lua_State *L,
 
         countReturnValues += errorObjectTableToLuaStackTop(
             L,
-            testCase, getThunkFunc,
             "", 0,
             "Unexpected unknown C++ exception was caught");
 
@@ -173,7 +153,6 @@ static int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::Te
 
         countReturnValues += errorObjectTableToLuaStackTop(
             L,
-            testCase, getThunkFunc,
             "", 0,
             "Unexpected SEH exception was caught");
     }
@@ -188,7 +167,6 @@ static int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::Te
 
         countReturnValues += errorObjectTableToLuaStackTop(
             L,
-            testCase, getThunkFunc,
             "", 0,
             "");
     }

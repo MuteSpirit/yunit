@@ -152,7 +152,13 @@ function TextTestProgressListener:totalErrorStr()
     local testName, errorObject
     for _, record in ipairs(self.tableWithErrors) do
         testName, errorObject = unpack(record)
-        table.insert(res, testName .. '\n\t' .. self:editorSpecifiedErrorLine(errorObject))
+        
+        local funcName = ''
+        if string.len(errorObject.func) > 0 then
+            funcName = ' (' ..  errorObject.func .. ')'
+        end
+        
+        table.insert(res, testName .. funcName .. '\n\t' .. self:editorSpecifiedErrorLine(errorObject))
     end;
     
     return table.concat(res, '\n------------------------------------------------------------------------------------------------------\n')
@@ -163,7 +169,13 @@ function TextTestProgressListener:totalFailureStr()
     local testName, errorObject
     for _, record in ipairs(self.tableWithFailures) do
         testName, errorObject = unpack(record)
-        table.insert(res, testName .. '\n\t' .. self:editorSpecifiedErrorLine(errorObject))
+
+        local funcName = ''
+        if string.len(errorObject.func) > 0 then
+            funcName = ' (' ..  errorObject.func .. ')'
+        end
+        
+        table.insert(res, testName .. funcName .. '\n\t' .. self:editorSpecifiedErrorLine(errorObject))
     end;
     
     return table.concat(res, '\n------------------------------------------------------------------------------------------------------\n')
