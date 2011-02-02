@@ -501,7 +501,7 @@ luaUnitSelfTestFixture =
     function isTrueTest()
         isTrue(true);
 
-        isTrue(1);
+        isTrue(false);
 
         isTrue(0 == 0);
         isTrue(0 >= 0);

@@ -1,0 +1,1 @@
+testListener = require('testunit.test_listeners').SciteTextTestProgressListener:new()

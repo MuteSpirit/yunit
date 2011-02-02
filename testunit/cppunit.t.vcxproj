@@ -101,7 +101,7 @@
       <ImportLibrary>..\_lib\$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>..\_bin\lua5.1.exe -e "package.path=[[..\?.lua;$(ProjectDir)?.lua;$(ProjectDir)..\ts_modules\?.lua;]] .. package.path" -l default_test_run -e "run([[$(TargetPath)]])"</Command>
+      <Command>..\_bin\lua5.1.exe -e "package.path=[[..\?.lua;$(ProjectDir)?.lua;$(ProjectDir)..\ts_modules\?.lua;]] .. package.path" -l load_vs_listener -l default_test_run -e "run([[$(TargetPath)]])"</Command>
       <Message>Run unit tests ...</Message>
     </PostBuildEvent>
     <PreLinkEvent>
@@ -191,7 +191,7 @@ endlocal</Command>
       <ImportLibrary>..\_lib\$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>..\_bin\lua5.1.exe -e "package.path=[[..\?.lua;$(ProjectDir)?.lua;$(ProjectDir)..\ts_modules\?.lua;]] .. package.path" -l default_test_run -e "run([[$(TargetPath)]])"</Command>
+      <Command>..\_bin\lua5.1.exe -e "package.path=[[..\?.lua;$(ProjectDir)?.lua;$(ProjectDir)..\ts_modules\?.lua;]] .. package.path" -l load_vs_listener -l default_test_run -e "run([[$(TargetPath)]])"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Run unit tests ...</Message>

@@ -289,7 +289,7 @@ TestSuite* TestRegistry::getTestSuite(const SourceLine& source)
     if (it == itEnd)
     {
         testSuiteList_.push_back(new TestSuite(source.fileName()));
-        it = ++itEnd;
+        it = --itEnd;
     }
 
     return *it;
@@ -540,9 +540,39 @@ bool TESTUNIT_API cppunitAssert(const char *expected, const char *actual)
 	return expected == actual || (NULL != expected && NULL != actual && 0 == strcmp(expected, actual));
 }
 
+bool TESTUNIT_API cppunitAssert(const char *expected, char *actual)
+{
+    return cppunitAssert(expected, static_cast<const char*>(actual));
+}
+
+bool TESTUNIT_API cppunitAssert(char *expected, const char *actual)
+{
+    return cppunitAssert(static_cast<const char*>(expected), actual);
+}
+
+bool TESTUNIT_API cppunitAssert(char *expected, char *actual)
+{
+    return cppunitAssert(static_cast<const char*>(expected), static_cast<const char*>(actual));
+}
+
 bool TESTUNIT_API cppunitAssert(const wchar_t *expected, const wchar_t *actual)
 {
 	return expected == actual || (NULL != expected && NULL != actual && 0 == wcscmp(expected, actual));
+}
+
+bool TESTUNIT_API cppunitAssert(const wchar_t *expected, wchar_t *actual)
+{
+    return cppunitAssert(expected, static_cast<const wchar_t*>(actual));
+}
+
+bool TESTUNIT_API cppunitAssert(wchar_t *expected, const wchar_t *actual)
+{
+    return cppunitAssert(static_cast<const wchar_t*>(expected), actual);
+}
+
+bool TESTUNIT_API cppunitAssert(wchar_t *expected, wchar_t *actual)
+{
+    return cppunitAssert(static_cast<const wchar_t*>(expected), static_cast<const wchar_t*>(actual));
 }
 
 bool TESTUNIT_API cppunitAssert(const std::wstring& expected, const std::wstring& actual)

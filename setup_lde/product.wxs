@@ -39,6 +39,8 @@
                   <File Id="test_runner.lua" Name="test_runner.lua" DiskId="1" Source="..\testunit\test_runner.lua" />
                   <File Id="default_test_run.lua" Name="default_test_run.lua" DiskId="1" Source="..\testunit\default_test_run.lua" />
                   <File Id="test_listeners.lua" Name="test_listeners.lua" DiskId="1" Source="..\testunit\test_listeners.lua" />
+                  <File Id="load_scite_listener.lua" Name="load_scite_listener.lua" DiskId="1" Source="..\testunit\load_scite_listener.lua" />
+                  <File Id="load_vs_listener.lua" Name="load_vs_listener.lua" DiskId="1" Source="..\testunit\load_vs_listener.lua" />
                   <File Id="report.xsl" Name="report.xsl" DiskId="1" Source="..\testunit\report.xsl" />
                 </Component>
               </Directory>
