@@ -182,32 +182,35 @@ test(test1)
     isFalse(false);
 }
 
+// fixtureA::setUp() will be called before testB and fixtureA::tearDown() - after.
 test1(test2, fixtureA)
 {
     areEq(10, a_); 
 }
 
+// fixtureA::setUp() and fixtureB::setUp() will be executed before testC
+// fixtureB::tearDown() and fixtureA::tearDown() will be executed after testC
 test2(test3, fixtureA, fixtureB)
 {
     areEq(10, a_); 
     areEq(11, b_); 
 }
 
+// ignored test case (may have uncompiled code in body)
 _test(test4)
 {
-    // ignored test case
     int uncompiledCode[0] = {1};
 }
 
+// ignored test case (may have uncompiled code in body)
 _test1(test5, fixtureA)
 {
-    // ignored test case
     int uncompiledCode[0] = {1};
 }
 
+// ignored test case (may have uncompiled code in body)
 _test2(test6, fixtureA, fixtureB)
 {
-    // ignored test case
     int uncompiledCode[0] = {1};
 }
 
