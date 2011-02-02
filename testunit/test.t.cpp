@@ -121,6 +121,7 @@
 /// Names of TestCases contains TestSuite and TestCase name, separated by '::'
 
 #include <sstream>
+#include <fstream>
 #include <testunit/test.h>
 
 std::wstring getTestWstdStr()
@@ -537,4 +538,13 @@ test(compareConstAndNonConstWcharPointer)
     areEq(a, L"abc");
     areEq(L"abc", a);
     areNotEq(a, b);
+}
+
+test(testSetGoodWorkingDir)
+{
+    std::wifstream f(L".\\cppunit.t.dll", std::ios::in | std::ios::binary);
+    bool exist = f.good();
+    if (exist)
+        f.close();
+    isTrue(exist);
 }

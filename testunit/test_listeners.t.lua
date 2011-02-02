@@ -67,7 +67,7 @@ sciteTextTestProgressListenerFixture =
         ttpl:addError(fakeTestCaseName .. '2', fakeErrorObject)
         ttpl:addError(fakeTestCaseName .. '1', fakeErrorObject)
         funcName = ' (' ..  fakeErrorObject.func .. ')'
-        local desiredString = fakeTestCaseName .. "2" .. funcName .. "\n\t" .. ttpl:sciteErrorLine(fakeErrorObject) .. 
+        local desiredString = '----Errors----\n' .. fakeTestCaseName .. "2" .. funcName .. "\n\t" .. ttpl:sciteErrorLine(fakeErrorObject) .. 
                                        "\n------------------------------------------------------------------------------------------------------\n" .. 
                                        fakeTestCaseName .. "1" .. funcName .. "\n\t" .. ttpl:sciteErrorLine(fakeErrorObject)
         areEq(desiredString, ttpl:totalErrorStr())
@@ -81,7 +81,7 @@ sciteTextTestProgressListenerFixture =
         ttpl:addFailure(fakeTestCaseName .. '1', fakeErrorObject)
         
         funcName = ' (' ..  fakeErrorObject.func .. ')'
-        local desiredString = fakeTestCaseName .. "2" .. funcName .. "\n\t" .. ttpl:sciteErrorLine(fakeErrorObject) .. 
+        local desiredString = '----Failures----\n' .. fakeTestCaseName .. "2" .. funcName .. "\n\t" .. ttpl:sciteErrorLine(fakeErrorObject) .. 
                                        "\n------------------------------------------------------------------------------------------------------\n" .. 
                                        fakeTestCaseName .. "1" .. funcName .. "\n\t" .. ttpl:sciteErrorLine(fakeErrorObject)
         
@@ -95,7 +95,7 @@ sciteTextTestProgressListenerFixture =
         ttpl:addIgnore(fakeTestCaseName .. '2', fakeErrorObject)
         ttpl:addIgnore(fakeTestCaseName .. '1', fakeErrorObject)
         
-        local desiredString = ttpl:sciteErrorLine(fakeErrorObject) .. fakeTestCaseName .. "2\n" ..
+        local desiredString = '----Ignored----\n' .. ttpl:sciteErrorLine(fakeErrorObject) .. fakeTestCaseName .. "2\n" ..
                                        ttpl:sciteErrorLine(fakeErrorObject) .. fakeTestCaseName .. "1" 
         areEq(desiredString, ttpl:totalIgnoreStr())
     end

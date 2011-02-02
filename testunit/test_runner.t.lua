@@ -89,18 +89,19 @@ local aux = require("aux_test_func");
 -- This fixture save (at setUp) and restore (at tearDown) currentSuite variable at luaunit module for possibility TEST_* macro testing
 substitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir = 
 {
-    setUp = function()
+    setUp = function(self)
         testRegistry = luaUnit.TestRegistry:new();
         currentTestRegistry = luaUnit.currentTestRegistry();
         luaUnit.currentTestRegistry(testRegistry);
         
         currentSuite = luaUnit.currentSuite();
 
+        self.curDir = lfs.currentdir();
         tmpDir = fs.tmpDirName();
         lfs.mkdir(tmpDir);
     end
     ;
-    tearDown = function()
+    tearDown = function(self)
         luaUnit.currentSuite(currentSuite);
         luaUnit.currentTestRegistry(currentTestRegistry);
         currentSuite = nil;
@@ -108,7 +109,7 @@ substitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir =
         
         -- delete tmpDir recursively
         isNotNil(tmpDir);
-        isTrue(lfs.chdir(tmpDir .. fs.osSlash() .. '..'))
+        isTrue(lfs.chdir(self.curDir))
         local status, msg = fs.rmdir(tmpDir)
         areEq(nil, msg)
         isTrue(status)
@@ -153,6 +154,7 @@ globalTestCaseListFixturePlusUseTmpDir =
         self.globalTestCaseList = luaUnit.copyTable(testRunner.GlobalTestCaseList);
         testRunner.GlobalTestCaseList = {};
 
+        self.curDir = lfs.currentdir();
         self.tmpDir = fs.tmpDirName();
         lfs.mkdir(self.tmpDir);
     end
@@ -167,7 +169,7 @@ globalTestCaseListFixturePlusUseTmpDir =
 
         -- delete tmpDir recursively
         isNotNil(self.tmpDir);
-        isTrue(lfs.chdir(self.tmpDir .. fs.osSlash() .. '..'))
+        isTrue(lfs.chdir(self.curDir))
         local status, msg = fs.rmdir(self.tmpDir)
         areEq(nil, msg)
         isTrue(status)
@@ -394,4 +396,8 @@ function globalTestCaseListFixturePlusUseTmpDir.runSomeTestContainer(self)
     areEq(2, #self.testRegistry.testsuites)
     areEq(1, #self.testRegistry.testsuites[2].testcases)
     areEq("someTestCase", self.testRegistry.testsuites[2].testcases[1].name_)
+end
+
+function testSetGoodWorkingDir()
+    isTrue(fs.isExist('test_runner.t.lua'));
 end
