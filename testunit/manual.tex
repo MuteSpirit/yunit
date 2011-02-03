@@ -185,13 +185,13 @@ TDD (Test Driven Development) переводиться как <<разработка через тестирование>>
 \item Скопируйте в нее проектник из репозитория
 \url{http://scm.til.int:8080/research2011} 
 файл \url{vs_projects/cppunit_template.t.vcxproj}
-\item Переименуйте его в \path{cpp_sample.t.vcxproj}
+\item Переименуйте его в \path{<имя тестируемого проекта>.t.vcxproj}
 \item Откройте его в Visual Studio
 \item Добавьте в него новый файл с расширением \path{*.t.cpp}, например, \path{cpp_sample.t.cpp}
 \item 
 Добавьте в него следующий текст (полное описание синтаксиса содержится в \ref{sec:cpp_test_syntax}):
 \begin{lstlisting}[language=c++]
-#include <tesunit/test.h>
+#include <testunit/test.h>
 
 test(testA)
 {
@@ -216,12 +216,14 @@ Execution of tests has been completed:
 Добавьте в конец файла еще тестов:
 \begin{lstlisting}[language=c++]
 test(failedTest)
-    isTrue(false)
-end
+{
+    isTrue(false);
+}
 
 _test(ignoredTest)
-    isTrue(false)
-end
+{
+    isTrue(false);
+}
 \end{lstlisting}
 \item 
 После выполнения компиляции в окне Output будут выведены результаты тестов:
@@ -237,7 +239,7 @@ Execution of tests has been completed:
 cpp_sample.t.cpp::failedTest
 	cpp_sample.t.cpp(8) : false != true
 ----Ignored----
-cpp_sample.t.cpp(12) : cpp_sample.t.cpp::_ignoredTest
+cpp_sample.t.cpp(12) : cpp_sample.t.cpp::ignoredTest
 \end{verbatim}
 По сообщениям видно, что:
 \begin{itemize}
@@ -256,7 +258,7 @@ cpp_sample.t.lua(8) : false != true
 \subsubsection{Первый тест на Lua}
 
 \begin{enumerate}
-\item Создайте файл с расширением \path{*.t.lua}, например, \path{lua_sample.t.lua}
+\item Создайте файл с расширением \path{*.t.lua}, например, \path{<имя тестируемого модуля>.t.lua}
 %
 \item При помощи SciTE добавьте в него следующий текст  (полное описание синтаксиса содержится в \ref{sec:lua_test_syntax}):
 \begin{lstlisting}[language=lua]
@@ -559,8 +561,8 @@ lua5.1.exe -l testunit.load_scite_listener -l testunit.default_test_run
 
 В качестве скрипта загрузки TestListner можно указывать:
 \begin{itemize}
-\item SciTE: \verb`testunit.load_vs_listener`
-\item Visual Studio 2010: \verb`testunit.load_scite_listener`
+\item SciTE: \verb`testunit.load_scite_listener`
+\item Visual Studio 2010: \verb`testunit.load_vs_listener`
 \end{itemize}
 
 Указывать \verb`TEST_CONTAINER_PATH` в двойных квадратных скобках необходимо, чтобы корректно обработать в пути обратные слэши (backslash).
@@ -575,14 +577,16 @@ lua5.1.exe
 В SciTE составленную командную строку можно задать, например, в настройках пользователя, прописав:
 \begin{verbatim}
 command.go.*.t.lua=lua5.1.exe 
--l testunit.load_scite_listener -l testunit.default_test_run -e "run([[$(FileNameExt)]])"
+-l testunit.load_scite_listener -l testunit.default_test_run
+-e "run([[$(FileNameExt)]])"
 \end{verbatim}
 
 В Visual Studio 2010 нужно добавить ее в настройки проектника, например:
 \begin{itemize}
 \item Debugging $\to$ Command = \path{lua5.1.exe}
 \item Debugging $\to$ Command Arguments = \\
-\verb`-l testunit.load_vs_listener -l testunit.default_test_run -e "[[$(TargetPath)]]"`
+\verb`-l testunit.load_vs_listener -l testunit.default_test_run` \\
+\verb`-e "[[$(TargetPath)]]"`
 \item Build Events $\to$ Post-Build Event $\to$ Command Line = \\
 \verb`lua5.1.exe -l testunit.load_vs_listener -l testunit.default_test_run`\\
 \verb` -e "[[$(TargetPath)]]"`
