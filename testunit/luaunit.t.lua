@@ -242,7 +242,7 @@ luaUnitSelfTestFixture =
         areEq(1, #testRegistry.testsuites[3].testcases);
     end
 
-    function luaUnitSelfTestFixture.testFrameTest()
+    function luaUnitSelfTestFixture.testFrame()
         ---------------------------------------------------
         -- initialize message system
         local testObserver = testRunner.TestObserver:new();
@@ -269,7 +269,7 @@ luaUnitSelfTestFixture =
         isNotNil(testList);
         areEq(1, #testList);
 
-        testRunner.runTestCase(testList[1].name_, testList[1], testObserver);
+        testRunner.runTestCase(testList[1], testObserver);
         isFalse(mockTestListener.error_);
 
         mockTestListener.error_ = false;
@@ -287,7 +287,7 @@ luaUnitSelfTestFixture =
         areEq(2, #testList);
     end
 
-    function luaUnitSelfTestFixture.testFixtureTest()
+    function luaUnitSelfTestFixture.testFixture()
         local setUpExecuted = false;
         local testExecuted = false;
         local tearDownExecuted = false;
@@ -324,7 +324,7 @@ luaUnitSelfTestFixture =
         areEq(1, #testList);
         
         local testObserver = testRunner.TestObserver:new();
-        testRunner.runTestCase("TestFixtureTests::EmptyTest", testList[1], testObserver);
+        testRunner.runTestCase(testList[1], testObserver);
         
         isTrue(setUpExecuted);
         isTrue(testExecuted);
@@ -498,10 +498,9 @@ luaUnitSelfTestFixture =
         areEq(luaTestContainerName, testRegistry.testsuites[2].name_)
         areEq(3, #testRegistry.testsuites[2].testcases)
     end
+    
     function isTrueTest()
         isTrue(true);
-
-        isTrue(false);
 
         isTrue(0 == 0);
         isTrue(0 >= 0);

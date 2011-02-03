@@ -61,8 +61,10 @@ const void     *(lua_topointer_p) (lua_State *L, int idx) {return lua_topointer(
 */
 void  (lua_pushnil_p) (lua_State *L) {lua_pushnil(L);}
 #ifdef _MSC_VER
+#pragma warning (disable : 4100)
 Naked void  (lua_pushnumber_p) (lua_State *L, lua_Number n) {__asm jmp DWORD PTR lua_pushnumber}
 Naked void  (lua_pushinteger_p) (lua_State *L, lua_Integer n) {__asm jmp DWORD PTR lua_pushinteger}
+#pragma warning (default : 4100)
 #else
 void  (lua_pushnumber_p) (lua_State *L, lua_Number n) {lua_pushnumber(L, n);}
 void  (lua_pushinteger_p) (lua_State *L, lua_Integer n) {lua_pushinteger(L, n);}
@@ -153,7 +155,9 @@ const char *(luaL_optlstring_p) (lua_State *L, int numArg, const char *def, size
 lua_Number (luaL_checknumber_p) (lua_State *L, int numArg) {return luaL_checknumber(L, numArg);}
 
 #ifdef _MSC_VER
+#pragma warning (disable : 4100)
 Naked lua_Number (luaL_optnumber_p) (lua_State *L, int nArg, lua_Number def) {_asm jmp DWORD PTR luaL_optnumber}
+#pragma warning (default : 4100)
 #else
 lua_Number (luaL_optnumber_p) (lua_State *L, int nArg, lua_Number def) {return luaL_optnumber(L, nArg, def);}
 #endif
