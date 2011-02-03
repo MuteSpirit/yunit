@@ -126,7 +126,7 @@ static bool wereCatchedCppExceptions(lua_State *L,
 
         countReturnValues += errorObjectTableToLuaStackTop(
             L,
-            "", 0,
+            testCase->source().fileName(), testCase->source().lineNumber(),
             "Unexpected unknown C++ exception was caught");
 
 		return true;
@@ -153,7 +153,7 @@ static int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::Te
 
         countReturnValues += errorObjectTableToLuaStackTop(
             L,
-            "", 0,
+            testCase->source().fileName(), testCase->source().lineNumber(),
             "Unexpected SEH exception was caught");
     }
 #else // not defined _MSC_VER
@@ -167,7 +167,7 @@ static int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::Te
 
         countReturnValues += errorObjectTableToLuaStackTop(
             L,
-            "", 0,
+            testCase->source().fileName(), testCase->source().lineNumber(),
             "");
     }
 
