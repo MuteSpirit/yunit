@@ -448,18 +448,6 @@ void TestEqualException<T1, T2>::message(char* buffer, const unsigned int buffer
 }
 
 template<>
-void TestEqualException<const char*, const char*>::message(char* buffer, const unsigned int bufferSize) const
-{
-	TS_SNPRINTF(buffer, bufferSize - 1, mustBeEqual_ ? "\"%s\" != \"%s\"" : "\"%s\" == \"%s\"", expected_, actual_);
-}
-
-template<>
-void TestEqualException<const wchar_t*, const wchar_t*>::message(char* buffer, const unsigned int bufferSize) const
-{
-    makeEqualMessage(buffer, bufferSize, mustBeEqual_, expected_, actual_);
-}
-
-template<>
 void TestEqualException<std::wstring, std::wstring>::message(char* buffer, const unsigned int bufferSize) const
 {
     makeEqualMessage(buffer, bufferSize, mustBeEqual_, expected_.c_str(), actual_.c_str());
@@ -493,29 +481,15 @@ void TestDoubleEqualException<T>::message(char* buffer, const unsigned int buffe
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//IgnoreTestCaseGuard::IgnoreTestCaseGuard(const char* testName, TestSuite* testSuite)
-//{
-//    testSuite->addTestCaseIntoIgnoreList(testName);
-//}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool cppunitAssert(const bool condition)
 {
     return condition;
 }
 
-template bool cppunitAssert<int>(const int expected, const int actual);
-template bool cppunitAssert<unsigned int>(const unsigned int expected, const unsigned int actual);
-
-//bool cppunitAssert(const int expected, const int actual)
-//{
-//	return cppunitAssert<int>(expected, actual);
-//}
-//
-//bool cppunitAssert(const unsigned int expected, const unsigned int actual)
-//{
-//	return cppunitAssert<unsigned int>(expected, actual);
-//}
+bool cppunitAssert(const long long expected, const long long actual)
+{
+    return expected == actual;
+}
 
 /// \brief All float point types have imprecission, so we must know precission of type for normal check
 /// \param[in] delta must be positive
@@ -540,39 +514,9 @@ bool TESTUNIT_API cppunitAssert(const char *expected, const char *actual)
 	return expected == actual || (NULL != expected && NULL != actual && 0 == strcmp(expected, actual));
 }
 
-bool TESTUNIT_API cppunitAssert(const char *expected, char *actual)
-{
-    return cppunitAssert(expected, static_cast<const char*>(actual));
-}
-
-bool TESTUNIT_API cppunitAssert(char *expected, const char *actual)
-{
-    return cppunitAssert(static_cast<const char*>(expected), actual);
-}
-
-bool TESTUNIT_API cppunitAssert(char *expected, char *actual)
-{
-    return cppunitAssert(static_cast<const char*>(expected), static_cast<const char*>(actual));
-}
-
 bool TESTUNIT_API cppunitAssert(const wchar_t *expected, const wchar_t *actual)
 {
 	return expected == actual || (NULL != expected && NULL != actual && 0 == wcscmp(expected, actual));
-}
-
-bool TESTUNIT_API cppunitAssert(const wchar_t *expected, wchar_t *actual)
-{
-    return cppunitAssert(expected, static_cast<const wchar_t*>(actual));
-}
-
-bool TESTUNIT_API cppunitAssert(wchar_t *expected, const wchar_t *actual)
-{
-    return cppunitAssert(static_cast<const wchar_t*>(expected), actual);
-}
-
-bool TESTUNIT_API cppunitAssert(wchar_t *expected, wchar_t *actual)
-{
-    return cppunitAssert(static_cast<const wchar_t*>(expected), static_cast<const wchar_t*>(actual));
 }
 
 bool TESTUNIT_API cppunitAssert(const std::wstring& expected, const std::wstring& actual)
@@ -602,47 +546,34 @@ void throwException(const SourceLine& sourceLine, const wchar_t* message, bool)
 }
 
 template<typename T1, typename T2>
-void throwException(const SourceLine& sourceLine, const T1 expected, const T2 actual, bool mustBeEqual)
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const T1 expected, const T2 actual, bool mustBeEqual)
 {
     throw TestEqualException<T1, T2>(sourceLine, expected, actual, mustBeEqual);
 }
 
-void throwException(const SourceLine& sourceLine, const int expected, const int actual, bool mustBeEqual)
+void throwException(const SourceLine& sourceLine, const long long expected, const long long actual, bool mustBeEqual)
 {
-    throwException<int, int>(sourceLine, expected, actual, mustBeEqual);
+    throw TestEqualException<long long, long long>(sourceLine, expected, actual, mustBeEqual);
 }
 
-void throwException(const SourceLine& sourceLine, const unsigned int expected, const unsigned int actual,
-							bool mustBeEqual)
+void throwException(const SourceLine& sourceLine, const wchar_t* expected, const wchar_t* actual, bool mustBeEqual)
 {
-    throwException<unsigned int, unsigned int>(sourceLine, expected, actual, mustBeEqual);
+    throw TestEqualException<std::wstring, std::wstring>(sourceLine, expected ? expected : L"NULL", actual ? actual : L"NULL", mustBeEqual);
 }
 
-//void throwException(const SourceLine& sourceLine, const unsigned int expected, const unsigned int actual)
-//{
-//	throwException<unsigned int>(sourceLine, expected, actual);
-//}
-
-void TESTUNIT_API throwException(const SourceLine& sourceLine, const char *expected, const char *actual, bool mustBeEqual)
+void throwException(const SourceLine& sourceLine, const std::wstring& expected, const std::wstring& actual, bool mustBeEqual)
 {
-    throwException<const char*, const char*>(sourceLine, (expected) ? expected : "NULL", (actual) ? actual : "NULL", mustBeEqual);
+    throw TestEqualException<std::wstring, std::wstring>(sourceLine, expected, actual, mustBeEqual);
 }
 
-void TESTUNIT_API throwException(const SourceLine& sourceLine, const wchar_t *expected, const wchar_t *actual, bool mustBeEqual)
+void throwException(const SourceLine& sourceLine, const char* expected, const char* actual, bool mustBeEqual)
 {
-    throwException<const wchar_t*, const wchar_t*>(sourceLine, (expected) ? expected : L"NULL", (actual) ? actual : L"NULL", mustBeEqual);
+    throw TestEqualException<std::string, std::string>(sourceLine, expected ? expected : "NULL", actual ? actual : "NULL", mustBeEqual);
 }
 
-void TESTUNIT_API throwException(const SourceLine& sourceLine, const std::wstring& expected, const std::wstring& actual,
-							bool mustBeEqual)
+void throwException(const SourceLine& sourceLine, const std::string& expected, const std::string& actual, bool mustBeEqual)
 {
-    throwException<std::wstring, std::wstring>(sourceLine, expected, actual, mustBeEqual);
-}
-
-void TESTUNIT_API throwException(const SourceLine& sourceLine, const std::string& expected, const std::string& actual,
-							bool mustBeEqual)
-{
-    throwException<std::string, std::string>(sourceLine, expected, actual, mustBeEqual);
+    throw TestEqualException<std::string, std::string>(sourceLine, expected, actual, mustBeEqual);
 }
 
 void throwException(const SourceLine& sourceLine,

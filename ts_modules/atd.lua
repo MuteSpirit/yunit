@@ -382,8 +382,8 @@ end
 local function convertTexTemplateIfNeeded(name)
 --------------------------------------------------------------------------------------------------------------
     local intermediateFileExt, defaultTexExt = 'src', 'tex';
-
-    local filename = (name..'.'..defaultTexExt);
+    local filenameWithoutExt = string.match(name, '[^/\\]+$');
+    local filename = filenameWithoutExt .. '.'..defaultTexExt;
     inform("open '" .. filename .. "'");
     
     local texFileOptions = {};
@@ -400,7 +400,7 @@ local function convertTexTemplateIfNeeded(name)
         texFileOptions.dir = lfs.currentdir() .. '\\';
         texFileOptions.macro['FILE_NAME'] = filename;
 
-        expandTemplate(texFileOptions, name, intermediateFileExt)
+        expandTemplate(texFileOptions, filenameWithoutExt, intermediateFileExt)
         break;
     end
     
