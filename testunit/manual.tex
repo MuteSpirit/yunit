@@ -7,8 +7,8 @@
 
 Модульное тестирование (unit test) "--- это тестирование отдельных функций исходного кода программы или программного комплекса. Модульное тестирование является одним из видов тестирования, выполняемых в рамках обеспечения надежности разрабатываемого ПО.
 
-%-------------------------------------------------------------------------------------------------------------
-\section{Особенности модульного тестирования}
+%-----------------------------------------------------------------------------------------
+\subsection{Особенности модульного тестирования}
 
 С технической точки зрения модульное тестирование заключается в выполнении тестируемых функций на некотором множестве исходных данных и сверке получаемых результатов с заранее известными с целью установить соответствие функции ее спецификации.
 
@@ -118,7 +118,7 @@ TDD (Test Driven Development) переводиться как <<разработка через тестирование>>
 \item Убеждаемся, что тест компилируется, тестовый драйвер линкуется, но валиться при выполнении.
 \item Создаем нормальную реализацию кода.
 \item Убеждаемся, что тест компилируется, тестовый драйвер линкуется и успешно выполняется.
-\item Проводит рефакторинг прикладного кода.
+\item Проводим рефакторинг прикладного кода.
 \item Убеждаемся, что тест компилируется, тестовый драйвер линкуется и успешно выполняется.
 \item Запускаем регрессионные тесты, убеждаемся, что они все проходят.
 \item Сдаем код в репозиторий.
@@ -127,6 +127,8 @@ TDD (Test Driven Development) переводиться как <<разработка через тестирование>>
 Если вы имеете достаточно опыта в TDD, то вы можете решить для себя, что приемлемо пропускать некоторые промежуточные шаги, можете работать сразу над несколькими тестами и т.д.
 
 Что хорошего в TDD, так это то, что решение большой задачи разбивается на последовательность мелких обозримых шажков, позволяющих думать в один момент времени только над одной частью общей задачи и не держать в голове несколько аспектов сразу.
+
+\clearpage
 
 %-------------------------------------------------------------------------------------------------------------
 \section{Библиотека модульных тестов \testunit}
@@ -156,6 +158,13 @@ TDD (Test Driven Development) переводиться как <<разработка через тестирование>>
 Инсталлятор\footnote{Исходники можно получить, сделав клон репозитория Mercurial: \path{hg clone http://scm.til.int:8080/lde lde}} находится здесь:\\
 \path{\\file\repo\lde\distributives\x.x.x.x\setup_lde.msi}
 
+Если какая-то версия Lua уже установлена, то необходимо деинсталлировать ее\footnote{Иначе устанавливаемая Lua просто не будет находится системой, а будет все время запускаться старая}:
+\begin{itemize}
+\item удалить путь к папке с lua5.1.exe из переменной окружения PATH (и системной, и пользовательской) (обязательно);
+\item удалить переменные среды LUA\_PATH и LUA\_CPATH (системные и пользовательские) (обязательно);
+\item удалить файлы установленных интерпретатора, библиотек и модулей, если Вы знаете, что делаете (опционально).
+\end{itemize}
+
 \begin{itemize}
 \item Для установки требуются права администратора
 \item Устанавливаются:
@@ -167,103 +176,20 @@ TDD (Test Driven Development) переводиться как <<разработка через тестирование>>
 \item Для файлов с расширением \path{*.lua} регистрируется иконка с логотипом Lua.
 \end{itemize}
 
-Если какая-то версия Lua уже установлена, то необходимо деинсталлировать ее:
-\begin{itemize}
-\item удалить путь к папке с lua5.1.exe из переменной окружения PATH (и системной, и пользовательской) (обязательно);
-\item удалить переменные среды LUA\_PATH и LUA\_CPATH (системные и пользовательские) (обязательно);
-\item удалить файлы установленных интерпретатора, библиотек и модулей, если Вы знаете, что делаете (опционально).
-\end{itemize}
-
 Для начала установки просто дважды кликните на файл и следуйте указаниям мастера установки.
-
-%---------------------------------------------------------------------
-\subsubsection{Первый тест на Lua}
-
-\begin{enumerate}
-\item Создайте файл с расширением \path{*.t.lua}, например, \path{lua_sample.t.lua}
-%
-\item Добавьте в него следующий текст при помощи SciTE:
-\begin{lstlisting}[language=lua]
-function testA()
-    isTrue(false ~= true);
-end
-\end{lstlisting}
-%
-\item Сохраните.
-%
-\item Откройте файл локальных настроек SciTE (меню <<Options>> $to$ <<Open Local Options File>>)
-%
-\item Вставьте в него строку:
-\begin{verbatim}
-command.go.*.t.lua=lua5.1.exe  -l load_scite_listener
--l testunit.default_test_run -e "run('$(FileNameExt)')"
-\end{verbatim}
-Более подробно о нормальной настройке параметров запуска см. \ref{sec:run_test_properties}.
-%
-\item Сохраните.
-%
-\item Перейдите на вкладку с открытым файлом теста
-%
-\item Нажмите F5
-%
-\item В Output Window Вы увидите результат выполнения теста:
-\begin{verbatim}
-[.]
-Execution of tests has been completed:
-			Failed:      0
-			Errors:       0
-			Ignored:     0
-			Successful:  1
-			Total:       1
-\end{verbatim}
-Тест был успешно пройден.
-%
-\item Добавим в конец файл еще несколько тестов:
-\begin{lstlisting}[language=lua]
-function failedTest()
-    isTrue(false)
-end
-
-function _ignoredTest()
-    isTrue(false)
-end
-\end{lstlisting}
-%
-\item Нажмите F5
-%
-\item В Output Window Вы увидите результат выполнения теста (только имя файла будет то, что задали Вы):
-\begin{verbatim}
-[I.F]
-Execution of tests has been completed:
-			Failed:      1	(0_-) BUGS !!!
-			Errors:       0
-			Ignored:     1	o(^_^)o ?
-			Successful:  1
-			Total:       3
-----Errors----
-lua_sample.t.lua::failedTest
-	lua_sample.t.lua : 6 : true expected but was nil or false
-----Ignored----
-lua_sample.t.lua : 10 : lua_sample.t.lua::_ignoredTest
-\end{verbatim}
-По сообщениям видно, что тест \verb`lua_sample.t.lua::failedTest` завалился, а тест \verb`lua_sample.t.lua::_ignoredTest` был проигнорирован и не выполнялся.
-Сделав двойной клик мышью на строке, либо нажав F4:
-\begin{verbatim}
-lua_sample.t.lua(6) : true expected but was nil or false
-\end{verbatim}
-Вы переместитесь на строку со сработавшим assert-ом
-\end{enumerate}
 
 %---------------------------------------------------------------------
 \subsubsection{Первый тест на C++}
 \begin{enumerate}
 \item Создайте папку
-\item Скопируйте в нее проектник из \url{http://scm.til.int:8080/research2011/vs_projects/cppunit_template.t.vcxproj}
-\item Переименуйте в \path{cpp_sample.t.dll}
+\item Скопируйте в нее проектник из репозитория
+\url{http://scm.til.int:8080/research2011} 
+файл \url{vs_projects/cppunit_template.t.vcxproj}
+\item Переименуйте его в \path{cpp_sample.t.vcxproj}
 \item Откройте его в Visual Studio
 \item Добавьте в него новый файл с расширением \path{*.t.cpp}, например, \path{cpp_sample.t.cpp}
 \item 
-Добавьте в него следующий текст:
+Добавьте в него следующий текст (полное описание синтаксиса содержится в \ref{sec:cpp_test_syntax}):
 \begin{lstlisting}[language=c++]
 #include <tesunit/test.h>
 
@@ -326,14 +252,93 @@ cpp_sample.t.lua(8) : false != true
 Вы переместитесь на строку со сработавшим assert-ом
 \end{enumerate}
 
+%---------------------------------------------------------------------
+\subsubsection{Первый тест на Lua}
+
+\begin{enumerate}
+\item Создайте файл с расширением \path{*.t.lua}, например, \path{lua_sample.t.lua}
+%
+\item При помощи SciTE добавьте в него следующий текст  (полное описание синтаксиса содержится в \ref{sec:lua_test_syntax}):
+\begin{lstlisting}[language=lua]
+function testA()
+    isTrue(false ~= true);
+end
+\end{lstlisting}
+%
+\item Сохраните.
+%
+\item Откройте файл локальных настроек SciTE (меню <<Options>> $\to$ <<Open Local Options File>>)
+%
+\item Вставьте в него строку:
+\begin{verbatim}
+command.go.*.t.lua=lua5.1.exe  -l load_scite_listener
+-l testunit.default_test_run -e "run('$(FileNameExt)')"
+\end{verbatim}
+Более подробно о нормальной настройке параметров запуска см. \ref{sec:run_test_properties}.
+%
+\item Сохраните.
+%
+\item Перейдите на вкладку с открытым файлом теста
+%
+\item Нажмите F5
+%
+\item В Output Window Вы увидите результат выполнения теста:
+\begin{verbatim}
+[.]
+Execution of tests has been completed:
+			Failed:      0
+			Errors:       0
+			Ignored:     0
+			Successful:  1
+			Total:       1
+\end{verbatim}
+Тест был успешно пройден.
+%
+\item Добавим в конец файл еще несколько тестов:
+\begin{lstlisting}[language=lua]
+function failedTest()
+    isTrue(false)
+end
+
+function _ignoredTest()
+    isTrue(false)
+end
+\end{lstlisting}
+%
+\item Нажмите F5
+%
+\item В Output Window Вы увидите результат выполнения теста (только имя файла будет то, что задали Вы):
+\begin{verbatim}
+[I.F]
+Execution of tests has been completed:
+			Failed:      1	(0_-) BUGS !!!
+			Errors:       0
+			Ignored:     1	o(^_^)o ?
+			Successful:  1
+			Total:       3
+----Errors----
+lua_sample.t.lua::failedTest
+	lua_sample.t.lua : 6 : true expected but was nil or false
+----Ignored----
+lua_sample.t.lua : 10 : lua_sample.t.lua::_ignoredTest
+\end{verbatim}
+По сообщениям видно, что тест \verb`lua_sample.t.lua::failedTest` завалился, а тест \verb`lua_sample.t.lua::_ignoredTest` был проигнорирован и не выполнялся.
+Сделав двойной клик мышью на строке, либо нажав F4:
+\begin{verbatim}
+lua_sample.t.lua(6) : true expected but was nil or false
+\end{verbatim}
+Вы переместитесь на строку со сработавшим assert-ом
+\end{enumerate}
+
+\clearpage
 %-----------------------------------------------------------------------------------------
 \subsection{Синтаксис}
 
-%-----------------------------------------------------------------------------------------
-\subsection{C++ Test Engine}
+%---------------------------------------------------------------------
+\subsubsection{C++ Test Engine}
 
 %---------------------------------------------------------------------
-\subsubsection{Тесты}
+\paragraph{Тесты}
 \label{sec:cpp_test_syntax}
 
 \begin{lstlisting}[language=c++]
@@ -415,7 +420,7 @@ _test2(testF, fixtureA, fixtureB)
 \end{lstlisting}
 
 %---------------------------------------------------------------------
-\subsubsection{Assert-ы}
+\paragraph{Assert-ы}
 
 \begin{itemize}
 \item Для проверки логических выражений:
@@ -443,11 +448,11 @@ _test2(testF, fixtureA, fixtureB)
 \end{itemize}
 
 \clearpage
-%-----------------------------------------------------------------------------------------
-\subsection{Lua Test Engine}
+%---------------------------------------------------------------------
+\subsubsection{Lua Test Engine}
 
 %---------------------------------------------------------------------
-\subsubsection{Тесты}
+\paragraph{Тесты}
 \label{sec:lua_test_syntax}
 
 \begin{lstlisting}[language=lua]
@@ -490,7 +495,7 @@ end
 \end{lstlisting}
 
 %---------------------------------------------------------------------
-\subsubsection{Assert-ы}
+\paragraph{Assert-ы}
 
 \begin{itemize}
 \item Для проверки логических выражений:
@@ -542,10 +547,11 @@ end
 
 Для запуска тестов одного тестового контейнера можно использовать отдельный модуль \path{default_test_run.lua}. Командная строка запуска будет выглядеть примерно так:
 \begin{verbatim}
-lua5.1.exe  -l load_scite_listener -l testunit.default_test_run -e "run([[TEST_CONTAINER_PATH]])"
+lua5.1.exe -l testunit.load_scite_listener -l testunit.default_test_run
+ -e "run([[TEST_CONTAINER_PATH]])"
 \end{verbatim}
 
-Вместо непосредственного указания пути к файлу контейнера (TEST~\_CONTAINER~\_PATH) можно указывать:
+Вместо непосредственного указания пути к файлу контейнера ~(TEST\_CONTAINER\_PATH) можно указывать:
 \begin{itemize}
 \item SciTE: \verb`$(FileNameExt)`
 \item Visual Studio 2010: \verb`$(TargetPath)`
@@ -553,8 +559,8 @@ lua5.1.exe  -l load_scite_listener -l testunit.default_test_run -e "run([[TEST_C
 
 В качестве скрипта загрузки TestListner можно указывать:
 \begin{itemize}
-\item SciTE: \verb`-l load_vs_listener`
-\item Visual Studio 2010: \verb`-l load_scite_listener`
+\item SciTE: \verb`testunit.load_vs_listener`
+\item Visual Studio 2010: \verb`testunit.load_scite_listener`
 \end{itemize}
 
 Указывать \verb`TEST_CONTAINER_PATH` в двойных квадратных скобках необходимо, чтобы корректно обработать в пути обратные слэши (backslash).
@@ -562,34 +568,26 @@ lua5.1.exe  -l load_scite_listener -l testunit.default_test_run -e "run([[TEST_C
 \begin{verbatim}
 lua5.1.exe 
 -e "package.path=[[PATH_TO_TESTUNIT/?.lua]]..package.path"
--l testunit.default_test_run -e "run([[TEST_CONTAINER_PATH]])"
+-l testunit.load_scite_listener -l testunit.default_test_run
+-e "run([[TEST_CONTAINER_PATH]])"
 \end{verbatim}
 
 В SciTE составленную командную строку можно задать, например, в настройках пользователя, прописав:
 \begin{verbatim}
 command.go.*.t.lua=lua5.1.exe 
--l load_scite_listener -l default_test_run -e "run([[$(FileNameExt)]])"
+-l testunit.load_scite_listener -l testunit.default_test_run -e "run([[$(FileNameExt)]])"
 \end{verbatim}
 
 В Visual Studio 2010 нужно добавить ее в настройки проектника, например:
 \begin{itemize}
 \item Debugging $\to$ Command = \path{lua5.1.exe}
 \item Debugging $\to$ Command Arguments = \\
-\verb`-l load_vs_listener -l default_test_run -e "[[$(TargetPath)]]"`
+\verb`-l testunit.load_vs_listener -l testunit.default_test_run -e "[[$(TargetPath)]]"`
 \item Build Events $\to$ Post-Build Event $\to$ Command Line = \\
-\verb`lua5.1.exe -l load_vs_listener -l default_test_run`\\
+\verb`lua5.1.exe -l testunit.load_vs_listener -l testunit.default_test_run`\\
 \verb` -e "[[$(TargetPath)]]"`
 \item Build Events $\to$ Post-Build Event $\to$ Description = Run unit tests \ldots
 \end{itemize}
-
-%%-------------------------------------------------------------------------
-% \subsection{Разработка компонента}
-
-% Открываем компонент (для C++ -- это файлы \path{*.h}, \path{*.cpp} и \path{*.t.cpp}) в IDE (или подходящего редактора, который <<обвешан>> скриптами для работы с модульными тестами\footnote{Не ждите пока любимый только Вами, но не используемый другими разработчиками редактор будет соответствующим образом <<накачан>> скриптами, сделайте это сами. Список того, что будет поддерживаться однозначно -- это MS Visual Studio и SciTE.}). Подразумевается, что все используемые текущим компоненты уже протестированы.
-
-% Выбираем для проекта конфигурацию <<test>>. Результатом сборки будет тестовый драйвер (Test Driver). При помощи него становиться возможным запуск содержащихся в нем тестов. Но поскольку мы вносим изменения в один компонент, то будет достаточным прогон только тестов, относящихся к нему.
-
-% Намечаем изменения, которые необходимо внести в компонент. Пишем в файле тестов (\path{*.t.cpp} -- для C++) новые тесты, проверяющие поведение кода согласно последней спецификации, либо подправляем уже имеющиеся. Затем производим сборку проекта и запуск тестов, для удобства эти два действия должны выполняться вспомогательным скриптом в одну атомарную операцию. Убеждаемся, что новые тесты провалились\footnote{А то вдруг и делать-то уже ничего не надо и код уже отвечает спецификации :-) }. Вносим изменения в основной код, опять запускаем тесты, смотрим какие из них завершились с ошибкой, исправляем код, опять прогоняем тесты и так до тех пор пока не будут проходить все тесты. 
 
 %-------------------------------------------------------------------------
 \subsection{Доставка изменений в центральный репозиторий}
@@ -607,5 +605,12 @@ command.go.*.t.lua=lua5.1.exe
 
 Джоэл Спольски рекомендует в качестве наказания виновного за проваленную сборку назначать того ответственным за подобные полные сборки до тех пор, пока не облажается кто-нибудь еще.
 
-%%-------------------------------------------------------------------------------------------------------------
-% \section{Рекомендуемая литература}
+%-------------------------------------------------------------------------------------------------------------
+\section{Рекомендуемая литература}
+
+\begin{enumerate}
+\item Кент Бек <<Экстремальное программирование: разработка через тестирование>>
+\item Кент Бек, Мартин Фаулер <<Экстремальное программирование: планирование>>
+\item Мартин Фаулер <<Рефакторинг. Улучшение существующего кода>>
+\item Джерард Месарош <<Шаблоны тестирования xUnit. Рефакторинг кода тестов>>
+\end{enumerate}
