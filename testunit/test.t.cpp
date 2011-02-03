@@ -253,6 +253,13 @@ _test2(test6bis, fixtureA, fixtureB)
     int uncompiledCode[0] = {1};
 }
 
+test(isNullAssert)
+{
+    void* p = NULL;
+    isNull(p);
+    willThrow(isNull(1), TESTUNIT_NS::TestException);
+}
+
 test(testBoolAssert)
 {
 	isTrue(true);
@@ -303,11 +310,17 @@ test(testBoolAssertNot)
 
 test(testAssertEqual)
 {
-	areEq((unsigned int)1, (unsigned int)1);
-	areEq((unsigned int)0, (unsigned int)0);
+	areEq(1, 1);
+
+	areEq(1, (int)1);
+    areEq(-1, (int)-1);
+
+	areEq((unsigned int)1, (int)1);
+    areEq(-1, (int)-1);
+
+    areEq((unsigned int)1, (unsigned int)1);
 
 	areEq((int)1, (int)1);
-	areEq((int)0, (int)0);
     areEq((int)-1, (int)-1);
 }
 
@@ -315,10 +328,9 @@ test(testAssertEqualWithTypedefs)
 {
     typedef unsigned int uint_max_t;
     areEq((uint_max_t)1, (uint_max_t)1);
-    areEq((uint_max_t)0, (uint_max_t)0);
+    areNotEq((uint_max_t)1, (uint_max_t)0);
     typedef int int_max_t;
     areEq((int_max_t)1, (int_max_t)1);
-    areEq((int_max_t)0, (int_max_t)0);
     areEq((int_max_t)-1, (int_max_t)-1);
 }
 
@@ -556,3 +568,4 @@ test(testSetGoodWorkingDir)
         f.close();
     isTrue(exist);
 }
+

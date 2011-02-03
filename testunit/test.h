@@ -277,23 +277,9 @@ RegisterIgnoredTestCase<TestCaseClass>::RegisterIgnoredTestCase(const char* name
 // Macro
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool TESTUNIT_API cppunitAssert(const bool condition);
 
-template<typename T>
-bool cppunitAssert(const T expected, const T actual);
-
-template<typename T1, typename T2>
-bool cppunitAssert(const T1 expected, const T2 actual)
-{
-	return cppunitAssert(expected == actual);
-}
-
-template<typename T>
-bool cppunitAssert(const T expected, const T actual)
-{
-	return cppunitAssert(expected == actual);
-}
+bool TESTUNIT_API cppunitAssert(const long long expected, const long long actual);
 
 /// \param[in] delta must be at [0.00000001f, +INFINITE)
 bool TESTUNIT_API cppunitAssert(const float expected, const float actual, const float delta);
@@ -305,14 +291,7 @@ bool TESTUNIT_API cppunitAssert(const double expected, const double actual, cons
 bool TESTUNIT_API cppunitAssert(const long double expected, const long double actual, const long double delta);
 
 bool TESTUNIT_API cppunitAssert(const char *expected, const char *actual);
-bool TESTUNIT_API cppunitAssert(const char *expected, char *actual);
-bool TESTUNIT_API cppunitAssert(char *expected, const char *actual);
-bool TESTUNIT_API cppunitAssert(char *expected, char *actual);
-
 bool TESTUNIT_API cppunitAssert(const wchar_t *expected, const wchar_t *actual);
-bool TESTUNIT_API cppunitAssert(const wchar_t *expected, wchar_t *actual);
-bool TESTUNIT_API cppunitAssert(wchar_t *expected, const wchar_t *actual);
-bool TESTUNIT_API cppunitAssert(wchar_t *expected, wchar_t *actual);
 
 bool TESTUNIT_API cppunitAssert(const std::wstring& expected, const std::wstring& actual);
 bool TESTUNIT_API cppunitAssert(const std::string& expected, const std::string& actual);
@@ -322,17 +301,15 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const char* condi
 void TESTUNIT_API throwException(const SourceLine& sourceLine, const char* message, bool);
 void TESTUNIT_API throwException(const SourceLine& sourceLine, const wchar_t* message, bool);
 
-void TESTUNIT_API throwException(const SourceLine& sourceLine, const int expected, const int actual,
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const long long expected, const long long actual,
 							bool mustBeEqual);
-void TESTUNIT_API throwException(const SourceLine& sourceLine, const unsigned int expected, const unsigned int actual,
-							bool mustBeEqual);
-void TESTUNIT_API throwException(const SourceLine& sourceLine, const char *expected, const char *actual,
-							bool mustBeEqual);
-void TESTUNIT_API throwException(const SourceLine& sourceLine, const wchar_t *expected, const wchar_t *actual,
-							bool mustBeEqual);
-void TESTUNIT_API throwException(const SourceLine& sourceLine, const std::wstring& expected, const std::wstring& actual,
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const char* expected, const char* actual,
 							bool mustBeEqual);
 void TESTUNIT_API throwException(const SourceLine& sourceLine, const std::string& expected, const std::string& actual,
+							bool mustBeEqual);
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const wchar_t* expected, const wchar_t* actual,
+							bool mustBeEqual);
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const std::wstring& expected, const std::wstring& actual,
 							bool mustBeEqual);
 void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expected, const double actual,
 							const double delta, bool mustBeEqual);
@@ -443,7 +420,15 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
     registerIgnoredTest(name, TESTUNIT_SOURCELINE())\
     ignoredTestBodyDef(name)
 
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ASSERTS
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define isNull(actual)\
+	if(!TESTUNIT_NS::cppunitAssert((actual) == NULL))\
+        TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), L ## #actual L" is not NULL", false)
+
 #define isTrue(condition)\
 	if(!TESTUNIT_NS::cppunitAssert(condition))\
 		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), #condition)
@@ -454,7 +439,7 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
 
 #define areEq(expected, actual)\
 	if(!TESTUNIT_NS::cppunitAssert((expected), (actual)))\
-		TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), (expected), (actual), true)
+        TESTUNIT_NS::throwException(TESTUNIT_SOURCELINE(), (expected), (actual), true)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define areNotEq(expected, actual)\

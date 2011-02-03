@@ -16,10 +16,17 @@ local function clean(extlist, directory, filename, verbose)
     if string.find(directory, "[\\/]$") then
         directory = string.sub(directory, 1, -2)
     end
+    if verbose then
+        inform("Will delete files from directory '" .. directory .. "'")
+    end
+
     -- prepare extensions table
     local extensions = {}
     for e in string.gmatch(extlist, "%.([^%.]*)") do
         extensions[e] = true
+        if verbose then
+            inform("Will delete files with extension '" .. e .. "'")
+        end
     end
     -- prepare file entries table
     local entries = {}
@@ -28,6 +35,7 @@ local function clean(extlist, directory, filename, verbose)
             entries[#entries + 1] = entry
         end
     end
+
     -- enumerate entries
     if verbose then
         inform("current directory is '" .. lfs.currentdir() .. "'")
