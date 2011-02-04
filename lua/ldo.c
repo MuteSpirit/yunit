@@ -103,11 +103,14 @@ void luaD_throw (lua_State *L, int errcode) {
       lua_unlock(L);
       G(L)->panic(L);
     }
-#ifdef _MSC_VER
-    __debugbreak();
-#else
-    __builtin_trap();
-#endif
+// removed code:
+//#ifdef _MSC_VER
+//    __debugbreak();
+//#else
+//    __builtin_trap();
+//#endif
+    // because we need pure unhandle exception with it's context, which will be catched 
+    // by unhandled exception handler  
   }
 }
 
