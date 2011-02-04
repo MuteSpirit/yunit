@@ -35,10 +35,6 @@
                   <File Id="luaunit.lua" Name="luaunit.lua" DiskId="1" Source="..\testunit\luaunit.lua" />
                 </Component>
 
-                <Component Id="Documentation" Guid="967C4E76-10C7-40ED-9D75-D03C0F1BC776">
-                  <File Id="manual.pdf" Name="manual.pdf" DiskId="1" Source="..\_bin\manual.pdf" />
-                </Component>
-
                 <Component Id="TestRunner" Guid="E7DC4B47-1BFB-4CE8-AD5D-C0A9043E3516">
                   <File Id="test_runner.lua" Name="test_runner.lua" DiskId="1" Source="..\testunit\test_runner.lua" />
                   <File Id="default_test_run.lua" Name="default_test_run.lua" DiskId="1" Source="..\testunit\default_test_run.lua" />
@@ -145,7 +141,6 @@
         <ComponentRef Id="CppTestEngineIncludes" />
         <ComponentRef Id="LuaTestEngine" />
         <ComponentRef Id="TestRunner" />
-        <ComponentRef Id="Documentation" />
       </Feature>
       <Feature Id="AdditionalModulesFeature" Title="Additional Modules" Level="1">
         <ComponentRef Id="AdditionalModules" />

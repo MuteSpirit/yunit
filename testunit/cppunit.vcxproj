@@ -163,23 +163,6 @@
     <ClInclude Include="test.h" />
     <ClInclude Include="thunk.h" />
   </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="manual.tex">
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)lua5.1.exe -e "package.path=[[..\ts_modules\?.lua]]" ..\ts_modules\atd.lua tex2pdf "$(ProjectDir)%(Filename)"
-$(OutDir)lua5.1.exe -e "package.path=[[..\ts_modules\?.lua]]" ..\ts_modules\clean.lua .toc.aux.dvi.ps.log.bbl.blg.src.out "$(ProjectDir)/"
-move $(ProjectDir)%(Filename).pdf $(OutDir)%(Filename).pdf</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)\%(Filename).pdf;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)lua5.1.exe -e "package.path=[[..\ts_modules\?.lua]]" ..\ts_modules\atd.lua tex2pdf "$(ProjectDir)%(Filename)"
-$(OutDir)lua5.1.exe -e "package.path=[[..\ts_modules\?.lua]]" ..\ts_modules\clean.lua .toc.aux.dvi.ps.log.bbl.blg.src.out "$(ProjectDir)/"
-move $(ProjectDir)%(Filename).pdf $(OutDir)%(Filename).pdf</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)\%(Filename).pdf;%(Outputs)</Outputs>
-    </CustomBuild>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
