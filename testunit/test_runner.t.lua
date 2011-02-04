@@ -263,9 +263,9 @@ globalTestCaseListFixturePlusUseTmpDir =
             };
         }
         
-        areEq(2, #testRegistry.testsuites);
-        areEq(1, #testRegistry.testsuites[2].testcases);
-        areEq("CallSetUpAndTearDownTestCase", testRegistry.testsuites[2].testcases[1].name_);
+        areEq(1, #testRegistry.testsuites);
+        areEq(1, #testRegistry.testsuites[1].testcases);
+        areEq("CallSetUpAndTearDownTestCase", testRegistry.testsuites[1].testcases[1].name_);
         
         testRunner.copyAllLuaTestCasesToGlobalTestList();
         areEq(1, #testRunner.GlobalTestCaseList);
@@ -365,18 +365,16 @@ globalTestCaseListFixturePlusUseTmpDir =
         local luaTestContainerFilename = tmpDir .. fs.osSlash() .. 'load_lua_container.t.lua'
         isTrue(aux.createTextFileWithContent(luaTestContainerFilename, luaTestContainerText))
         
-        areEq(1, #testRegistry.testsuites)
-        areEq(0, #testRegistry.testsuites[1].testcases)
+        areEq(0, #testRegistry.testsuites)
         
         local status, msg = testRunner.loadLuaContainer(luaTestContainerFilename)
         areEq(nil, msg)
         isTrue(status)
         
-        areEq(2, #testRegistry.testsuites)
-        areEq(0, #testRegistry.testsuites[1].testcases)
-        areEq(3, #testRegistry.testsuites[2].testcases)
+        areEq(1, #testRegistry.testsuites)
+        areEq(3, #testRegistry.testsuites[1].testcases)
 
-        areEq(luaTestContainerFilename, testRegistry.testsuites[2].name_)
+        areEq(luaTestContainerFilename, testRegistry.testsuites[1].name_)
     end
 
 function globalTestCaseListFixturePlusUseTmpDir.runSomeTestContainer(self)
@@ -384,15 +382,14 @@ function globalTestCaseListFixturePlusUseTmpDir.runSomeTestContainer(self)
     local testContainerText = [[function someTestCase() end]]
     isTrue(aux.createTextFileWithContent(testContainerPath, testContainerText))
    
-    areEq(1, #self.testRegistry.testsuites)
-    areEq(0, #self.testRegistry.testsuites[1].testcases)
+    areEq(0, #self.testRegistry.testsuites)
 
     require('default_test_run')
     run(testContainerPath)
     
-    areEq(2, #self.testRegistry.testsuites)
-    areEq(1, #self.testRegistry.testsuites[2].testcases)
-    areEq("someTestCase", self.testRegistry.testsuites[2].testcases[1].name_)
+    areEq(1, #self.testRegistry.testsuites)
+    areEq(1, #self.testRegistry.testsuites[1].testcases)
+    areEq("someTestCase", self.testRegistry.testsuites[1].testcases[1].name_)
 end
 
 function testSetGoodWorkingDir()

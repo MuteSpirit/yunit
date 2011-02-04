@@ -98,13 +98,13 @@ end
 -------------------------------------------------------
 TestRegistry = 
 {
-    testsuites = {TestSuite:new("Default")};
+    testsuites = {};
 };
 -------------------------------------------------------
 function TestRegistry:new()
     local o = 
     {
-        testsuites = {TestSuite:new("Default")};
+        testsuites = {};
     };
     setmetatable(o, self);
     self.__index = self;
@@ -124,16 +124,12 @@ function currentTestRegistry(value)
     end
 end
 
-function TestRegistry:addTestCase(testcase)
-    self.testsuites[1]:addTestCase(testcase);
-end
-
 function TestRegistry:addTestSuite(testsuite)
     table.insert(self.testsuites, testsuite);
 end
 
 function TestRegistry:reset()
-    self.testsuites = {TestSuite:new("Default")};
+    self.testsuites = {};
 end
 
 -------------------------------------------------------
