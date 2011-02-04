@@ -40,30 +40,11 @@ namespace TestUnit {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef TS_T
-//#	ifdef UNICODE
-//#		define TS_T2(x)		L ## x
-//#		define char		wchar_t
-//#		define TS_STRING	std::wstring
-//#		define TS_STRLEN	wcslen
-//#		define TS_STRCPY	wcscpy
-//#		define TS_STRNCPY	wcsncpy
-//#		define TS_STRCMP	wcscmp
-//#		define _snprintf	_snwprintf
-//#	else
-#		define TS_T2(x)		x
-//#		define char		char
-//#		define TS_STRING	std::string
-//#		define TS_STRLEN	strlen
-//#		define TS_STRCPY	strcpy
-//#		define TS_STRNCPY	strncpy
-//#		define TS_STRCMP	strcmp
 #	if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
 #		define TS_SNPRINTF	_snprintf
 #	else
 #		define TS_SNPRINTF	snprintf
 #	endif
-//#	endif
-#define TS_T(x)  TS_T2(x)
 #endif
 
 #endif // _TESTUNIT_PORTABILITY_HEADER_

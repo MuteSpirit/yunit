@@ -15,9 +15,6 @@
 --- \class TestRegistry
 --- \brief Contain all TestSuites from loaded Lua test scripts (*.t.lua) and C++ test drivers (*.t.dll)
 
---- \fn TestRegistry:addTestCase(testcase)
---- \brief Add TestCase object into default TestSuite
-
 --- \fn TestRegistry:reset()
 --- \brief return TestRegistry to the default state
 
@@ -144,54 +141,47 @@ luaUnitSelfTestFixture =
         noThrow(testcase.test);
         noThrow(testcase.tearDown);
     end
-    function luaUnitSelfTestFixture.addingTestCasesToTestRegistryTest()
-        areEq(1, #testRegistry.testsuites);
-        areEq("Default", testRegistry.testsuites[1].name_);
-        areEq(0, #testRegistry.testsuites[1].testcases);
-        
-        testRegistry:addTestCase(luaUnit.TestCase:new("TestCaseForDefaultTestSuite"));
-        areEq(1, #testRegistry.testsuites);
-        areEq(1, #testRegistry.testsuites[1].testcases);
-        
-        local testsuite = luaUnit.TestSuite:new("NotDefaultTestSuite");
-        testRegistry:addTestSuite(testsuite);
-        areEq(2, #testRegistry.testsuites);
-        areEq(1, #testRegistry.testsuites[1].testcases);
-        areEq(0, #testRegistry.testsuites[2].testcases);
+    
+function luaUnitSelfTestFixture.addingTestCasesToTestRegistryTest()
+    areEq(0, #testRegistry.testsuites);
+    
+    local testsuite = luaUnit.TestSuite:new("NotDefaultTestSuite");
+    testRegistry:addTestSuite(testsuite);
+    areEq(1, #testRegistry.testsuites);
+    areEq(0, #testRegistry.testsuites[1].testcases);
 
-        testRegistry:addTestCase(luaUnit.TestCase:new("OtherTestCaseForDefaultTestSuite"));
-        areEq(2, #testRegistry.testsuites);
-        areEq(2, #testRegistry.testsuites[1].testcases);
-        areEq(0, #testRegistry.testsuites[2].testcases);
-        
-        testsuite:addTestCase(luaUnit.TestCase:new("TestCase1"));
-        areEq(2, #testRegistry.testsuites);
-        areEq(2, #testRegistry.testsuites[1].testcases);
-        areEq(1, #testRegistry.testsuites[2].testcases);
-        
-        testRegistry:reset();
-        areEq(1, #testRegistry.testsuites);
-        areEq("Default", testRegistry.testsuites[1].name_);
-        areEq(0, #testRegistry.testsuites[1].testcases);
+    testsuite:addTestCase(luaUnit.TestCase:new("TestCase1"));
+    areEq(1, #testRegistry.testsuites);
+    areEq(1, #testRegistry.testsuites[1].testcases);
+    
+    testRegistry:reset();
+    areEq(0, #testRegistry.testsuites);
+end
+
+function luaUnitSelfTestFixture.getTestListTest()
+    local testList = luaUnit.getTestList();
+    isNotNil(testList);
+    areEq(0, #testList);
+    
+    -- add one TestCase
+    local testcaseName = "GetTestListTestCase";
+    local testcase = luaUnit.TestCase:new(testcaseName);
+    testcase.test = function()
+        luaUnit.areEq(0, 0);
     end
 
-    function luaUnitSelfTestFixture.getTestListTest()
-        local testList = luaUnit.getTestList();
-        isNotNil(testList);
-        areEq(0, #testList);
-        
-        -- add one TestCase
-        local testcaseName = "GetTestListTestCase";
-        local testcase = luaUnit.TestCase:new(testcaseName);
-        testcase.test = function()
-            luaUnit.areEq(0, 0);
-        end
-        testRegistry:addTestCase(testcase);
-
-        testList = luaUnit.getTestList();
-        isNotNil(testList);
-        areEq(1, #testList);
-    end
+    testList = luaUnit.getTestList();
+    isNotNil(testList);
+    areEq(0, #testList);
+    
+    local testsuite = luaUnit.TestSuite:new("GetTestListTestSuite");
+    testsuite:addTestCase(testcase);
+    testRegistry:addTestSuite(testsuite);
+    
+    testList = luaUnit.getTestList();
+    isNotNil(testList);
+    areEq(1, #testList);
+end
 
     function luaUnitSelfTestFixture.protectTestCaseMethodCallTest()
         -- we try to call create simple TestCAse and call 'setUp', 'test', 'tearDown' in protected mode
@@ -225,8 +215,8 @@ luaUnitSelfTestFixture =
         {
         };
         
-        areEq(2, #testRegistry.testsuites);
-        areEq(0, #testRegistry.testsuites[2].testcases);
+        areEq(1, #testRegistry.testsuites);
+        areEq(0, #testRegistry.testsuites[1].testcases);
 
         luaUnit.TEST_SUITE("MacroTestSuiteWithOneTestCase")
         {
@@ -236,100 +226,99 @@ luaUnitSelfTestFixture =
             };
         }
 
-        areEq(3, #testRegistry.testsuites);
-        areEq(0, #testRegistry.testsuites[1].testcases);
-        areEq(0, #testRegistry.testsuites[2].testcases);
-        areEq(1, #testRegistry.testsuites[3].testcases);
-    end
-
-    function luaUnitSelfTestFixture.testFrame()
-        ---------------------------------------------------
-        -- initialize message system
-        local testObserver = testRunner.TestObserver:new();
-        local mockTestListener = testRunner.TestListener:new();
-        mockTestListener.error_ = false;
-        function mockTestListener:addError()
-            mockTestListener.error_ = true;
-        end
-        function mockTestListener:addFailure()
-            mockTestListener.error_ = true;
-        end
-        testObserver:addTestListener(mockTestListener);
-        ---------------------------------------------------
-        -- Make TestCase manually, then run it 
-        mockTestListener.error_ = false;
-        local testcase = luaUnit.TestCase:new("GetTestListTestCase");
-        testcase.test = function()
-            luaUnit.areEq(0, 0);
-        end
-        
-        testRegistry:addTestCase(testcase);
-
-        local testList = luaUnit.getTestList();
-        isNotNil(testList);
-        areEq(1, #testList);
-
-        testRunner.runTestCase(testList[1], testObserver);
-        isFalse(mockTestListener.error_);
-
-        mockTestListener.error_ = false;
-        luaUnit.TEST_SUITE("TestFrameTestSuite")
-        {
-            luaUnit.TEST_CASE{"TestFrameTestCase", function()
-                luaUnit.areEq(0, 0);
-            end
-            };
-        }
-
-        
-        testList = luaUnit.getTestList();
-        isNotNil(testList);
-        areEq(2, #testList);
-    end
-
-    function luaUnitSelfTestFixture.testFixture()
-        local setUpExecuted = false;
-        local testExecuted = false;
-        local tearDownExecuted = false;
-        
-        luaUnit.TEST_FIXTURE("MockTestFixture")
-        {
-            setUp = function(self)
-                setUpExecuted = true;
-            end
-            ;
-            tearDown = function(self)
-                tearDownExecuted = true;
-            end
-            ;
-        };
-        
-        areEq(1, #testRegistry.testsuites);
-        isNotNil(_G["MockTestFixture"]);
-
-        luaUnit.TEST_SUITE("TestFixtureTests")
-        {
-            luaUnit.TEST_CASE_EX{"EmptyTest", "MockTestFixture", function(self)
-                testExecuted = true;
-            end
-            };
-        }
-
-
         areEq(2, #testRegistry.testsuites);
         areEq(0, #testRegistry.testsuites[1].testcases);
         areEq(1, #testRegistry.testsuites[2].testcases);
-        
-        local testList = luaUnit.getTestList();
-        areEq(1, #testList);
-        
-        local testObserver = testRunner.TestObserver:new();
-        testRunner.runTestCase(testList[1], testObserver);
-        
-        isTrue(setUpExecuted);
-        isTrue(testExecuted);
-        isTrue(tearDownExecuted);
     end
+
+function luaUnitSelfTestFixture.testFrame()
+    ---------------------------------------------------
+    -- initialize message system
+    local testObserver = testRunner.TestObserver:new();
+    local mockTestListener = testRunner.TestListener:new();
+    mockTestListener.error_ = false;
+    function mockTestListener:addError()
+        mockTestListener.error_ = true;
+    end
+    function mockTestListener:addFailure()
+        mockTestListener.error_ = true;
+    end
+    testObserver:addTestListener(mockTestListener);
+    ---------------------------------------------------
+    -- Make TestCase manually, then run it 
+    mockTestListener.error_ = false;
+    local testcase = luaUnit.TestCase:new("testFrameTestCase");
+    testcase.test = function()
+        luaUnit.areEq(0, 0);
+    end
+    
+    local testsuite = luaUnit.TestSuite:new("testFrameTestSuite");
+    testsuite:addTestCase(testcase);
+    testRegistry:addTestSuite(testsuite);
+    
+    local testList = luaUnit.getTestList();
+    isNotNil(testList);
+    areEq(1, #testList);
+
+    testRunner.runTestCase(testList[1], testObserver);
+    isFalse(mockTestListener.error_);
+
+    mockTestListener.error_ = false;
+    luaUnit.TEST_SUITE("TestFrameTestSuite")
+    {
+        luaUnit.TEST_CASE{"TestFrameTestCase", function()
+            luaUnit.areEq(0, 0);
+        end
+        };
+    }
+    
+    testList = luaUnit.getTestList();
+    isNotNil(testList);
+    areEq(2, #testList);
+end
+
+function luaUnitSelfTestFixture.testFixture()
+    local setUpExecuted = false;
+    local testExecuted = false;
+    local tearDownExecuted = false;
+    
+    luaUnit.TEST_FIXTURE("MockTestFixture")
+    {
+        setUp = function(self)
+            setUpExecuted = true;
+        end
+        ;
+        tearDown = function(self)
+            tearDownExecuted = true;
+        end
+        ;
+    };
+    
+    areEq(0, #testRegistry.testsuites);
+    isNotNil(_G["MockTestFixture"]);
+
+    luaUnit.TEST_SUITE("TestFixtureTests")
+    {
+        luaUnit.TEST_CASE_EX{"EmptyTest", "MockTestFixture", function(self)
+            testExecuted = true;
+        end
+        };
+    }
+
+
+    areEq(1, #testRegistry.testsuites);
+    areEq(1, #testRegistry.testsuites[1].testcases);
+    
+    local testList = luaUnit.getTestList();
+    areEq(1, #testList);
+    
+    local testObserver = testRunner.TestObserver:new();
+    testRunner.runTestCase(testList[1], testObserver);
+    
+    isTrue(setUpExecuted);
+    isTrue(testExecuted);
+    isTrue(tearDownExecuted);
+end
     
     function getTestEnvTest()
         local testContainerName = 'testunit.luaunit'
@@ -485,18 +474,15 @@ luaUnitSelfTestFixture =
                 ]]
         local luaTestContainerName = 'load_lua_container.t'
 
-        areEq(1, #testRegistry.testsuites)
-        areEq(0, #testRegistry.testsuites[1].testcases)
+        areEq(0, #testRegistry.testsuites)
         
         local status, msg = luaUnit.loadTestChunk(luaTestContainerSourceCode, luaTestContainerName)
         areEq(nil, msg)
         isTrue(status)
         
-        areEq(2, #testRegistry.testsuites)
-        areEq(0, #testRegistry.testsuites[1].testcases)
-        
-        areEq(luaTestContainerName, testRegistry.testsuites[2].name_)
-        areEq(3, #testRegistry.testsuites[2].testcases)
+        areEq(1, #testRegistry.testsuites)
+        areEq(luaTestContainerName, testRegistry.testsuites[1].name_)
+        areEq(3, #testRegistry.testsuites[1].testcases)
     end
     
     function isTrueTest()
