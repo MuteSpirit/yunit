@@ -114,7 +114,7 @@ static bool wereCatchedCppExceptions(lua_State *L,
 
         countReturnValues += errorObjectTableToLuaStackTop(
             L,
-            "", 0,
+            testCase->source().fileName(), testCase->source().lineNumber(),
             errorMessage);
 
 		return true;
