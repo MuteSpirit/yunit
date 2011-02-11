@@ -534,7 +534,7 @@ test(thisTestMustFail)
         char buf[512];
         ex.message(buf, 512);
         //areEq(buf, buf);
-        areEq("a!=b", buf);
+        areEq("a != b", buf);
     }
 }
 
