@@ -125,6 +125,7 @@ function runTestCase(testcase, testResult)
         end
 
         if status then
+            -- testcase object must have test()
             status, errorObject = testcase:test();
 
             if not status then
