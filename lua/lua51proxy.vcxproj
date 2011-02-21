@@ -37,11 +37,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_debug|Win32'">..\_bin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_debug|Win32'">..\..\_bin\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_debug|Win32'">_tmp\$(ProjectName)\</IntDir>
     <ExtensionsToDeleteOnClean Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_debug|Win32'" />
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_debug|Win32'">false</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_release|Win32'">..\_bin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_release|Win32'">..\..\_bin\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_release|Win32'">_tmp\$(ProjectName)\</IntDir>
     <ExtensionsToDeleteOnClean Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_release|Win32'" />
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_release|Win32'">false</LinkIncremental>
@@ -78,14 +78,14 @@
       <AdditionalDependencies>lua5.1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>lua_proxy.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(TargetDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <NoEntryPoint>true</NoEntryPoint>
       <SetChecksum>true</SetChecksum>
-      <ImportLibrary>..\_lib\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>..\..\_lib\$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
@@ -117,7 +117,7 @@
       <AdditionalDependencies>lua5.1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>lua_proxy.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(TargetDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -126,7 +126,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <NoEntryPoint>true</NoEntryPoint>
       <SetChecksum>true</SetChecksum>
-      <ImportLibrary>..\_lib\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>..\..\_lib\$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>

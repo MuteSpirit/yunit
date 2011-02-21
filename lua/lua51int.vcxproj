@@ -37,11 +37,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_debug|Win32'">..\_bin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_debug|Win32'">..\..\_bin\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_debug|Win32'">_tmp\$(ProjectName)\</IntDir>
     <ExtensionsToDeleteOnClean Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_debug|Win32'" />
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_debug|Win32'">false</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_release|Win32'">..\_bin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_release|Win32'">..\..\_bin\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_release|Win32'">_tmp\$(ProjectName)\</IntDir>
     <ExtensionsToDeleteOnClean Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_release|Win32'" />
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_release|Win32'">false</LinkIncremental>
@@ -77,7 +77,7 @@
       <AdditionalDependencies>lua5.1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)lua5.1.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(TargetDir)$(TargetName)_int.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -116,7 +116,7 @@
       <AdditionalDependencies>lua5.1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)lua5.1.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(TargetDir)$(TargetName)_int.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
