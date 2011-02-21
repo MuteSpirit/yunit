@@ -37,11 +37,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_debug|Win32'">..\_bin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_debug|Win32'">..\..\_bin\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_debug|Win32'">_tmp\$(ProjectName)\</IntDir>
     <ExtensionsToDeleteOnClean Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_debug|Win32'" />
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_debug|Win32'">false</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_release|Win32'">..\_bin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_release|Win32'">..\..\_bin\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_release|Win32'">_tmp\$(ProjectName)\</IntDir>
     <ExtensionsToDeleteOnClean Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_release|Win32'" />
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='dyn_dynrt_release|Win32'">false</LinkIncremental>
@@ -83,7 +83,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>..\_lib\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>..\..\_lib\$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
@@ -134,7 +134,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>..\_lib\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>..\..\_lib\$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>

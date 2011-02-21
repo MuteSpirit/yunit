@@ -39,11 +39,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>..\_bin\</OutDir>
+    <OutDir>..\..\_bin\</OutDir>
     <IntDir>_tmp\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>..\_bin\</OutDir>
+    <OutDir>..\..\_bin\</OutDir>
     <IntDir>_tmp\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
@@ -79,7 +79,7 @@
       </AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>..\_lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\_lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>lua5.1.lib</AdditionalDependencies>
       <AllowIsolation>
       </AllowIsolation>
@@ -99,7 +99,7 @@
       </RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>..\_lib\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>..\..\_lib\$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
       <LinkErrorReporting>NoErrorReport</LinkErrorReporting>
       <AdditionalOptions>
@@ -135,7 +135,7 @@
       </AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>..\_lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\_lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>lua5.1.lib</AdditionalDependencies>
       <AllowIsolation>
       </AllowIsolation>
@@ -157,7 +157,7 @@
       </RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>..\_lib\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>..\..\_lib\$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
       <LinkErrorReporting>NoErrorReport</LinkErrorReporting>
       <AdditionalOptions>

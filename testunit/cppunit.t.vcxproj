@@ -34,11 +34,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>..\_bin\</OutDir>
+    <OutDir>..\..\_bin\</OutDir>
     <IntDir>_tmp\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>..\_bin\</OutDir>
+    <OutDir>..\..\_bin\</OutDir>
     <IntDir>_tmp\$(ProjectName)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
@@ -74,7 +74,7 @@
       </AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>..\_lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\_lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>cppunit.lib</AdditionalDependencies>
       <AllowIsolation>
       </AllowIsolation>
@@ -98,34 +98,23 @@
       <LinkErrorReporting>NoErrorReport</LinkErrorReporting>
       <AdditionalOptions>
       </AdditionalOptions>
-      <ImportLibrary>..\_lib\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>..\..\_lib\$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>..\_bin\lua5.1.exe -e "package.path=[[..\?.lua;..\ts_modules\?.lua;]] .. package.path" -l testunit.load_vs_listener -l testunit.default_test_run -e "run([[$(TargetPath)]])"</Command>
+      <Command>..\..\_bin\lua5.1.exe -e "package.path=[[..\?.lua;..\lde\?.lua;..\ts_modules\?.lua;..\lde\ts_modules\?.lua;]] .. package.path" -l testunit.load_vs_listener -l testunit.default_test_run -e "run([[$(TargetPath)]])"</Command>
       <Message>Run unit tests ...</Message>
     </PostBuildEvent>
     <PreLinkEvent>
-      <Command>setlocal
-set RUN_TEST_SCRIPT=$(ProjectDir)\$(IntDir)\$(ProjectName)_run_test_units.lua
-echo -- Generated in Post Build Step of project $(ProjectName) &gt; %RUN_TEST_SCRIPT%
-
-echo local fs = require('filesystem'); &gt;&gt; %RUN_TEST_SCRIPT%
-echo package.path = fs.canonizePath([[../_bin/../?.lua;../_bin/../?/init.lua;]] .. package.path); &gt;&gt; %RUN_TEST_SCRIPT%
-echo package.cpath = fs.canonizePath([[../_bin/?.dll;]] .. package.cpath); &gt;&gt; %RUN_TEST_SCRIPT%
-echo local testRunner = require('testunit.test_runner'); &gt;&gt; %RUN_TEST_SCRIPT%
-echo local testListeners = require('testunit.test_listeners'); &gt;&gt; %RUN_TEST_SCRIPT%
-echo testRunner.loadTestContainers{fs.canonizePath([[$(OutDir)/$(TargetFileName)]])}; &gt;&gt; %RUN_TEST_SCRIPT%
-echo local testObserver = testRunner.TestObserver:new(); &gt;&gt; %RUN_TEST_SCRIPT%
-echo testObserver:addTestListener(testListeners.TextTestProgressListener:new()); &gt;&gt; %RUN_TEST_SCRIPT%
-echo testRunner.runAllTestCases(testObserver); &gt;&gt; %RUN_TEST_SCRIPT%
-endlocal</Command>
+      <Command>
+      </Command>
     </PreLinkEvent>
     <PreLinkEvent>
-      <Message>Generate test runner script ...</Message>
+      <Message>
+      </Message>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommand>..\_bin\lua5.1.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommand>..\..\_bin\lua5.1.exe</LocalDebuggerCommand>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerCommandArguments>-e "package.path=[[..\?.lua;..\ts_modules\?.lua;]] .. package.path" -l testunit.load_vs_listener -l testunit.default_test_run -e "run([[$(TargetPath)]])"</LocalDebuggerCommandArguments>
@@ -162,7 +151,7 @@ endlocal</Command>
       </AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>..\_lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\_lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>cppunit.lib</AdditionalDependencies>
       <AllowIsolation>
       </AllowIsolation>
@@ -188,10 +177,10 @@ endlocal</Command>
       <LinkErrorReporting>NoErrorReport</LinkErrorReporting>
       <AdditionalOptions>
       </AdditionalOptions>
-      <ImportLibrary>..\_lib\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>..\..\_lib\$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>..\_bin\lua5.1.exe -e "package.path=[[..\?.lua;..\ts_modules\?.lua;]] .. package.path" -l testunit.load_vs_listener -l testunit.default_test_run -e "run([[$(TargetPath)]])"</Command>
+      <Command>..\..\_bin\lua5.1.exe -e "package.path=[[..\?.lua;..\lde\?.lua;..\ts_modules\?.lua;..\lde\ts_modules\?.lua;]] .. package.path" -l testunit.load_vs_listener -l testunit.default_test_run -e "run([[$(TargetPath)]])"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Run unit tests ...</Message>
@@ -204,7 +193,7 @@ endlocal</Command>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommand>..\_bin\lua5.1.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommand>..\..\_bin\lua5.1.exe</LocalDebuggerCommand>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerCommandArguments>-e "package.path=[[..\?.lua;..\ts_modules\?.lua;]] .. package.path" -l testunit.load_vs_listener -l testunit.default_test_run -e "run([[$(TargetPath)]])"</LocalDebuggerCommandArguments>
