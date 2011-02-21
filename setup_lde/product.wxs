@@ -65,26 +65,26 @@
 
             <Directory Id="LibDir" Name="lib">
               <Component Id="CppTestEngineLibs" Guid="B68DE9BC-C6EF-42E5-914C-7FADA60960A9">
-                <File Id="cppunit.lib" Name="cppunit.lib" DiskId="1" Source="..\_lib\cppunit.lib" />
-                <File Id="cppunit.exp" Name="cppunit.exp" DiskId="1" Source="..\_lib\cppunit.exp" />
+                <File Id="cppunit.lib" Name="cppunit.lib" DiskId="1" Source="..\..\_lib\cppunit.lib" />
+                <File Id="cppunit.exp" Name="cppunit.exp" DiskId="1" Source="..\..\_lib\cppunit.exp" />
               </Component>
 
               <Component Id="LuaLibs" Guid="5B423281-8032-4DE4-9300-A0A42A2145D4">
-                <File Id="lua5.1.lib" Name="lua5.1.lib" DiskId="1" Source="..\_lib\lua5.1.lib" />
-                <File Id="lua5.1.exp" Name="lua5.1.exp" DiskId="1" Source="..\_lib\lua5.1.exp" />
-                <File Id="lua51.lib" Name="lua51.lib" DiskId="1" Source="..\_lib\lua51.lib" />
-                <File Id="lua51.exp" Name="lua51.exp" DiskId="1" Source="..\_lib\lua51.exp" />
+                <File Id="lua5.1.lib" Name="lua5.1.lib" DiskId="1" Source="..\..\_lib\lua5.1.lib" />
+                <File Id="lua5.1.exp" Name="lua5.1.exp" DiskId="1" Source="..\..\_lib\lua5.1.exp" />
+                <File Id="lua51.lib" Name="lua51.lib" DiskId="1" Source="..\..\_lib\lua51.lib" />
+                <File Id="lua51.exp" Name="lua51.exp" DiskId="1" Source="..\..\_lib\lua51.exp" />
               </Component>
             </Directory>
 
 
             <Component Id="LuaBinaries" Guid="FD368DA0-EB2D-4E21-9118-F016B84C0980">
-              <File Id="lua5.1.dll" Name="lua5.1.dll" DiskId="1" Source="..\_bin\lua5.1.dll" />
-              <File Id="lua5.1_lib.pdb" Name="lua5.1_lib.pdb" DiskId="1" Source="..\_bin\lua5.1_lib.pdb" />
-              <File Id="lua51.dll" Name="lua51.dll" DiskId="1" Source="..\_bin\lua51.dll" />
-              <File Id="lua51.pdb" Name="lua51.pdb" DiskId="1" Source="..\_bin\lua51.pdb" />
-              <File Id="lua5.1.exe" Name="lua5.1.exe" DiskId="1" Source="..\_bin\lua5.1.exe" />
-              <File Id="lua5.1_int.pdb" Name="lua5.1_int.pdb" DiskId="1" Source="..\_bin\lua5.1_int.pdb" />
+              <File Id="lua5.1.dll" Name="lua5.1.dll" DiskId="1" Source="..\..\_bin\lua5.1.dll" />
+              <File Id="lua5.1_lib.pdb" Name="lua5.1_lib.pdb" DiskId="1" Source="..\..\_bin\lua5.1_lib.pdb" />
+              <File Id="lua51.dll" Name="lua51.dll" DiskId="1" Source="..\..\_bin\lua51.dll" />
+              <File Id="lua51.pdb" Name="lua51.pdb" DiskId="1" Source="..\..\_bin\lua51.pdb" />
+              <File Id="lua5.1.exe" Name="lua5.1.exe" DiskId="1" Source="..\..\_bin\lua5.1.exe" />
+              <File Id="lua5.1_int.pdb" Name="lua5.1_int.pdb" DiskId="1" Source="..\..\_bin\lua5.1_int.pdb" />
               <File Id="lua_icon.ico" Name="lua_icon.ico" DiskId="1" Source=".\lua_icon.ico" />
               <!--ассоциируем иконку-->
               <RegistryKey Root="HKCR" Key=".lua" Action="createAndRemoveOnUninstall">
@@ -101,12 +101,12 @@
             </Component>
 
             <Component Id="LuaFileSystemBinaries" Guid="80511ee5-80c8-4cf6-a96e-d0652e28eb41">
-              <File Id="lfs.dll" Name="lfs.dll" DiskId="1" Source="..\_bin\lfs.dll" />
+              <File Id="lfs.dll" Name="lfs.dll" DiskId="1" Source="..\..\_bin\lfs.dll" />
             </Component>
 
             <Component Id="CppTestEngineBinaries" Guid="5C65A91D-FB7C-4ACE-B910-D6ECE5DC1A88">
-              <File Id="cppunit.dll" Name="cppunit.dll" DiskId="1" Source="..\_bin\cppunit.dll" />
-              <File Id="cppunit.pdb" Name="cppunit.pdb" DiskId="1" Source="..\_bin\cppunit.pdb" />
+              <File Id="cppunit.dll" Name="cppunit.dll" DiskId="1" Source="..\..\_bin\cppunit.dll" />
+              <File Id="cppunit.pdb" Name="cppunit.pdb" DiskId="1" Source="..\..\_bin\cppunit.pdb" />
             </Component>
           </Directory>
         </Directory>
