@@ -51,7 +51,7 @@
       </PreprocessorDefinitions>
       <MinimalRebuild>
       </MinimalRebuild>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>
       </FloatingPointModel>
