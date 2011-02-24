@@ -1,6 +1,3 @@
---- \fn fakeFunction()
---- \brief Do nothing. Apply it for disable work some function.
-
 --- \class TestListener
 --- \brief Base class for all Test Listeners classes. Contain interface functions and their empty definitions
 
@@ -234,23 +231,6 @@ globalTestCaseListFixturePlusUseTmpDir =
         isTrue(ttpl2.startTestsCall);
     end
 
-    function isLuaTestContainerTest()
-        isTrue(testRunner.isLuaTestContainer("unit.t.lua"));
-        isTrue(testRunner.isLuaTestContainer(" .t.lua"));
-        isFalse(testRunner.isLuaTestContainer("unit_t.lua"));
-        isFalse(testRunner.isLuaTestContainer("unit.test.lua"));
-        isFalse(testRunner.isLuaTestContainer("unit.lua.t"));
-    end
-
-    function isCppTestContainerTest()
-        isTrue(testRunner.isCppTestContainer("unit.t.dll"));
-        isTrue(testRunner.isCppTestContainer(" .t.dll"));
-        isFalse(testRunner.isCppTestContainer("unit_t.dll"));
-        isFalse(testRunner.isCppTestContainer("unit.test.dll"));
-        isFalse(testRunner.isCppTestContainer("unit.dll.t"));
-        isFalse(testRunner.isCppTestContainer("unit.t.cpp"));
-    end
-    
     function substitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir.loadLuaContainerTest()
         local luaTestContainerText = 
             [[fixture =

@@ -21,6 +21,11 @@
 
 TESTUNIT_NS_BEGIN
 
+void getTestContainerExtensions(std::list<std::string>& extList)
+{
+    extList.resize(1, ".t.dll");
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class TestConditionException : public TestException
 {

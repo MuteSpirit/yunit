@@ -425,6 +425,12 @@ function luaUnitSelfTestFixture.sourceFilenameOfIgnoredLuaTest()
     mockTestListener:endTests();
 end
 
+function isLuaTestContainerTest()
+    local extList = luaUnit.getTestContainerExtensions()
+    areEq(1, #extList);
+    areEq(".t.lua", extList[1]);
+end
+
 function isTrueTest()
     isTrue(true);
 
@@ -562,3 +568,4 @@ end
 
 function assertsAtTearDownFixture.assertsAtTearDown()
 end
+

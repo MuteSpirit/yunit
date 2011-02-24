@@ -5,28 +5,6 @@ module(...)
 _G.setmetatable(_M, {__index = _G})
 --------------------------------------------------------------------------------------------------------------
 
-------------------------------------------------------
-local function isFunction(variable)
-------------------------------------------------------
-    return "function" == type(variable);
-end
-
-------------------------------------------------------
-local function isString(variable)
-------------------------------------------------------
-    return "string" == type(variable);
-end
-
-------------------------------------------------------
-local function isTable(variable)
-------------------------------------------------------
-    return "table" == type(variable);
-end
-
-function fakeFunction()
-end
-
-------------------------------------------------------
 TestListener = {
     addSuccessful = function(testCaseName) end;
     addFailure = function(testCaseName, errorObject) end;
@@ -105,6 +83,11 @@ end
 ------------------------------------------------------
 function runTestCase(testcase, testResult)
 ------------------------------------------------------
+
+    local function isFunction(variable)
+        return "function" == type(variable);
+    end
+
     local errorObjectDefault =
     {
         source = "";
@@ -160,30 +143,6 @@ end
 
 ------------------------------------------------------
 GlobalTestCaseList = {};
-
-------------------------------------------------------
-function isWin()
-    local envVar = os.getenv('WINDIR') or os.getenv('HOME') or os.getenv('PWD');
-    return nil ~= string.match(envVar, '^%w:');
-end
-
-function isUnix()
-    local envVar = os.getenv('WINDIR') or os.getenv('HOME') or os.getenv('PWD');
-    return nil ~= string.match(envVar, '^/');
-end
-
-function isLuaTestContainer(filePath)
-    return nil ~= string.find(filePath, "%.t%.lua$")
-end
-
-function isCppTestContainer(filePath)
-    if isWin() then
-        return nil ~= string.find(filePath, "%.t%.dll$");
-    elseif isUnix() then
-        return nil ~= string.find(filePath, "%.t%.so$");
-    end
-end
-
 --------------------------------------------------------------------
 GlobalTestUnitEngineList = {}
 --------------------------------------------------------------------
