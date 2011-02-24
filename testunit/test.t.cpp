@@ -253,6 +253,14 @@ _test2(test6bis, fixtureA, fixtureB)
     int uncompiledCode[0] = {1};
 }
 
+test(getTestContainerExtensions)
+{
+    std::list<std::string> extList;
+    TESTUNIT_NS::getTestContainerExtensions(extList);
+    areEq(1, extList.size());
+    areEq(".t.dll", extList.front().c_str());
+}
+
 test(isNullAssert)
 {
     void* p = NULL;
