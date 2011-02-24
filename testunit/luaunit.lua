@@ -328,6 +328,13 @@ end
 local assertRefs = {}
 setAssertShortNames(assertRefs)
 
+-------------------------------------------------------
+function getTestContainerExtensions()
+-------------------------------------------------------
+    return {'.t.lua'};
+end
+
+
 local testCaseMt = 
 {
     __index = function(t, k)
@@ -419,3 +426,25 @@ function loadTestChunk(testContainerSourceCode, testContainerName)
     
     return true
 end
+
+-------------------------------------------------------
+function loadTestContainer(filePath)
+-------------------------------------------------------
+    local sourceCode;
+    
+    local hFile, errMsg = io.open(filePath, 'r');
+    if not hFile then
+        return hFile, errMsg;
+    end
+    sourceCode = hFile:read('*a');
+    hFile:close();
+    
+--~     local filenameWithExt = string.match(filePath, '[^/\\]+$');
+    local res, msg = loadTestChunk(sourceCode, filePath);
+    if not res then
+        return res, msg;
+    end
+    
+    return true;
+end
+

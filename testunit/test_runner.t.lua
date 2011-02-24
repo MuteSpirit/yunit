@@ -271,7 +271,7 @@ globalTestCaseListFixturePlusUseTmpDir =
         
         areEq(0, #testRegistry.testsuites)
         
-        local status, msg = testRunner.loadLuaContainer(luaTestContainerFilename)
+        local status, msg = luaUnit.loadTestContainer(luaTestContainerFilename)
         areEq(nil, msg)
         isTrue(status)
         
@@ -298,4 +298,15 @@ end
 
 function testSetGoodWorkingDir()
     isTrue(fs.isExist('test_runner.t.lua'));
+end
+
+function loadTestUnitEnginesTest()
+    testRunner.loadTestUnitEngines{'apollounit'};
+    isTable(testRunner.GlobalTestUnitEngineList['.t.alua']);
+    
+    testRunner.loadTestUnitEngines{'cppunit'};
+    isTable(testRunner.GlobalTestUnitEngineList['.t.dll']);
+    
+    testRunner.loadTestUnitEngines{'testunit.luaunit'};
+    isTable(testRunner.GlobalTestUnitEngineList['.t.lua']);
 end

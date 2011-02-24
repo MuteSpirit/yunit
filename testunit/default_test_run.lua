@@ -12,6 +12,7 @@ function run(path)
     local workingDir = fs.dirname(path)
     lfs.chdir(workingDir)
     
+    testRunner.loadTestUnitEngines{'cppunit', 'testunit.luaunit'};
     testRunner.loadTestContainers{fs.canonizePath(path)}
     testRunner.runAllTestCases(testObserver)
 end
