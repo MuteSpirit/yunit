@@ -172,31 +172,6 @@ function isUnix()
     return nil ~= string.match(envVar, '^/');
 end
 
-function loadLuaContainer(filePath)
-    local sourceCode;
-    
-    local hFile, errMsg = io.open(filePath, 'r');
-    if not hFile then
-        return hFile, errMsg;
-    end
-    sourceCode = hFile:read('*a');
-    hFile:close();
-    
---~     local filenameWithExt = string.match(filePath, '[^/\\]+$');
-    local res, msg = luaUnit.loadTestChunk(sourceCode, filePath);
-    if not res then
-        return res, msg;
-    end
-    
-    return true;
-end
-
-function loadCppContainer(filePath)
-    -- we must only load library to current process for initialization global objects and
-    -- filling test register
-    package.loadlib(filePath, "");
-end
-
 function isLuaTestContainer(filePath)
     return nil ~= string.find(filePath, "%.t%.lua$")
 end
@@ -209,58 +184,49 @@ function isCppTestContainer(filePath)
     end
 end
 
-function initializeTestUnits()
-    if not package.loaded["testunit.luaunit"] then
-        luaUnit = require("testunit.luaunit");
-    end
+--------------------------------------------------------------------
+GlobalTestUnitEngineList = {}
+--------------------------------------------------------------------
 
-    if not package.loaded["cppunit"] then
-        if isWin() then
-            package.cpath = "../_bin/?.dll;"..package.cpath;
-        elseif isUnix() then
-            package.cpath = "../_bin/?.so;"..package.cpath;
+function loadTestUnitEngines(tueList)
+    for _, tueName in ipairs(tueList) do
+        if not package.loaded[tueName] then
+            local tue, errMsg = require(tueName);
+            
+            if 'boolean' == type(tue) then
+                io.stderr:write(tue .. '\t' .. errMsg);
+            elseif tue and 'table' == type(tue) then
+                local tcExtList = tue.getTestContainerExtensions();
+                
+                for _, ext in ipairs(tcExtList) do
+                    GlobalTestUnitEngineList[ext] = tue; 
+                end
+            end
         end
-        cppUnit = require("cppunit");
     end
 end
 
 function loadTestContainers(filePathList)
-    initializeTestUnits();
-    local luaTestsArePresent, cppTestsArePresent = false, false;
-
+    -- load test containers into test case lists inside Test Unit Engines
     for _, filePath in ipairs(filePathList) do
-        if isLuaTestContainer(filePath) then
-            loadLuaContainer(filePath);
-            luaTestsArePresent = true;
-        elseif isCppTestContainer(filePath) then
-            loadCppContainer(filePath);
-            cppTestsArePresent = true;
+        local res, errMsg;
+        for ext, tue in pairs(GlobalTestUnitEngineList) do
+            if string.find(filePath, ext, -string.len(ext), true) then
+                res, errMsg = tue.loadTestContainer(filePath);
+                if not res then
+                    io.stderr:write('Can\'t load test container "' .. filePath .. '". Error: "' .. errMsg .. '"\n');
+                end
+            end
         end
     end
 
-    if luaTestsArePresent then
-        copyAllLuaTestCasesToGlobalTestList();
-    end
-
-    if cppTestsArePresent then
-        copyAllCppTestCasesToGlobalTestList();
-    end
-end
-
-------------------------------------------------------
-function copyAllLuaTestCasesToGlobalTestList()
-    local luaUnit = require("testunit.luaunit");
-    local testcases = luaUnit.getTestList();
-    for _, testcase in ipairs(testcases) do
-        table.insert(GlobalTestCaseList, testcase);
-    end
-end
-
-function copyAllCppTestCasesToGlobalTestList()
-    local cppUnit = require("cppunit");
-    local testcases = cppUnit.getTestList();
-    for _, testcase in ipairs(testcases) do
-        table.insert(GlobalTestCaseList, testcase);
+    -- get from Test Unit Engines Test Case objects lists and copy them into GlobalTestUnitEngineList
+    for _, tue in pairs(GlobalTestUnitEngineList) do    
+        local testcases = tue.getTestList();
+        
+        for _, testcase in ipairs(testcases) do
+            table.insert(GlobalTestCaseList, testcase);
+        end
     end
 end
 

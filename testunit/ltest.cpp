@@ -241,11 +241,51 @@ int getTestList(lua_State *L)
 	return 1;
 }
 
+int getTestContainerExtensions(lua_State *L)
+{
+    lua_newtable(L);
+
+    lua_pushnumber(L, 1); 
+    lua_pushstring(L, ".t.dll");
+    lua_settable(L, -3);
+    return 1;
+}
+
+int errLoadContainerHandler(lua_State*)
+{
+    return 0;
+}
+
+int loadTestContainer(lua_State *L)
+{
+    if (const char* path = lua_tostring(L, 1))
+    {
+        // we must only load library to current process for initialization global objects and
+        // filling test register
+        lua_pushcfunction(L, errLoadContainerHandler);
+        lua_getglobal(L, "package");
+        lua_getfield(L, -1, "loadlib");
+        lua_pushstring(L, path);
+        lua_pushstring(L, "");  // not load specified function
+        lua_pushboolean(L, (0 == lua_pcall(L, 2, 1, -5)) ? 1 : 0);
+        lua_pushfstring(L, "error during package.loadlib('%s') call", path);
+    }
+    else
+    {
+        lua_pushboolean(L, 0);
+        lua_pushstring(L, "invalid argument");
+    }
+
+    return 2;
+}
+
 TESTUNIT_NS_END
 
 
 static const struct luaL_Reg cppunitLuaFunctions[] =
 {
+	{"loadTestContainer", TESTUNIT_NS::loadTestContainer},
+	{"getTestContainerExtensions", TESTUNIT_NS::getTestContainerExtensions},
 	{"getTestList", TESTUNIT_NS::getTestList},
 	{NULL, NULL},
 };
