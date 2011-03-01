@@ -233,10 +233,11 @@ function isFalse(actual)
 end
 
 function areEq(expected, actual)
-    local actualType, expectedType = type(actual), type(expected)
+    local expectedType = type(expected) or 'nil'
+    local actualType = type(actual) or 'nil';
 
     if actualType ~= expectedType then
-        error("expected type is " .. expectedType .. " but was a ".. actualtype, 0)
+        error("expected type is " .. expectedType .. " but was a ".. actualType, 0)
     end
 
 	if  actual ~= expected  then
@@ -412,6 +413,27 @@ function collectPureTestCaseList(env)
 end
 
 -------------------------------------------------------
+function setTestFilename(testcases, testContainerName)
+-------------------------------------------------------
+    for _, testcase in ipairs(testcases) do
+        testcase.fileName_ = testContainerName;
+    end
+end
+-------------------------------------------------------
+function defineTestLineNumber(testcases, testContainerSourceCode) 
+-------------------------------------------------------
+    local lineNumber = 0;
+    for line in string.gmatch(testContainerSourceCode, '([^\r\n]*)[\r]*\n') do
+        lineNumber = lineNumber + 1;
+        for _, testcase in ipairs(testcases) do
+            if string.find(line, testcase.name_ .. '%s*%([^%)]*%)') then
+                testcase.lineNumber_ = lineNumber;
+                break;
+            end
+        end
+    end
+end
+-------------------------------------------------------
 function loadTestChunk(testContainerSourceCode, testContainerName)
 -------------------------------------------------------
     local env = getTestEnv(testContainerName)
@@ -422,6 +444,10 @@ function loadTestChunk(testContainerSourceCode, testContainerName)
     
     local testSuite = TestSuite:new(testContainerName)
     testSuite.testcases = collectPureTestCaseList(env)
+    
+    setTestFilename(testSuite.testcases, testContainerName)
+    defineTestLineNumber(testSuite.testcases, testContainerSourceCode) 
+    
     curTestRegistry:addTestSuite(testSuite)
     
     return true

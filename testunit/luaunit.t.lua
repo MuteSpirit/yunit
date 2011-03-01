@@ -390,6 +390,7 @@ function luaUnitSelfTestFixture.loadTestChunk()
     areEq(1, #testRegistry.testsuites)
     areEq(luaTestContainerName, testRegistry.testsuites[1].name_)
     areEq(3, #testRegistry.testsuites[1].testcases)
+    areEq(12, testRegistry.testsuites[1].testcases[1].lineNumber_)
 end
 
 function luaUnitSelfTestFixture.sourceFilenameOfIgnoredLuaTest()
@@ -429,6 +430,48 @@ function isLuaTestContainerTest()
     local extList = luaUnit.getTestContainerExtensions()
     areEq(1, #extList);
     areEq(".t.lua", extList[1]);
+end
+
+function setTestFilenameTest()
+    local testcases = {{}, {}}
+    local filePath = 'tc.t.lua';
+    luaUnit.setTestFilename(testcases, filePath);
+    
+    areEq(filePath, testcases[1].fileName_);
+    areEq(filePath, testcases[2].fileName_);
+end
+
+function defineTestLineNumberTest()
+    local testcases = {
+    {['name_'] = 'test1',}, 
+    {['name_'] = 'test2',}, 
+    {['name_'] = '_test3',}, 
+    {['name_'] = 'test4',}, 
+    {['name_'] = 'test5',}, 
+    {['name_'] = 'test6',}, 
+    {['name_'] = 'test7',}, 
+    };
+    local testConteinerSource = 
+    [[                                          -- 1
+        function test1()                -- 2
+        end                                     -- 3
+                                                    -- 4
+        function test2() end        -- 5
+        function _test3() end       -- 6
+        function fix.test4() end    -- 7
+        function fix.test5(self) end    -- 8
+        function fix.test6 ( ) end    -- 9
+        function fix.test7 ( self ) end    -- 10
+      ]];
+    
+    luaUnit.defineTestLineNumber(testcases, testConteinerSource);
+    areEq(2, testcases[1].lineNumber_);
+    areEq(5, testcases[2].lineNumber_);
+    areEq(6, testcases[3].lineNumber_);
+    areEq(7, testcases[4].lineNumber_);
+    areEq(8, testcases[5].lineNumber_);
+    areEq(9, testcases[6].lineNumber_);
+    areEq(10, testcases[7].lineNumber_);
 end
 
 function isTrueTest()
