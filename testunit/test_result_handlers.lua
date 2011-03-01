@@ -11,7 +11,7 @@ local testRunner = require("testunit.test_runner");
 
 
 ------------------------------------------------------
-TextTestProgressListener = testRunner.TestResultHandler:new{
+TextTestProgressHandler = testRunner.TestResultHandler:new{
         tableWithSuccesses = {},
         tableWithIgnores = {},
         tableWithErrors = {},
@@ -19,7 +19,7 @@ TextTestProgressListener = testRunner.TestResultHandler:new{
     };
 ------------------------------------------------------
 
-function TextTestProgressListener:new()
+function TextTestProgressHandler:new()
     local o =
     {
         tableWithSuccesses = {},
@@ -32,7 +32,7 @@ function TextTestProgressListener:new()
     return o;
 end
 
-function TextTestProgressListener:sciteErrorLine(errorObject)
+function TextTestProgressHandler:sciteErrorLine(errorObject)
     if string.find(errorObject.message, ':[%d]+:') or '[C]' == errorObject.source then
         return errorObject.message;
     else
@@ -40,7 +40,7 @@ function TextTestProgressListener:sciteErrorLine(errorObject)
     end
 end
 
-function TextTestProgressListener:msvcErrorLine(errorObject)
+function TextTestProgressHandler:msvcErrorLine(errorObject)
     if string.find(errorObject.message, '%([%d]+%)') or '[C]' == errorObject.source then
         return errorObject.message;
     else
@@ -48,20 +48,20 @@ function TextTestProgressListener:msvcErrorLine(errorObject)
     end
 end
 
-TextTestProgressListener.editorSpecifiedErrorLine = TextTestProgressListener.msvcErrorLine;
+TextTestProgressHandler.editorSpecifiedErrorLine = TextTestProgressHandler.msvcErrorLine;
 
-function TextTestProgressListener:resetCounters()
+function TextTestProgressHandler:resetCounters()
     self.tableWithSuccesses = {}
     self.tableWithIgnores = {}
     self.tableWithErrors = {}
     self.tableWithFailures = {}
 end
 
-function TextTestProgressListener:totalTestNum()
+function TextTestProgressHandler:totalTestNum()
     return #self.tableWithSuccesses + #self.tableWithIgnores + #self.tableWithErrors + #self.tableWithFailures;
 end
 
-function TextTestProgressListener:totalResultsStr()
+function TextTestProgressHandler:totalResultsStr()
     local message = "Execution of tests has been completed:\n";
 
     message = message.."\t\t\tFailed:      "..tostring(#self.tableWithFailures);
@@ -89,43 +89,43 @@ function TextTestProgressListener:totalResultsStr()
     return message;
 end
 
-function TextTestProgressListener:outputMessage(message)
+function TextTestProgressHandler:outputMessage(message)
     io.write(message);
     io.output():flush();
 end
 
-function TextTestProgressListener:onTestSuccessfull(testCaseName)
+function TextTestProgressHandler:onTestSuccessfull(testCaseName)
     table.insert(self.tableWithSuccesses, {testCaseName});
     self:outputMessage('.');
 end
 
-function TextTestProgressListener:onTestFailure(testCaseName, errorObject)
+function TextTestProgressHandler:onTestFailure(testCaseName, errorObject)
     table.insert(self.tableWithFailures, {testCaseName, errorObject});
     self:outputMessage('F');
 end
 
-function TextTestProgressListener:onTestError(testCaseName, errorObject)
+function TextTestProgressHandler:onTestError(testCaseName, errorObject)
     table.insert(self.tableWithErrors, {testCaseName, errorObject});
     self:outputMessage('E');
 end
 
-function TextTestProgressListener:onTestIgnore(testCaseName, errorObject)
+function TextTestProgressHandler:onTestIgnore(testCaseName, errorObject)
     table.insert(self.tableWithIgnores, {testCaseName, errorObject});
     self:outputMessage("I");
 end
 
-function TextTestProgressListener:onTestBegin(testCaseName)
+function TextTestProgressHandler:onTestBegin(testCaseName)
 end
 
-function TextTestProgressListener:onTestEnd(testCaseName)
+function TextTestProgressHandler:onTestEnd(testCaseName)
 end
 
-function TextTestProgressListener:onTestsBegin()
+function TextTestProgressHandler:onTestsBegin()
     self:resetCounters();
     self:outputMessage('[');
 end
 
-function TextTestProgressListener:onTestsEnd()
+function TextTestProgressHandler:onTestsEnd()
     local res = {']', self:totalResultsStr()}
     
     local str = self:totalFailureStr()
@@ -146,7 +146,7 @@ function TextTestProgressListener:onTestsEnd()
     self:outputMessage(table.concat(res, '\n'));
 end
 
-function TextTestProgressListener:totalErrorStr()
+function TextTestProgressHandler:totalErrorStr()
     local res = {}
     local testName, errorObject
 
@@ -169,7 +169,7 @@ function TextTestProgressListener:totalErrorStr()
     return prefix .. table.concat(res, '\n------------------------------------------------------------------------------------------------------\n')
 end
 
-function TextTestProgressListener:totalFailureStr()
+function TextTestProgressHandler:totalFailureStr()
     local res = {}
     local testName, errorObject
 
@@ -192,7 +192,7 @@ function TextTestProgressListener:totalFailureStr()
     return prefix .. table.concat(res, '\n------------------------------------------------------------------------------------------------------\n')
 end
 
-function TextTestProgressListener:totalIgnoreStr()
+function TextTestProgressHandler:totalIgnoreStr()
     local res = {}
     local testName
 
@@ -211,10 +211,10 @@ end
 
 
 ------------------------------------------------------
-SciteTextTestProgressListener = TextTestProgressListener:new()
+SciteTextTestProgressHandler = TextTestProgressHandler:new()
 ------------------------------------------------------
 
-SciteTextTestProgressListener.editorSpecifiedErrorLine = TextTestProgressListener.sciteErrorLine--~ local defaultXmlReportPath = 'report.xml';
+SciteTextTestProgressHandler.editorSpecifiedErrorLine = TextTestProgressHandler.sciteErrorLine--~ local defaultXmlReportPath = 'report.xml';
 
 --~ ------------------------------------------------------
 --~ XmlListenerAlaCppUnitXmlOutputter = testRunner.TestResultHandler:new{

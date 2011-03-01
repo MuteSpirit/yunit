@@ -35,7 +35,7 @@ local testRunner = require("testunit.test_runner");
 local luaExt = require("lua_ext")
 local fs = require("filesystem")
 local luaUnit = require('testunit.luaunit');
-local testResultHandlers = require('testunit.test_listeners');
+local testResultHandlers = require('testunit.test_result_handlers');
 
 assertsAtSetUpFixture = 
 {
@@ -414,7 +414,7 @@ function luaUnitSelfTestFixture.sourceFilenameOfIgnoredLuaTest()
     isTrue(status)
     
     local testObserver = testRunner.TestResultHandlerList:new();
-    local mockTestListener = testResultHandlers.TextTestProgressListener:new();
+    local mockTestListener = testResultHandlers.TextTestProgressHandler:new();
     mockTestListener.outputMessage = function(self, msg) end;
     testObserver:addHandler(mockTestListener);
 

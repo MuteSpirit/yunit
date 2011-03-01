@@ -5,7 +5,7 @@ local files = arg
 if not files[1] then
     table.insert(files, 'lua_ext.t.lua')
     table.insert(files, 'filesystem.t.lua')
-    table.insert(files, '..\\testunit\\test_listeners.t.lua')
+    table.insert(files, '..\\testunit\\test_result_handlers.t.lua')
     table.insert(files, '..\\testunit\\test_runner.t.lua')
     table.insert(files, '..\\testunit\\cppunit.t.lua')
     table.insert(files, 'aux_test_func.t.lua')

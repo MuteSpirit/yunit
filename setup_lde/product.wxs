@@ -38,9 +38,9 @@
                 <Component Id="TestRunner" Guid="E7DC4B47-1BFB-4CE8-AD5D-C0A9043E3516">
                   <File Id="test_runner.lua" Name="test_runner.lua" DiskId="1" Source="..\testunit\test_runner.lua" />
                   <File Id="default_test_run.lua" Name="default_test_run.lua" DiskId="1" Source="..\testunit\default_test_run.lua" />
-                  <File Id="test_listeners.lua" Name="test_listeners.lua" DiskId="1" Source="..\testunit\test_listeners.lua" />
-                  <File Id="load_scite_listener.lua" Name="load_scite_listener.lua" DiskId="1" Source="..\testunit\load_scite_listener.lua" />
-                  <File Id="load_vs_listener.lua" Name="load_vs_listener.lua" DiskId="1" Source="..\testunit\load_vs_listener.lua" />
+                  <File Id="test_result_handlers.lua" Name="test_result_handlers.lua" DiskId="1" Source="..\testunit\test_result_handlers.lua" />
+                  <File Id="work_in_scite.lua" Name="work_in_scite.lua" DiskId="1" Source="..\testunit\work_in_scite.lua" />
+                  <File Id="work_in_vs.lua" Name="work_in_vs.lua" DiskId="1" Source="..\testunit\work_in_vs.lua" />
                   <File Id="report.xsl" Name="report.xsl" DiskId="1" Source="..\testunit\report.xsl" />
                 </Component>
               </Directory>
