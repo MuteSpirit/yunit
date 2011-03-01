@@ -1,11 +1,11 @@
 --- \class TextTestProgressListener
---- \brief Derived from TestListener. Output messages to standat output.
+--- \brief Derived from TestResultHandler. Output messages to standat output.
 local luaUnit = require('testunit.luaunit');
-local testListeners = require('testunit.test_listeners');
+local testResultHandlers = require('testunit.test_listeners');
 
 
 
-local testListeners = require('testunit.test_listeners');
+local testResultHandlers = require('testunit.test_listeners');
 --~ require('LuaXML');
 
 local testModuleName = 'TestListenerTest';
@@ -38,34 +38,34 @@ errorObjectFixture =
 sciteTextTestProgressListenerFixture = 
 {
     setUp = function(self)
-        function testListeners.SciteTextTestProgressListener:unusedTestFunction()
+        function testResultHandlers.SciteTextTestProgressListener:unusedTestFunction()
         end
     end
     ;
     
     tearDown = function(self)
-        testListeners.SciteTextTestProgressListener.unusedTestFunction = nil
+        testResultHandlers.SciteTextTestProgressListener.unusedTestFunction = nil
     end
     ;
 };
 
     function testTextTestProgressListenerCreation()
-        isNotNil(testListeners.TextTestProgressListener:new());
+        isNotNil(testResultHandlers.TextTestProgressListener:new());
     end
 
     function errorObjectFixture.testSciteErrorFormatterString()
-        local ttpl = testListeners.SciteTextTestProgressListener:new();
+        local ttpl = testResultHandlers.SciteTextTestProgressListener:new();
       
         local desiredString = fakeErrorObject.source .. ":" .. tostring(fakeErrorObject.line) .. ": " .. fakeErrorObject.message
         areEq(desiredString, ttpl:sciteErrorLine(fakeErrorObject))
     end
 
     function errorObjectFixture.testErrorString()
-        local ttpl = testListeners.SciteTextTestProgressListener:new();
+        local ttpl = testResultHandlers.SciteTextTestProgressListener:new();
 
         ttpl.outputMessage = function(self, msg) end
-        ttpl:addError(fakeTestCaseName .. '2', fakeErrorObject)
-        ttpl:addError(fakeTestCaseName .. '1', fakeErrorObject)
+        ttpl:onTestError(fakeTestCaseName .. '2', fakeErrorObject)
+        ttpl:onTestError(fakeTestCaseName .. '1', fakeErrorObject)
         funcName = ' (' ..  fakeErrorObject.func .. ')'
         local desiredString = '----Errors----\n' .. fakeTestCaseName .. "2" .. funcName .. "\n\t" .. ttpl:sciteErrorLine(fakeErrorObject) .. 
                                        "\n------------------------------------------------------------------------------------------------------\n" .. 
@@ -74,11 +74,11 @@ sciteTextTestProgressListenerFixture =
     end
 
     function errorObjectFixture.testFailureString()
-        local ttpl = testListeners.SciteTextTestProgressListener:new();
+        local ttpl = testResultHandlers.SciteTextTestProgressListener:new();
 
         ttpl.outputMessage = function(self, msg) end
-        ttpl:addFailure(fakeTestCaseName .. '2', fakeErrorObject)
-        ttpl:addFailure(fakeTestCaseName .. '1', fakeErrorObject)
+        ttpl:onTestFailure(fakeTestCaseName .. '2', fakeErrorObject)
+        ttpl:onTestFailure(fakeTestCaseName .. '1', fakeErrorObject)
         
         funcName = ' (' ..  fakeErrorObject.func .. ')'
         local desiredString = '----Failures----\n' .. fakeTestCaseName .. "2" .. funcName .. "\n\t" .. ttpl:sciteErrorLine(fakeErrorObject) .. 
@@ -89,11 +89,11 @@ sciteTextTestProgressListenerFixture =
     end
 
     function errorObjectFixture.testIgnoreString()
-        local ttpl = testListeners.SciteTextTestProgressListener:new();
+        local ttpl = testResultHandlers.SciteTextTestProgressListener:new();
 
         ttpl.outputMessage = function(self, msg) end
-        ttpl:addIgnore(fakeTestCaseName .. '2', fakeErrorObject)
-        ttpl:addIgnore(fakeTestCaseName .. '1', fakeErrorObject)
+        ttpl:onTestIgnore(fakeTestCaseName .. '2', fakeErrorObject)
+        ttpl:onTestIgnore(fakeTestCaseName .. '1', fakeErrorObject)
         
         local desiredString = '----Ignored----\n' .. ttpl:sciteErrorLine(fakeErrorObject) .. fakeTestCaseName .. "2\n" ..
                                        ttpl:sciteErrorLine(fakeErrorObject) .. fakeTestCaseName .. "1" 
@@ -101,7 +101,7 @@ sciteTextTestProgressListenerFixture =
     end
 
     function errorObjectFixture.testOutput()
-        local ttpl = testListeners.SciteTextTestProgressListener:new();
+        local ttpl = testResultHandlers.SciteTextTestProgressListener:new();
 
         local function successfullOutput(self, msg) areEq('.', msg) end
         local function failedOutput(self, msg)        areEq('F', msg) end
@@ -109,111 +109,111 @@ sciteTextTestProgressListenerFixture =
         local function ignoredOutput(self, msg)      areEq('I', msg) end
         
         ttpl.outputMessage = function(self, msg) areEq('[', msg) end
-        ttpl:startTests();
+        ttpl:onTestsBegin();
 
         ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
-        ttpl:startTest(fakeTestCaseName, fakeTestName);
+        ttpl:onTestBegin(fakeTestCaseName, fakeTestName);
         
         ttpl.outputMessage = successfullOutput;
-        ttpl:addSuccessful(fakeTestCaseName, fakeTestName);
+        ttpl:onTestSuccessfull(fakeTestCaseName, fakeTestName);
         
         ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
-        ttpl:endTest(fakeTestCaseName, fakeTestName);
+        ttpl:onTestEnd(fakeTestCaseName, fakeTestName);
 
         ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
-        ttpl:startTest(fakeTestCaseName, fakeTestName);
+        ttpl:onTestBegin(fakeTestCaseName, fakeTestName);
         
         ttpl.outputMessage = failedOutput;
-        ttpl:addFailure(fakeTestCaseName, fakeErrorObject);
+        ttpl:onTestFailure(fakeTestCaseName, fakeErrorObject);
         
         ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
-        ttpl:endTest(fakeTestCaseName, fakeTestName);
+        ttpl:onTestEnd(fakeTestCaseName, fakeTestName);
 
         ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
-        ttpl:startTest(fakeTestCaseName, fakeTestName);
+        ttpl:onTestBegin(fakeTestCaseName, fakeTestName);
         
         ttpl.outputMessage = errorOutput;
-        ttpl:addError(fakeTestCaseName, fakeErrorObject);
+        ttpl:onTestError(fakeTestCaseName, fakeErrorObject);
         
         ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
-        ttpl:endTest(fakeTestCaseName, fakeTestName);
+        ttpl:onTestEnd(fakeTestCaseName, fakeTestName);
 
         ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
-        ttpl:startTest(fakeTestCaseName, fakeTestName);
+        ttpl:onTestBegin(fakeTestCaseName, fakeTestName);
         
         ttpl.outputMessage = ignoredOutput;
-        ttpl:addIgnore(fakeTestCaseName, fakeErrorObject);
+        ttpl:onTestIgnore(fakeTestCaseName, fakeErrorObject);
         
         ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
-        ttpl:endTest(fakeTestCaseName, fakeTestName);
+        ttpl:onTestEnd(fakeTestCaseName, fakeTestName);
         
         ttpl.outputMessage = function(self, msg) end;
-        ttpl:endTests();
+        ttpl:onTestsEnd();
     end
 
     function errorObjectFixture.emptyEndTestsTest()
-        local ttpl = testListeners.SciteTextTestProgressListener:new();
+        local ttpl = testResultHandlers.SciteTextTestProgressListener:new();
         function ttpl:outputMessage(msg) 
             areEq(']\n' .. self:totalResultsStr(), msg);
         end
-        ttpl:endTests();
+        ttpl:onTestsEnd();
     end
 
     function errorObjectFixture.filledEndTestsTest()
-        local ttpl = testListeners.SciteTextTestProgressListener:new();
+        local ttpl = testResultHandlers.SciteTextTestProgressListener:new();
         
         ttpl.outputMessage = function(self, msg) end;
-        ttpl:addFailure(fakeTestCaseName, fakeErrorObject);
-        ttpl:addError(fakeTestCaseName, fakeErrorObject);
+        ttpl:onTestFailure(fakeTestCaseName, fakeErrorObject);
+        ttpl:onTestError(fakeTestCaseName, fakeErrorObject);
         
         function ttpl:outputMessage(msg) 
             areEq(']\n' .. self:totalResultsStr() .. '\n' .. self:totalFailureStr() .. '\n' .. self:totalErrorStr(), msg);
         end
-        ttpl:endTests();
+        ttpl:onTestsEnd();
     end
 
     function sciteTextTestProgressListenerFixture.derivationTextTestListenerTest()
-        local ttpl = testListeners.TextTestProgressListener:new();
+        local ttpl = testResultHandlers.TextTestProgressListener:new();
         isNil(ttpl.unusedTestFunction)
         isNotNil(ttpl.outputMessage)
-        local sttpl = testListeners.SciteTextTestProgressListener:new();
+        local sttpl = testResultHandlers.SciteTextTestProgressListener:new();
         isNotNil(sttpl.unusedTestFunction)
         isNotNil(sttpl.outputMessage)
     end
     
     --~ function errorObjectFixture.testXmlListenerSimulateTestRunning()
-    --~     local ttpl = testListeners.XmlListenerAlaCppUnitXmlOutputter:new();
+    --~     local ttpl = testResultHandlers.XmlListenerAlaCppUnitXmlOutputter:new();
     --~     
     --~     function ttpl:outputMessage(message)
     --~     end
 
-    --~     ttpl:startTests();
+    --~     ttpl:onTestsBegin();
 
     --~     areEq(0, #ttpl.reportContent.FailedTests);
-    --~     ttpl:startTest(fakeTestCaseName, fakeTestName);
-    --~     ttpl:addSuccessful(fakeTestCaseName, fakeTestName);
-    --~     ttpl:endTest(fakeTestCaseName, fakeTestName);
+    --~     ttpl:onTestBegin(fakeTestCaseName, fakeTestName);
+    --~     ttpl:onTestSuccessfull(fakeTestCaseName, fakeTestName);
+    --~     ttpl:onTestEnd(fakeTestCaseName, fakeTestName);
     --~     areEq(0, #ttpl.reportContent.FailedTests);
     --~     
     --~     areEq(0, #ttpl.reportContent.FailedTests);
-    --~     ttpl:startTest(fakeTestCaseName, fakeTestName);
-    --~     ttpl:addFailure(fakeTestCaseName, fakeErrorObject);
-    --~     ttpl:endTest(fakeTestCaseName, fakeTestName);
+    --~     ttpl:onTestBegin(fakeTestCaseName, fakeTestName);
+    --~     ttpl:onTestFailure(fakeTestCaseName, fakeErrorObject);
+    --~     ttpl:onTestEnd(fakeTestCaseName, fakeTestName);
     --~     areEq(1, #ttpl.reportContent.FailedTests);
 
-    --~     ttpl:startTest(fakeTestCaseName, fakeTestName);
-    --~     ttpl:addError(fakeTestCaseName, fakeErrorObject);
-    --~     ttpl:endTest(fakeTestCaseName, fakeTestName);
+    --~     ttpl:onTestBegin(fakeTestCaseName, fakeTestName);
+    --~     ttpl:onTestError(fakeTestCaseName, fakeErrorObject);
+    --~     ttpl:onTestEnd(fakeTestCaseName, fakeTestName);
 
-    --~    ttpl:startTest(fakeTestCaseName, fakeTestName);
-    --~     ttpl:addIgnore(fakeTestCaseName);
-    --~     ttpl:endTest(fakeTestCaseName, fakeTestName);
+    --~    ttpl:onTestBegin(fakeTestCaseName, fakeTestName);
+    --~     ttpl:onTestIgnore(fakeTestCaseName);
+    --~     ttpl:onTestEnd(fakeTestCaseName, fakeTestName);
     --~  
     --~     areEq(1, #ttpl.reportContent.SuccessfulTests);
     --~     areEq(1, #ttpl.reportContent.ErrorTests);
     --~     areEq(1, #ttpl.reportContent.IgnoredTests);
     --~     
-    --~     ttpl:endTests();
+    --~     ttpl:onTestsEnd();
     --~     
     --~ end
     --~ };

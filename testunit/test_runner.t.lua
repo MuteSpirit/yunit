@@ -1,13 +1,13 @@
---- \class TestListener
+--- \class TestResultHandler
 --- \brief Base class for all Test Listeners classes. Contain interface functions and their empty definitions
 
---- \class TestObserver
+--- \class TestResultHandlerList
 --- \brief Variation of pattern observer for events during test execution process. Contain several 
 --- TestListeners and inform then about test events
 
---- \fn TestObserver:callListenersFunction(functionName, ...)
---- \brief Function call function with name 'functionName' of each TestListener, whitch contained at list 'listeners'
---- \param[in] functionName Each TestListener must have function with such name.
+--- \fn TestResultHandlerList:callHandlersMethod(functionName, ...)
+--- \brief Function call function with name 'functionName' of each TestResultHandler, whitch contained at list 'listeners'
+--- \param[in] functionName Each TestResultHandler must have function with such name.
 --- \param[in] ... Arguments, whith will be sended to the function 
 --- \return None
 
@@ -17,10 +17,10 @@
 --- \param[in] functionName Name of function for check
 --- \return boolean
 
---- \fn runTestCase(testcase, testResult)
+--- \fn runTestCase(testcase, testResultHandler)
 --- \brief This is "Frame of Test". Run setUp(), test() and tearDown() function of testcase (if thay are present, i.e. it may not use fixture).
 --- \param[in] testcase TestCase for run
---- \param[in] testResult TesObserver for log events
+--- \param[in] testResultHandler TesObserver for log events
 --- \return None
 
 --- \var GlobalTestCaseList
@@ -75,7 +75,7 @@
 
 
 local luaUnit = require("testunit.luaunit")
-local testListeners = require("testunit.test_listeners");
+local testResultHandlers = require("testunit.test_listeners");
 local testRunner = require("testunit.test_runner");
 local fs = require("filesystem");
 local aux = require("aux_test_func");
@@ -172,63 +172,63 @@ globalTestCaseListFixturePlusUseTmpDir =
 };
 
     function testTestListenerCreation()
-        isNotNil(testRunner.TestListener:new());
+        isNotNil(testRunner.TestResultHandler:new());
     end
 
 
     function testObserverCreationTest()
-        isNotNil(testRunner.TestObserver:new());
+        isNotNil(testRunner.TestResultHandlerList:new());
     end
 
 
     function testObserverTestAddFailureFunctionTest()
-        local ttpl1 = testListeners.TextTestProgressListener:new();
-        local ttpl2 = testListeners.TextTestProgressListener:new();
-        local tr = testRunner.TestObserver:new();
+        local ttpl1 = testResultHandlers.TextTestProgressListener:new();
+        local ttpl2 = testResultHandlers.TextTestProgressListener:new();
+        local tr = testRunner.TestResultHandlerList:new();
         local fakeTestCaseName = _M._NAME;
-        local fakeTestName = "testTestObserver";
+        local fakeTestName = "testTestListenerList";
         local fakeFailureMessage = "This is test message. It hasn't usefull information";
         
         isNotNil(fakeTestCaseName)
         
-        function ttpl1:addFailure(testCaseName, failureMessage)
+        function ttpl1:onTestFailure(testCaseName, failureMessage)
             areEq(fakeTestCaseName, testCaseName);
             areEq(fakeFailureMessage, failureMessage);
         end
         
-        function ttpl2:addFailure(testCaseName, failureMessage)
+        function ttpl2:onTestFailure(testCaseName, failureMessage)
             areEq(fakeTestCaseName, testCaseName);
             areEq(fakeFailureMessage, failureMessage);
         end
         
-        tr:addTestListener(ttpl1);
-        tr:addTestListener(ttpl2);
-        areEq(2, #tr.testListeners);
+        tr:addHandler(ttpl1);
+        tr:addHandler(ttpl2);
+        areEq(2, #tr.testResultHandlers);
         
-        tr:addFailure(fakeTestCaseName, fakeFailureMessage);
+        tr:onTestFailure(fakeTestCaseName, fakeFailureMessage);
     end
 
 
     function testObserverStartTestsFunctionTest()
-        local ttpl1 = testListeners.TextTestProgressListener:new();
-        local ttpl2 = testListeners.SciteTextTestProgressListener:new();
-        local tr = testRunner.TestObserver:new();
+        local ttpl1 = testResultHandlers.TextTestProgressListener:new();
+        local ttpl2 = testResultHandlers.SciteTextTestProgressListener:new();
+        local tr = testRunner.TestResultHandlerList:new();
         
-        function ttpl1:startTests()
-            self.startTestsCall = true;
+        function ttpl1:onTestsBegin()
+            self.onTestsBeginCall = true;
         end
         
-        function ttpl2:startTests()
-            self.startTestsCall = true;
+        function ttpl2:onTestsBegin()
+            self.onTestsBeginCall = true;
         end
         
-        tr:addTestListener(ttpl1);
-        tr:addTestListener(ttpl2);
+        tr:addHandler(ttpl1);
+        tr:addHandler(ttpl2);
         
-        tr:startTests();
+        tr:onTestsBegin();
          
-        isTrue(ttpl1.startTestsCall);
-        isTrue(ttpl2.startTestsCall);
+        isTrue(ttpl1.onTestsBeginCall);
+        isTrue(ttpl2.onTestsBeginCall);
     end
 
     function substitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir.loadLuaContainerTest()
