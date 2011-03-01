@@ -75,7 +75,7 @@
 
 
 local luaUnit = require("testunit.luaunit")
-local testResultHandlers = require("testunit.test_listeners");
+local testResultHandlers = require("testunit.test_result_handlers");
 local testRunner = require("testunit.test_runner");
 local fs = require("filesystem");
 local aux = require("aux_test_func");
@@ -182,8 +182,8 @@ globalTestCaseListFixturePlusUseTmpDir =
 
 
     function testObserverTestAddFailureFunctionTest()
-        local ttpl1 = testResultHandlers.TextTestProgressListener:new();
-        local ttpl2 = testResultHandlers.TextTestProgressListener:new();
+        local ttpl1 = testResultHandlers.TextTestProgressHandler:new();
+        local ttpl2 = testResultHandlers.TextTestProgressHandler:new();
         local tr = testRunner.TestResultHandlerList:new();
         local fakeTestCaseName = _M._NAME;
         local fakeTestName = "testTestListenerList";
@@ -210,8 +210,8 @@ globalTestCaseListFixturePlusUseTmpDir =
 
 
     function testObserverStartTestsFunctionTest()
-        local ttpl1 = testResultHandlers.TextTestProgressListener:new();
-        local ttpl2 = testResultHandlers.SciteTextTestProgressListener:new();
+        local ttpl1 = testResultHandlers.TextTestProgressHandler:new();
+        local ttpl2 = testResultHandlers.SciteTextTestProgressHandler:new();
         local tr = testRunner.TestResultHandlerList:new();
         
         function ttpl1:onTestsBegin()

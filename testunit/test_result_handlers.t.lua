@@ -1,11 +1,11 @@
---- \class TextTestProgressListener
+--- \class TextTestProgressHandler
 --- \brief Derived from TestResultHandler. Output messages to standat output.
 local luaUnit = require('testunit.luaunit');
-local testResultHandlers = require('testunit.test_listeners');
+local testResultHandlers = require('testunit.test_result_handlers');
 
 
 
-local testResultHandlers = require('testunit.test_listeners');
+local testResultHandlers = require('testunit.test_result_handlers');
 --~ require('LuaXML');
 
 local testModuleName = 'TestListenerTest';
@@ -38,30 +38,30 @@ errorObjectFixture =
 sciteTextTestProgressListenerFixture = 
 {
     setUp = function(self)
-        function testResultHandlers.SciteTextTestProgressListener:unusedTestFunction()
+        function testResultHandlers.SciteTextTestProgressHandler:unusedTestFunction()
         end
     end
     ;
     
     tearDown = function(self)
-        testResultHandlers.SciteTextTestProgressListener.unusedTestFunction = nil
+        testResultHandlers.SciteTextTestProgressHandler.unusedTestFunction = nil
     end
     ;
 };
 
     function testTextTestProgressListenerCreation()
-        isNotNil(testResultHandlers.TextTestProgressListener:new());
+        isNotNil(testResultHandlers.TextTestProgressHandler:new());
     end
 
     function errorObjectFixture.testSciteErrorFormatterString()
-        local ttpl = testResultHandlers.SciteTextTestProgressListener:new();
+        local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
       
         local desiredString = fakeErrorObject.source .. ":" .. tostring(fakeErrorObject.line) .. ": " .. fakeErrorObject.message
         areEq(desiredString, ttpl:sciteErrorLine(fakeErrorObject))
     end
 
     function errorObjectFixture.testErrorString()
-        local ttpl = testResultHandlers.SciteTextTestProgressListener:new();
+        local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
 
         ttpl.outputMessage = function(self, msg) end
         ttpl:onTestError(fakeTestCaseName .. '2', fakeErrorObject)
@@ -74,7 +74,7 @@ sciteTextTestProgressListenerFixture =
     end
 
     function errorObjectFixture.testFailureString()
-        local ttpl = testResultHandlers.SciteTextTestProgressListener:new();
+        local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
 
         ttpl.outputMessage = function(self, msg) end
         ttpl:onTestFailure(fakeTestCaseName .. '2', fakeErrorObject)
@@ -89,7 +89,7 @@ sciteTextTestProgressListenerFixture =
     end
 
     function errorObjectFixture.testIgnoreString()
-        local ttpl = testResultHandlers.SciteTextTestProgressListener:new();
+        local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
 
         ttpl.outputMessage = function(self, msg) end
         ttpl:onTestIgnore(fakeTestCaseName .. '2', fakeErrorObject)
@@ -101,7 +101,7 @@ sciteTextTestProgressListenerFixture =
     end
 
     function errorObjectFixture.testOutput()
-        local ttpl = testResultHandlers.SciteTextTestProgressListener:new();
+        local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
 
         local function successfullOutput(self, msg) areEq('.', msg) end
         local function failedOutput(self, msg)        areEq('F', msg) end
@@ -152,7 +152,7 @@ sciteTextTestProgressListenerFixture =
     end
 
     function errorObjectFixture.emptyEndTestsTest()
-        local ttpl = testResultHandlers.SciteTextTestProgressListener:new();
+        local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
         function ttpl:outputMessage(msg) 
             areEq(']\n' .. self:totalResultsStr(), msg);
         end
@@ -160,7 +160,7 @@ sciteTextTestProgressListenerFixture =
     end
 
     function errorObjectFixture.filledEndTestsTest()
-        local ttpl = testResultHandlers.SciteTextTestProgressListener:new();
+        local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
         
         ttpl.outputMessage = function(self, msg) end;
         ttpl:onTestFailure(fakeTestCaseName, fakeErrorObject);
@@ -173,10 +173,10 @@ sciteTextTestProgressListenerFixture =
     end
 
     function sciteTextTestProgressListenerFixture.derivationTextTestListenerTest()
-        local ttpl = testResultHandlers.TextTestProgressListener:new();
+        local ttpl = testResultHandlers.TextTestProgressHandler:new();
         isNil(ttpl.unusedTestFunction)
         isNotNil(ttpl.outputMessage)
-        local sttpl = testResultHandlers.SciteTextTestProgressListener:new();
+        local sttpl = testResultHandlers.SciteTextTestProgressHandler:new();
         isNotNil(sttpl.unusedTestFunction)
         isNotNil(sttpl.outputMessage)
     end

@@ -101,7 +101,7 @@
       <ImportLibrary>..\..\_lib\$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>..\..\_bin\lua5.1.exe -e "package.path=[[..\?.lua;..\lde\?.lua;..\ts_modules\?.lua;..\lde\ts_modules\?.lua;]] .. package.path" -l testunit.load_vs_listener -l testunit.default_test_run -e "run([[$(TargetPath)]])"</Command>
+      <Command>..\..\_bin\lua5.1.exe -e "package.path=[[..\?.lua;..\lde\?.lua;..\ts_modules\?.lua;..\lde\ts_modules\?.lua;]] .. package.path" -l testunit.work_in_vs -l testunit.default_test_run -e "run([[$(TargetPath)]])"</Command>
       <Message>Run unit tests ...</Message>
     </PostBuildEvent>
     <PreLinkEvent>
@@ -117,7 +117,7 @@
     <LocalDebuggerCommand>..\..\_bin\lua5.1.exe</LocalDebuggerCommand>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>-e "package.path=[[..\?.lua;..\ts_modules\?.lua;]] .. package.path" -l testunit.load_vs_listener -l testunit.default_test_run -e "run([[$(TargetPath)]])"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-e "package.path=[[..\?.lua;..\ts_modules\?.lua;]] .. package.path" -l testunit.work_in_vs -l testunit.default_test_run -e "run([[$(TargetPath)]])"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <IncludePath>$(ProgramFiles)\lua\5.1\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProgramFiles)\lua\5.1\lib;$(LibraryPath)</LibraryPath>
@@ -180,7 +180,7 @@
       <ImportLibrary>..\..\_lib\$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>..\..\_bin\lua5.1.exe -e "package.path=[[..\?.lua;..\lde\?.lua;..\ts_modules\?.lua;..\lde\ts_modules\?.lua;]] .. package.path" -l testunit.load_vs_listener -l testunit.default_test_run -e "run([[$(TargetPath)]])"</Command>
+      <Command>..\..\_bin\lua5.1.exe -e "package.path=[[..\?.lua;..\lde\?.lua;..\ts_modules\?.lua;..\lde\ts_modules\?.lua;]] .. package.path" -l testunit.work_in_vs -l testunit.default_test_run -e "run([[$(TargetPath)]])"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Run unit tests ...</Message>
@@ -196,7 +196,7 @@
     <LocalDebuggerCommand>..\..\_bin\lua5.1.exe</LocalDebuggerCommand>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>-e "package.path=[[..\?.lua;..\ts_modules\?.lua;]] .. package.path" -l testunit.load_vs_listener -l testunit.default_test_run -e "run([[$(TargetPath)]])"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-e "package.path=[[..\?.lua;..\ts_modules\?.lua;]] .. package.path" -l testunit.work_in_vs -l testunit.default_test_run -e "run([[$(TargetPath)]])"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <IncludePath>$(ProgramFiles)\lua\5.1\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProgramFiles)\lua\5.1\lib;$(LibraryPath)</LibraryPath>
