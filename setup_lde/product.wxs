@@ -108,6 +108,10 @@
               <File Id="cppunit.dll" Name="cppunit.dll" DiskId="1" Source="..\..\_bin\cppunit.dll" />
               <File Id="cppunit.pdb" Name="cppunit.pdb" DiskId="1" Source="..\..\_bin\cppunit.pdb" />
             </Component>
+            
+            <Component Id="TraceModule" Guid="D4521506-C4B6-49AF-ABAE-9BE03B2C83A6">
+              <File Id="trace.dll" Name="trace.dll" DiskId="1" Source="..\..\_bin\trace.dll" />
+            </Component>
           </Directory>
         </Directory>
       </Directory>
@@ -141,6 +145,7 @@
         <ComponentRef Id="CppTestEngineIncludes" />
         <ComponentRef Id="LuaTestEngine" />
         <ComponentRef Id="TestRunner" />
+        <ComponentRef Id="TraceModule" />
       </Feature>
       <Feature Id="AdditionalModulesFeature" Title="Additional Modules" Level="1">
         <ComponentRef Id="AdditionalModules" />
