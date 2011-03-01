@@ -2,10 +2,10 @@ local fs = require('filesystem')
 local testRunner = require('testunit.test_runner')
 
 -- test observer alone, because 'run' function may be called multiple times in one test run
-local testObserver = testRunner.TestObserver:new()
+local testObserver = testRunner.TestResultHandlerList:new()
 
-if testListener then
-    testObserver:addTestListener(testListener)
+if testResultHandler then
+    testObserver:addHandler(testResultHandler)
 end
 
 function run(path)

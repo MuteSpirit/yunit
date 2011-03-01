@@ -11,7 +11,7 @@ local testRunner = require("testunit.test_runner");
 
 
 ------------------------------------------------------
-TextTestProgressListener = testRunner.TestListener:new{
+TextTestProgressListener = testRunner.TestResultHandler:new{
         tableWithSuccesses = {},
         tableWithIgnores = {},
         tableWithErrors = {},
@@ -94,38 +94,38 @@ function TextTestProgressListener:outputMessage(message)
     io.output():flush();
 end
 
-function TextTestProgressListener:addSuccessful(testCaseName)
+function TextTestProgressListener:onTestSuccessfull(testCaseName)
     table.insert(self.tableWithSuccesses, {testCaseName});
     self:outputMessage('.');
 end
 
-function TextTestProgressListener:addFailure(testCaseName, errorObject)
+function TextTestProgressListener:onTestFailure(testCaseName, errorObject)
     table.insert(self.tableWithFailures, {testCaseName, errorObject});
     self:outputMessage('F');
 end
 
-function TextTestProgressListener:addError(testCaseName, errorObject)
+function TextTestProgressListener:onTestError(testCaseName, errorObject)
     table.insert(self.tableWithErrors, {testCaseName, errorObject});
     self:outputMessage('E');
 end
 
-function TextTestProgressListener:addIgnore(testCaseName, errorObject)
+function TextTestProgressListener:onTestIgnore(testCaseName, errorObject)
     table.insert(self.tableWithIgnores, {testCaseName, errorObject});
     self:outputMessage("I");
 end
 
-function TextTestProgressListener:startTest(testCaseName)
+function TextTestProgressListener:onTestBegin(testCaseName)
 end
 
-function TextTestProgressListener:endTest(testCaseName)
+function TextTestProgressListener:onTestEnd(testCaseName)
 end
 
-function TextTestProgressListener:startTests()
+function TextTestProgressListener:onTestsBegin()
     self:resetCounters();
     self:outputMessage('[');
 end
 
-function TextTestProgressListener:endTests()
+function TextTestProgressListener:onTestsEnd()
     local res = {']', self:totalResultsStr()}
     
     local str = self:totalFailureStr()
@@ -217,7 +217,7 @@ SciteTextTestProgressListener = TextTestProgressListener:new()
 SciteTextTestProgressListener.editorSpecifiedErrorLine = TextTestProgressListener.sciteErrorLine--~ local defaultXmlReportPath = 'report.xml';
 
 --~ ------------------------------------------------------
---~ XmlListenerAlaCppUnitXmlOutputter = testRunner.TestListener:new{
+--~ XmlListenerAlaCppUnitXmlOutputter = testRunner.TestResultHandler:new{
 --~         reportContent =
 --~         {
 --~             FailedTests = {},
@@ -274,33 +274,33 @@ SciteTextTestProgressListener.editorSpecifiedErrorLine = TextTestProgressListene
 --~     };
 --~ end
 
---~ function XmlListenerAlaCppUnitXmlOutputter:addSuccessful(testCaseName)
+--~ function XmlListenerAlaCppUnitXmlOutputter:onTestSuccessfull(testCaseName)
 --~     self.testCount = self.testCount + 1;
 --~     table.insert(self.reportContent.SuccessfulTests, xml.str(self:succesfullTestInfo(testCaseName), 2, 'Test'));
 --~ end
 
---~ function XmlListenerAlaCppUnitXmlOutputter:addIgnore(testCaseName)
+--~ function XmlListenerAlaCppUnitXmlOutputter:onTestIgnore(testCaseName)
 --~     self.testCount = self.testCount + 1;
 --~     table.insert(self.reportContent.IgnoredTests, xml.str(self:succesfullTestInfo(testCaseName), 2, 'IgnoredTest'));
 --~ end
 
---~ function XmlListenerAlaCppUnitXmlOutputter:addFailure(testCaseName, errorObject)
+--~ function XmlListenerAlaCppUnitXmlOutputter:onTestFailure(testCaseName, errorObject)
 --~     self.testCount = self.testCount + 1;
 --~     table.insert(self.reportContent.FailedTests, xml.str(self:notSuccesfullTestInfo(testCaseName, errorObject), 2, 'FailedTest'));
 --~ end
 
---~ function XmlListenerAlaCppUnitXmlOutputter:addError(testCaseName, errorObject)
+--~ function XmlListenerAlaCppUnitXmlOutputter:onTestError(testCaseName, errorObject)
 --~     self.testCount = self.testCount + 1;
 --~     table.insert(self.reportContent.ErrorTests, xml.str(self:notSuccesfullTestInfo(testCaseName, errorObject), 2, 'ErrorTest'));
 --~ end
 
---~ function XmlListenerAlaCppUnitXmlOutputter:startTest(testCaseName)
+--~ function XmlListenerAlaCppUnitXmlOutputter:onTestBegin(testCaseName)
 --~ end
 
---~ function XmlListenerAlaCppUnitXmlOutputter:endTest(testCaseName)
+--~ function XmlListenerAlaCppUnitXmlOutputter:onTestEnd(testCaseName)
 --~ end
 
---~ function XmlListenerAlaCppUnitXmlOutputter:startTests()
+--~ function XmlListenerAlaCppUnitXmlOutputter:onTestsBegin()
 --~     self.reportContent =
 --~     {
 --~         FailedTests = {},
@@ -312,7 +312,7 @@ SciteTextTestProgressListener.editorSpecifiedErrorLine = TextTestProgressListene
 --~     self.testCount = 0;
 --~ end
 
---~ function XmlListenerAlaCppUnitXmlOutputter:endTests()
+--~ function XmlListenerAlaCppUnitXmlOutputter:onTestsEnd()
 --~     if not self.xmlFilePath then
 --~         self:outputMessage('Wrong setting xml report file path. Using default path.');
 --~         self.xmlFilePath = defaultXmlReportPath;

@@ -5,19 +5,19 @@ module(...)
 _G.setmetatable(_M, {__index = _G})
 --------------------------------------------------------------------------------------------------------------
 
-TestListener = {
-    addSuccessful = function(testCaseName) end;
-    addFailure = function(testCaseName, errorObject) end;
-    addError = function(testCaseName, errorObject) end;
-    addIgnore = function(testCaseName, errorObject) end;
-    startTest = function(testCaseName) end;
-    endTest = function(testCaseName) end;
-    startTests = function() end;
-    endTests = function() end;
+TestResultHandler = {
+    onTestSuccessfull = function(testCaseName) end;
+    onTestFailure = function(testCaseName, errorObject) end;
+    onTestError = function(testCaseName, errorObject) end;
+    onTestIgnore = function(testCaseName, errorObject) end;
+    onTestBegin = function(testCaseName) end;
+    onTestEnd = function(testCaseName) end;
+    onTestsBegin = function() end;
+    onTestsEnd = function() end;
     outputMessage = function(message) end;
 };
 
-function TestListener:new(o)
+function TestResultHandler:new(o)
     o = o or {};
     setmetatable(o, self);
     self.__index = self;
@@ -25,63 +25,62 @@ function TestListener:new(o)
 end
 
 ------------------------------------------------------
-TestObserver = 
-{
-    testListeners = {}
+TestResultHandlerList = TestResultHandler:new{
+    testResultHandlers = {}
 };
 ------------------------------------------------------
 
-function TestObserver:new(o)
-    o = o or {testListeners = {}};
+function TestResultHandlerList:new(o)
+    o = o or {testResultHandlers = {}};
     setmetatable(o, self);
     self.__index = self;
     return o;
 end
 
-function TestObserver:addTestListener(listener)
-    self.testListeners[#self.testListeners + 1] = listener;
+function TestResultHandlerList:addHandler(handler)
+    self.testResultHandlers[#self.testResultHandlers + 1] = handler;
 end
 
-function TestObserver:callListenersFunction(functionName, ...)
-    for _, listener in ipairs(self.testListeners) do
-        listener[functionName](listener, ...);
+function TestResultHandlerList:callHandlersMethod(functionName, ...)
+    for _, handler in ipairs(self.testResultHandlers) do
+        handler[functionName](handler, ...);
     end
 end
 
-function TestObserver:addSuccessful(testCaseName)
-    self:callListenersFunction('addSuccessful', testCaseName);
+function TestResultHandlerList:onTestSuccessfull(testCaseName)
+    self:callHandlersMethod('onTestSuccessfull', testCaseName);
 end
 
-function TestObserver:addFailure(testCaseName, errorObject)
-    self:callListenersFunction('addFailure', testCaseName, errorObject);
+function TestResultHandlerList:onTestFailure(testCaseName, errorObject)
+    self:callHandlersMethod('onTestFailure', testCaseName, errorObject);
 end
 
-function TestObserver:addError(testCaseName, errorObject)
-    self:callListenersFunction('addError', testCaseName, errorObject);
+function TestResultHandlerList:onTestError(testCaseName, errorObject)
+    self:callHandlersMethod('onTestError', testCaseName, errorObject);
 end
 
-function TestObserver:addIgnore(testCaseName, errorObject)
-    self:callListenersFunction('addIgnore', testCaseName, errorObject);
+function TestResultHandlerList:onTestIgnore(testCaseName, errorObject)
+    self:callHandlersMethod('onTestIgnore', testCaseName, errorObject);
 end
 
-function TestObserver:startTest(testCaseName)
-    self:callListenersFunction('startTest', testCaseName);
+function TestResultHandlerList:onTestBegin(testCaseName)
+    self:callHandlersMethod('onTestBegin', testCaseName);
 end
 
-function TestObserver:endTest(testCaseName)
-    self:callListenersFunction('endTest', testCaseName);
+function TestResultHandlerList:onTestEnd(testCaseName)
+    self:callHandlersMethod('onTestEnd', testCaseName);
 end
 
-function TestObserver:startTests()
-    self:callListenersFunction('startTests');
+function TestResultHandlerList:onTestsBegin()
+    self:callHandlersMethod('onTestsBegin');
 end
 
-function TestObserver:endTests()
-    self:callListenersFunction('endTests');
+function TestResultHandlerList:onTestsEnd()
+    self:callHandlersMethod('onTestsEnd');
 end
 
 ------------------------------------------------------
-function runTestCase(testcase, testResult)
+function runTestCase(testcase, testResultHandler)
 ------------------------------------------------------
 
     local function isFunction(variable)
@@ -98,7 +97,7 @@ function runTestCase(testcase, testResult)
     local status, errorObject = true, errorObjectDefault;
     local testName = testcase.name_ or 'unknownTestCase';
 
-    testResult:startTest(testName);
+    testResultHandler:onTestBegin(testName);
 
     if not testcase.isIgnored_ then
         if testcase.setUp and isFunction(testcase.setUp) then
@@ -113,9 +112,9 @@ function runTestCase(testcase, testResult)
 
             if not status then
                 errorObject.func = ''
-                testResult:addFailure(testName, errorObject or errorObjectDefault);
+                testResultHandler:onTestFailure(testName, errorObject or errorObjectDefault);
             else
-                testResult:addSuccessful(testName);
+                testResultHandler:onTestSuccessfull(testName);
             end
 
             if testcase.tearDown and isFunction(testcase.tearDown) then
@@ -126,19 +125,19 @@ function runTestCase(testcase, testResult)
 
             if not status then -- if tearDown failed
                 errorObject.func = 'tearDown'
-                testResult:addError(testName, errorObject or errorObjectDefault);
+                testResultHandler:onTestError(testName, errorObject or errorObjectDefault);
             end
         else -- if setUp failed
             errorObject.func = 'setUp'
-            testResult:addError(testName, errorObject or errorObjectDefault);
+            testResultHandler:onTestError(testName, errorObject or errorObjectDefault);
         end
     else
         errorObject.line = testcase.lineNumber_
         errorObject.source = testcase.fileName_
-        testResult:addIgnore(testName, errorObject);
+        testResultHandler:onTestIgnore(testName, errorObject);
     end
 
-    testResult:endTest(testName);
+    testResultHandler:onTestEnd(testName);
 end
 
 ------------------------------------------------------
@@ -189,12 +188,12 @@ function loadTestContainers(filePathList)
     end
 end
 
-function runAllTestCases(testResult)
-    testResult = testResult or TestObserver;
+function runAllTestCases(testResultHandler)
+    testResultHandler = testResultHandler or TestResultHandlerList;
     
-    testResult:startTests();
+    testResultHandler:onTestsBegin();
     for _, test in ipairs(GlobalTestCaseList) do
-        runTestCase(test, testResult);
+        runTestCase(test, testResultHandler);
     end
-    testResult:endTests();
+    testResultHandler:onTestsEnd();
 end

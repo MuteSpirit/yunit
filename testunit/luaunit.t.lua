@@ -35,7 +35,7 @@ local testRunner = require("testunit.test_runner");
 local luaExt = require("lua_ext")
 local fs = require("filesystem")
 local luaUnit = require('testunit.luaunit');
-local testListeners = require('testunit.test_listeners');
+local testResultHandlers = require('testunit.test_listeners');
 
 assertsAtSetUpFixture = 
 {
@@ -196,16 +196,16 @@ end
 function luaUnitSelfTestFixture.testFrame()
     ---------------------------------------------------
     -- initialize message system
-    local testObserver = testRunner.TestObserver:new();
-    local mockTestListener = testRunner.TestListener:new();
+    local testObserver = testRunner.TestResultHandlerList:new();
+    local mockTestListener = testRunner.TestResultHandler:new();
     mockTestListener.error_ = false;
-    function mockTestListener:addError()
+    function mockTestListener:onTestError()
         mockTestListener.error_ = true;
     end
-    function mockTestListener:addFailure()
+    function mockTestListener:onTestFailure()
         mockTestListener.error_ = true;
     end
-    testObserver:addTestListener(mockTestListener);
+    testObserver:addHandler(mockTestListener);
     ---------------------------------------------------
     -- Make TestCase manually, then run it 
     mockTestListener.error_ = false;
@@ -413,17 +413,17 @@ function luaUnitSelfTestFixture.sourceFilenameOfIgnoredLuaTest()
     areEq(nil, msg)
     isTrue(status)
     
-    local testObserver = testRunner.TestObserver:new();
-    local mockTestListener = testListeners.TextTestProgressListener:new();
+    local testObserver = testRunner.TestResultHandlerList:new();
+    local mockTestListener = testResultHandlers.TextTestProgressListener:new();
     mockTestListener.outputMessage = function(self, msg) end;
-    testObserver:addTestListener(mockTestListener);
+    testObserver:addHandler(mockTestListener);
 
     local testList = luaUnit.getTestList();
     isNotNil(testList);
     areEq(1, #testList);
 
     testRunner.runTestCase(testList[1], testObserver);
-    mockTestListener:endTests();
+    mockTestListener:onTestsEnd();
 end
 
 function isLuaTestContainerTest()

@@ -1,1 +1,1 @@
-testListener = require('testunit.test_listeners').SciteTextTestProgressListener:new()
+testResultHandler = require('testunit.test_listeners').SciteTextTestProgressListener:new()
