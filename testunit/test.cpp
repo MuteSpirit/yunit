@@ -531,16 +531,6 @@ bool TESTUNIT_API cppunitAssert(const wchar_t *expected, const wchar_t *actual)
 	return expected == actual || (NULL != expected && NULL != actual && 0 == wcscmp(expected, actual));
 }
 
-bool TESTUNIT_API cppunitAssert(const std::wstring& expected, const std::wstring& actual)
-{
-	return &expected == &actual || expected == actual;
-}
-
-bool TESTUNIT_API cppunitAssert(const std::string& expected, const std::string& actual)
-{
-	return &expected == &actual || expected == actual;
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void throwException(const SourceLine& sourceLine, const char* condition)
 {
@@ -573,19 +563,9 @@ void throwException(const SourceLine& sourceLine, const wchar_t* expected, const
     throw TestEqualException<std::wstring, std::wstring>(sourceLine, expected ? expected : L"NULL", actual ? actual : L"NULL", mustBeEqual);
 }
 
-void throwException(const SourceLine& sourceLine, const std::wstring& expected, const std::wstring& actual, bool mustBeEqual)
-{
-    throw TestEqualException<std::wstring, std::wstring>(sourceLine, expected, actual, mustBeEqual);
-}
-
 void throwException(const SourceLine& sourceLine, const char* expected, const char* actual, bool mustBeEqual)
 {
     throw TestEqualException<std::string, std::string>(sourceLine, expected ? expected : "NULL", actual ? actual : "NULL", mustBeEqual);
-}
-
-void throwException(const SourceLine& sourceLine, const std::string& expected, const std::string& actual, bool mustBeEqual)
-{
-    throw TestEqualException<std::string, std::string>(sourceLine, expected, actual, mustBeEqual);
 }
 
 void throwException(const SourceLine& sourceLine,
