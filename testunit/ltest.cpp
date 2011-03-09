@@ -243,18 +243,16 @@ int getTestList(lua_State *L)
 
 int getTestContainerExtensions(lua_State *L)
 {
-    std::list<std::string> extList;
-    getTestContainerExtensions(extList);
+    const char** extList = getTestContainerExtensions();
 
     lua_newtable(L);
 
-    std::list<std::string>::const_iterator it = extList.begin();
-    std::list<std::string>::const_iterator itEnd = extList.end();
-
-    for (int i = 1; it != itEnd; ++it)
+    const char* p = extList[0];
+    int i = 1;
+    for (; p && *p; ++p)
     {
         lua_pushnumber(L, i++); 
-        lua_pushstring(L, (*it).c_str());
+        lua_pushstring(L, p);
         lua_settable(L, -3);
     }
 

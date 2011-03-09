@@ -255,10 +255,9 @@ _test2(test6bis, fixtureA, fixtureB)
 
 test(getTestContainerExtensions)
 {
-    std::list<std::string> extList;
-    TESTUNIT_NS::getTestContainerExtensions(extList);
-    areEq(1, extList.size());
-    areEq(".t.dll", extList.front().c_str());
+    const char** extList = TESTUNIT_NS::getTestContainerExtensions();
+    areEq(".t.dll", extList[0]);
+    isNull(extList[1]);
 }
 
 test(isNullAssert)
@@ -474,9 +473,11 @@ test(assertEqualWideCharConstStringsAnsStlStringsTest)
 test(assertEqualMultiByteCharConstStringsAnsStlStringsTest)
 {
     std::string expectedStlStr = "abc";
+    std::string expectedStlStr2 = expectedStlStr;
 	areEq(expectedStlStr, "abc");
 	areEq("abc", expectedStlStr);
     areEq(expectedStlStr, expectedStlStr);
+    areEq(expectedStlStr, expectedStlStr2);
     areEq(expectedStlStr.data(), expectedStlStr.data());
     areEq(expectedStlStr.c_str(), expectedStlStr.c_str());
 
