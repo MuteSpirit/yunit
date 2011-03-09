@@ -68,7 +68,7 @@ namespace TestUnit {
 
 TESTUNIT_NS_BEGIN
 
-void TESTUNIT_API getTestContainerExtensions(std::list<std::string>& extList);
+TESTUNIT_API const char** getTestContainerExtensions();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class SourceLine
