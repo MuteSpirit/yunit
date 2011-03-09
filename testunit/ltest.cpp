@@ -247,12 +247,12 @@ int getTestContainerExtensions(lua_State *L)
 
     lua_newtable(L);
 
-    const char* p = extList[0];
+    const char** p = extList;
     int i = 1;
-    for (; p && *p; ++p)
+    while(p && *p)
     {
         lua_pushnumber(L, i++); 
-        lua_pushstring(L, p);
+        lua_pushstring(L, *p++);
         lua_settable(L, -3);
     }
 

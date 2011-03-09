@@ -276,8 +276,15 @@ bool TESTUNIT_API cppunitAssert(const long double expected, const long double ac
 bool TESTUNIT_API cppunitAssert(const char *expected, const char *actual);
 bool TESTUNIT_API cppunitAssert(const wchar_t *expected, const wchar_t *actual);
 
-bool TESTUNIT_API cppunitAssert(const std::wstring& expected, const std::wstring& actual);
-bool TESTUNIT_API cppunitAssert(const std::string& expected, const std::string& actual);
+inline bool cppunitAssert(const std::wstring& expected, const std::wstring& actual)
+{
+    return cppunitAssert(expected.c_str(), actual.c_str());
+}
+
+inline bool cppunitAssert(const std::string& expected, const std::string& actual)
+{
+    return cppunitAssert(expected.c_str(), actual.c_str());
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void TESTUNIT_API throwException(const SourceLine& sourceLine, const char* condition);
@@ -288,12 +295,26 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const long long e
 							bool mustBeEqual);
 void TESTUNIT_API throwException(const SourceLine& sourceLine, const char* expected, const char* actual,
 							bool mustBeEqual);
-void TESTUNIT_API throwException(const SourceLine& sourceLine, const std::string& expected, const std::string& actual,
-							bool mustBeEqual);
+
+inline void throwException(const SourceLine& sourceLine,
+                    const std::string& expected,
+                    const std::string& actual,
+                    bool mustBeEqual)
+{
+    throwException(sourceLine, expected.c_str(), actual.c_str(), mustBeEqual);
+}
+
 void TESTUNIT_API throwException(const SourceLine& sourceLine, const wchar_t* expected, const wchar_t* actual,
 							bool mustBeEqual);
-void TESTUNIT_API throwException(const SourceLine& sourceLine, const std::wstring& expected, const std::wstring& actual,
-							bool mustBeEqual);
+
+inline void throwException(const SourceLine& sourceLine,
+                                 const std::wstring& expected,
+                                 const std::wstring& actual,
+							     bool mustBeEqual)
+{
+    throwException(sourceLine, expected.c_str(), actual.c_str(), mustBeEqual);
+}
+
 void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expected, const double actual,
 							const double delta, bool mustBeEqual);
 
