@@ -222,12 +222,12 @@ void TestSuite::addTestCase(TestCase* testCase)
     testCases_.push_back(testCase);
 }
 
-TestSuite::TestCaseIter TestSuite::begin()
+TestSuite::TestCaseConstIter TestSuite::begin()
 {
     return testCases_.begin();
 }
 
-TestSuite::TestCaseIter TestSuite::end()
+TestSuite::TestCaseConstIter TestSuite::end()
 {
     return testCases_.end();
 }
@@ -266,18 +266,18 @@ void TestRegistry::reinitialize(TestRegistry* newValue)
 	thisPtr_ = newValue;
 }
 
-void TESTUNIT_API TestRegistry::addTestCase(TestCase* testCase)
+void TestRegistry::addTestCase(TestCase* testCase)
 {
     TestSuite* testSuite = getTestSuite(testCase->source());
     testSuite->addTestCase(testCase);
 }
 
-TestRegistry::TestSuiteIter TestRegistry::begin()
+TestRegistry::TestSuiteConstIter TestRegistry::begin()
 {
     return testSuiteList_.begin();
 }
 
-TestRegistry::TestSuiteIter TestRegistry::end()
+TestRegistry::TestSuiteConstIter TestRegistry::end()
 {
     return testSuiteList_.end();
 }

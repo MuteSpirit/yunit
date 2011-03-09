@@ -7,10 +7,6 @@
 // other classes that contained this member.
 // This situation with TestFixture and TestCase, inherited from it
 #pragma warning(disable : 4250)
-//
-// warning C4251: 'CppUnit::TestSuite::testCases_' : class 'std::list<_Ty>' needs to have dll-interface
-// to be used by clients of class 'CppUnit::TestSuite'
-#pragma warning(disable : 4251)
 #endif
 
 
@@ -71,10 +67,10 @@ TESTUNIT_NS_BEGIN
 TESTUNIT_API const char** getTestContainerExtensions();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class SourceLine
+class TESTUNIT_API SourceLine
 {
 public:
-	TESTUNIT_API SourceLine(const char* fileName, const int lineNumber);
+	SourceLine(const char* fileName, const int lineNumber);
 
 	const char* fileName() const;
 	int lineNumber() const;
@@ -148,12 +144,13 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class TESTUNIT_API TestSuite
+class TestSuite
 {
 public:
 	typedef std::list<TestCase*> TestCaseList;
-	typedef TestCaseList::iterator TestCaseIter;
 	typedef TestCaseList::const_iterator TestCaseConstIter;
+private:
+	typedef TestCaseList::iterator TestCaseIter;
 
 public:
 	TestSuite(const char* name = 0);
@@ -163,8 +160,8 @@ public:
 
 	const char* name() const;
 
-	TestCaseIter begin();
-	TestCaseIter end();
+	TestCaseConstIter begin();
+	TestCaseConstIter end();
 
 	void addTestCase(TestCase* testCase);
 
@@ -178,23 +175,24 @@ class TestRegistry
 {
 public:
 	typedef std::list<TestSuite*> TestSuiteList;
-	typedef TestSuiteList::iterator TestSuiteIter;
 	typedef TestSuiteList::const_iterator TestSuiteConstIter;
+private:
+	typedef TestSuiteList::iterator TestSuiteIter;
 
 public:
-	static TESTUNIT_API TestRegistry* initialize();
-	static TESTUNIT_API void reinitialize(TestRegistry* newValue);	// for tests
+	TESTUNIT_API static TestRegistry* initialize();
+	static void reinitialize(TestRegistry* newValue);	// for tests
 
-    void TESTUNIT_API addTestCase(TestCase* testCase);
+    TESTUNIT_API void addTestCase(TestCase* testCase);
 
-	TESTUNIT_API TestSuiteIter begin();
-	TESTUNIT_API TestSuiteIter end();
+	TestSuiteConstIter begin();
+	TestSuiteConstIter end();
 
 protected:
 	TestRegistry();
 	~TestRegistry();
 
-    TESTUNIT_API TestSuite* getTestSuite(const SourceLine& source);
+    TestSuite* getTestSuite(const SourceLine& source);
 
 private:
 	static TESTUNIT_API TestRegistry* thisPtr_;
