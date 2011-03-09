@@ -593,3 +593,55 @@ test(wrongMessageTextWhere)
     }
 }
 
+test(charStringMustBeBoundedWithDoubleQuotesAtFailedEquationMessage)
+{
+    try
+    {
+        areEq("s1", "s2");
+    }
+    catch(TESTUNIT_NS::TestException& ex)
+    {
+        enum {bufferSize = 128};
+        char buffer[bufferSize];
+        ex.message(buffer, bufferSize);
+        areEq("\"s1\" != \"s2\"", buffer);
+    }
+
+    try
+    {
+        areNotEq("s1", "s2");
+    }
+    catch(TESTUNIT_NS::TestException& ex)
+    {
+        enum {bufferSize = 128};
+        char buffer[bufferSize];
+        ex.message(buffer, bufferSize);
+        areEq("\"s1\" == \"s2\"", buffer);
+    }
+}
+test(wideCharStringMustBeBoundedWithDoubleQuotesAtFailedEquationMessage)
+{
+    try
+    {
+        areEq(L"s1", L"s2");
+    }
+    catch(TESTUNIT_NS::TestException& ex)
+    {
+        enum {bufferSize = 128};
+        char buffer[bufferSize];
+        ex.message(buffer, bufferSize);
+        areEq("\"s1\" != \"s2\"", buffer);
+    }
+
+    try
+    {
+        areNotEq(L"s1", L"s2");
+    }
+    catch(TESTUNIT_NS::TestException& ex)
+    {
+        enum {bufferSize = 128};
+        char buffer[bufferSize];
+        ex.message(buffer, bufferSize);
+        areEq("\"s1\" == \"s2\"", buffer);
+    }
+}
