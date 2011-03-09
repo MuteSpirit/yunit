@@ -21,9 +21,10 @@
 
 TESTUNIT_NS_BEGIN
 
-void getTestContainerExtensions(std::list<std::string>& extList)
+const char** getTestContainerExtensions()
 {
-    extList.resize(1, ".t.dll");
+    static const char* mas[] = {".t.dll", NULL};
+    return mas;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
