@@ -577,3 +577,18 @@ test(testSetGoodWorkingDir)
     isTrue(exist);
 }
 
+test(wrongMessageTextWhere)
+{
+    try
+    {
+        areEq(1, 10);
+    }
+    catch(TESTUNIT_NS::TestException& ex)
+    {
+        enum {bufferSize = 128};
+        char buffer[bufferSize];
+        ex.message(buffer, bufferSize);
+        areEq("1 != 10", buffer);
+    }
+}
+

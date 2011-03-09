@@ -453,6 +453,12 @@ void TestEqualException<T1, T2>::message(char* buffer, const unsigned int buffer
 }
 
 template<>
+void TestEqualException<long long, long long>::message(char* buffer, const unsigned int bufferSize) const
+{
+	TS_SNPRINTF(buffer, bufferSize - 1, mustBeEqual_ ? "%lld != %lld" : "%lld == %lld", expected_, actual_);
+}
+
+template<>
 void TestEqualException<std::wstring, std::wstring>::message(char* buffer, const unsigned int bufferSize) const
 {
     makeEqualMessage(buffer, bufferSize, mustBeEqual_, expected_.c_str(), actual_.c_str());
