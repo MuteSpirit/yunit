@@ -531,22 +531,6 @@ test(checkForUnreachableCodeWarningWhenUseWillThrow)
     willThrow(ThrowException::foo(), Exception);
 }
 
-test(thisTestMustFail)
-{
-    wchar_t t[] = L"a";
-    try
-    {
-        areEq(t, L"b");
-    }
-    catch(TESTUNIT_NS::TestException& ex)
-    {
-        char buf[512];
-        ex.message(buf, 512);
-        //areEq(buf, buf);
-        areEq("a != b", buf);
-    }
-}
-
 test(compareConstAndNonConstCharPointer)
 {
     char a[] = "abc";
