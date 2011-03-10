@@ -462,7 +462,7 @@ void TestEqualException<long long, long long>::message(char* buffer, const unsig
 template<>
 void TestEqualException<std::wstring, std::wstring>::message(char* buffer, const unsigned int bufferSize) const
 {
-    makeEqualMessage(buffer, bufferSize, mustBeEqual_, expected_.c_str(), actual_.c_str());
+    makeEqualMessage(buffer, bufferSize, mustBeEqual_, (L"\"" + expected_ + L"\"").c_str(), (L"\"" + actual_ + L"\"").c_str());
 }
 
 template<>
