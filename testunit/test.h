@@ -153,7 +153,7 @@ private:
 	typedef TestCaseList::iterator TestCaseIter;
 
 public:
-	TestSuite(const char* name = 0);
+	TESTUNIT_API TestSuite(const char* name = 0);
 	TestSuite(const TestSuite& rhs);
 	TestSuite& operator=(const TestSuite& rhs);
 	virtual ~TestSuite();
