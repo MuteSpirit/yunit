@@ -173,9 +173,12 @@ function loadTestContainers(filePathList)
                 res, errMsg = tue.loadTestContainer(filePath);
                 if not res then
                     io.stderr:write('Can\'t load test container "' .. filePath .. '". Error: "' .. errMsg .. '"\n');
+                else
+                    break;
                 end
             end
         end
+        io.stderr:write('Can\'t load test container "' .. filePath .. '". Error: "There are not Test Unit Engine, support such test container"\n');
     end
 
     -- get from Test Unit Engines Test Case objects lists and copy them into GlobalTestUnitEngineList
