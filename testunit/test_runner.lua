@@ -171,14 +171,14 @@ function loadTestContainers(filePathList)
         for ext, tue in pairs(GlobalTestUnitEngineList) do
             if string.find(filePath, ext, -string.len(ext), true) then
                 res, errMsg = tue.loadTestContainer(filePath);
-                if not res then
-                    io.stderr:write('Can\'t load test container "' .. filePath .. '". Error: "' .. errMsg .. '"\n');
-                else
-                    break;
-                end
+                break;
             end
         end
-        io.stderr:write('Can\'t load test container "' .. filePath .. '". Error: "There are not Test Unit Engine, support such test container"\n');
+        if not res and errMsg then
+            io.stderr:write('Can\'t load test container "' .. filePath .. '". Error: "' .. errMsg .. '"\n');
+        elseif not res then
+            io.stderr:write('Can\'t load test container "' .. filePath .. '". Error: "There are not Test Unit Engine, support such test container"\n');
+        end
     end
 
     -- get from Test Unit Engines Test Case objects lists and copy them into GlobalTestUnitEngineList
