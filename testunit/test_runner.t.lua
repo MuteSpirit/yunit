@@ -281,12 +281,38 @@ function testSetGoodWorkingDir()
 end
 
 function loadTestUnitEnginesTest()
-    testRunner.loadTestUnitEngines{'apollounit'};
-    isTable(testRunner.GlobalTestUnitEngineList['.t.alua']);
-    
     testRunner.loadTestUnitEngines{'cppunit'};
     isTable(testRunner.GlobalTestUnitEngineList['.t.dll']);
     
     testRunner.loadTestUnitEngines{'testunit.luaunit'};
     isTable(testRunner.GlobalTestUnitEngineList['.t.lua']);
+end
+
+function sortTestCasesAccordingFileAndLine()
+	local tests = 
+	{
+		{
+			['fileName_'] = 'test_b.t.lua',
+			['lineNumber_'] = 9,
+		},
+		{
+			['fileName_'] = 'test_a.t.lua',
+			['lineNumber_'] = 11,
+		},
+		{
+			['fileName_'] = 'test_a.t.lua',
+			['lineNumber_'] = 10,
+		},
+	}
+	
+	table.sort(tests, testRunner.operatorLess)
+	
+	areEq('test_a.t.lua', tests[1].fileName_)
+	areEq(10, tests[1].lineNumber_)
+
+	areEq('test_a.t.lua', tests[2].fileName_)
+	areEq(11, tests[2].lineNumber_)
+
+	areEq('test_b.t.lua', tests[3].fileName_)
+	areEq(9, tests[3].lineNumber_)
 end

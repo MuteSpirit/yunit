@@ -204,13 +204,13 @@ _test(Test4)
 }
 
 // ignored test case (may have uncompiled code in body)
-_test1(test5, fixtureA)
+_test1(Test5, fixtureA)
 {
     int uncompiledCode[0] = {1};
 }
 
 // ignored test case (may have uncompiled code in body)
-_test2(test6, fixtureA, fixtureB)
+_test2(Test6, fixtureA, fixtureB)
 {
     int uncompiledCode[0] = {1};
 }
