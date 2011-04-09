@@ -31,14 +31,14 @@ const char** getTestContainerExtensions()
 class TestConditionException : public TestException
 {
 private:
-    typedef TestException BaseClassType;
+    typedef TestException Parent;
 
 public:
     TestConditionException(const SourceLine& sourceLine, const char* condition);
     TestConditionException(const TestConditionException& rhs);
     TestConditionException& operator=(const TestConditionException& rhs);
 
-    virtual void message(char* buffer, const unsigned int bufferSize) const;
+    void message(char* buffer, const unsigned int bufferSize) const;
 
 private:
     const char* condition_;
@@ -49,14 +49,14 @@ template<typename CharType>
 class TestMessageException : public TestException
 {
 private:
-    typedef TestException BaseClassType;
+    typedef TestException Parent;
 
 public:
     TestMessageException(const SourceLine& sourceLine, const CharType* message);
     TestMessageException(const TestMessageException<CharType>& rhs);
     TestMessageException<CharType>& operator=(const TestMessageException<CharType>& rhs);
 
-    virtual void message(char* buffer, const unsigned int bufferSize) const;
+    void message(char* buffer, const unsigned int bufferSize) const;
 
 private:
     const CharType* message_;
@@ -67,12 +67,12 @@ template<typename T1, typename T2>
 class TestEqualException : public TestException
 {
 private:
-    typedef TestException BaseClassType;
+    typedef TestException Parent;
 
 public:
     TestEqualException(const SourceLine& sourceLine, const T1 expected, const T2 actual, bool mustBeEqual);
     ~TestEqualException() throw();
-    virtual void message(char* buffer, const unsigned int bufferSize) const;
+    void message(char* buffer, const unsigned int bufferSize) const;
 
 private:
     T1 expected_;
@@ -81,11 +81,28 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class TestEqualPointersException : public TestException
+{
+private:
+    typedef TestException Parent;
+
+public:
+    TestEqualPointersException(const SourceLine& sourceLine, const void* expected, const void* actual, bool mustBeEqual);
+    ~TestEqualPointersException() throw();
+    void message(char* buffer, const unsigned int bufferSize) const;
+
+private:
+    const void* expected_;
+    const void* actual_;
+	bool mustBeEqual_;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T>
 class TestDoubleEqualException : public TestException
 {
 private:
-    typedef TestException BaseClassType;
+    typedef TestException Parent;
 
 public:
     TestDoubleEqualException(const SourceLine& sourceLine, const T expected, const T actual, const T delta,
@@ -344,13 +361,13 @@ const SourceLine& TestException::sourceLine() const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TestConditionException::TestConditionException(const SourceLine& sourceLine, const char* condition)
-: BaseClassType(sourceLine)
+: Parent(sourceLine)
 , condition_(condition)
 {
 }
 
 TestConditionException::TestConditionException(const TestConditionException& rhs)
-: BaseClassType(rhs)
+: Parent(rhs)
 , condition_(rhs.condition_)
 {
 
@@ -360,7 +377,7 @@ TestConditionException& TestConditionException::operator=(const TestConditionExc
 {
     if (this == &rhs)
         return *this;
-    BaseClassType::operator=(rhs);
+    Parent::operator=(rhs);
     condition_ = rhs.condition_;
     return *this;
 }
@@ -373,14 +390,14 @@ void TestConditionException::message(char* buffer, const unsigned int bufferSize
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename CharType>
 TestMessageException<CharType>::TestMessageException(const SourceLine& sourceLine, const CharType* message)
-: BaseClassType(sourceLine)
+: Parent(sourceLine)
 , message_(message)
 {
 }
 
 template<typename CharType>
 TestMessageException<CharType>::TestMessageException(const TestMessageException<CharType>& rhs)
-: BaseClassType(rhs)
+: Parent(rhs)
 , message_(rhs.message_)
 {
 }
@@ -390,7 +407,7 @@ TestMessageException<CharType>& TestMessageException<CharType>::operator=(const 
 {
     if (this == &rhs)
         return *this;
-    BaseClassType::operator=(rhs);
+    Parent::operator=(rhs);
     message_ = rhs.message_;
     return *this;
 }
@@ -430,12 +447,13 @@ void makeEqualMessage(char* dst, const unsigned int dstSize,
     writtenBytes = ::wcstombs(dst + offset, actual, dstSize - offset);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T1, typename T2>
 TestEqualException<T1, T2>::TestEqualException(const SourceLine& sourceLine,
                                                const T1 expected,
                                                const T2 actual,
                                                bool mustBeEqual)
-: BaseClassType(sourceLine)
+: Parent(sourceLine)
 , expected_(expected)
 , actual_(actual)
 , mustBeEqual_(mustBeEqual)
@@ -472,13 +490,33 @@ void TestEqualException<std::string, std::string>::message(char* buffer, const u
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+TestEqualPointersException::TestEqualPointersException(const SourceLine& sourceLine,
+                                               const void* expected, const void* actual,
+                                               bool mustBeEqual)
+: Parent(sourceLine)
+, expected_(expected)
+, actual_(actual)
+, mustBeEqual_(mustBeEqual)
+{
+}
+
+TestEqualPointersException::~TestEqualPointersException() throw()
+{
+}
+
+void TestEqualPointersException::message(char* buffer, const unsigned int bufferSize) const
+{
+	TS_SNPRINTF(buffer, bufferSize - 1, mustBeEqual_ ? "\"0x%X\" != \"0x%X\"" : "\"0x%X\" == \"0x%X\"", expected_, actual_);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T>
 TestDoubleEqualException<T>::TestDoubleEqualException(const SourceLine& sourceLine,
   													  const T expected,
 													  const T actual,
 													  const T delta,
 													  bool mustBeEqual)
-: BaseClassType(sourceLine)
+: Parent(sourceLine)
 , expected_(expected)
 , actual_(actual)
 , delta_(delta)
@@ -521,12 +559,17 @@ bool cppunitAssert(const double expected, const double actual, const double delt
     return cppunitAssert<double>(expected, actual, delta, 0.000000000000001);
 }
 
-bool TESTUNIT_API cppunitAssert(const char *expected, const char *actual)
+bool cppunitAssert(const void *expected, const void *actual)
+{
+	return expected == actual;
+}
+
+bool cppunitAssert(const char *expected, const char *actual)
 {
 	return expected == actual || (NULL != expected && NULL != actual && 0 == strcmp(expected, actual));
 }
 
-bool TESTUNIT_API cppunitAssert(const wchar_t *expected, const wchar_t *actual)
+bool cppunitAssert(const wchar_t *expected, const wchar_t *actual)
 {
 	return expected == actual || (NULL != expected && NULL != actual && 0 == wcscmp(expected, actual));
 }
@@ -556,6 +599,11 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const T1 expected
 void throwException(const SourceLine& sourceLine, const long long expected, const long long actual, bool mustBeEqual)
 {
     throw TestEqualException<long long, long long>(sourceLine, expected, actual, mustBeEqual);
+}
+
+void throwException(const SourceLine& sourceLine, const void* expected, const void* actual, bool mustBeEqual)
+{
+    throw TestEqualPointersException(sourceLine, expected, actual, mustBeEqual);
 }
 
 void throwException(const SourceLine& sourceLine, const wchar_t* expected, const wchar_t* actual, bool mustBeEqual)
