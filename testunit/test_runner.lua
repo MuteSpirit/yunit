@@ -191,8 +191,14 @@ function loadTestContainers(filePathList)
     end
 end
 
+function operatorLess(test1, test2)
+	return test1.fileName_ < test2.fileName_ or (test1.fileName_ == test2.fileName_ and test1.lineNumber_ < test2.lineNumber_)
+end
+
 function runAllTestCases(testResultHandler)
     testResultHandler = testResultHandler or TestResultHandlerList;
+
+	table.sort(GlobalTestCaseList, operatorLess)
     
     testResultHandler:onTestsBegin();
     for _, test in ipairs(GlobalTestCaseList) do
