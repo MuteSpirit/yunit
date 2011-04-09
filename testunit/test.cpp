@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// unit_test_sample.cpp
+// test.cpp
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifdef _MSC_VER
@@ -10,7 +10,6 @@
 
 #include <math.h>
 #include <stdio.h>
-#include <algorithm>
 
 #ifndef _MSC_VER
 #include <string.h>
@@ -19,7 +18,7 @@
 #include <stdlib.h>
 
 
-TESTUNIT_NS_BEGIN
+namespace TESTUNIT_NS {
 
 const char** getTestContainerExtensions()
 {
@@ -203,11 +202,9 @@ const SourceLine& TestCase::source() const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TestSuite::TestSuite(const char *name)
-: name_(name)
+: name_(name ? name : "")
 , testCases_()
 {
-	if (0 == name_)
-		name_ = "";
 }
 
 TestSuite::TestSuite(const TestSuite& rhs)
@@ -259,14 +256,8 @@ TestRegistry::TestRegistry()
 
 TestRegistry::~TestRegistry()
 {
-    struct Delete
-    {
-        void operator()(TestSuite* testSuite)
-        {
-            delete testSuite;
-        }
-    };
-    std::for_each(testSuiteList_.begin(), testSuiteList_.end(), Delete());
+	for (TestSuiteIter it = testSuiteList_.begin(), itEnd = testSuiteList_.end(); it != itEnd; ++it)
+		delete *it;
     testSuiteList_.clear();
 }
 
@@ -276,11 +267,6 @@ TestRegistry* TestRegistry::initialize()
 	if (0 == thisPtr_)
 		thisPtr_ = &testRegistry;
 	return thisPtr_;
-}
-
-void TestRegistry::reinitialize(TestRegistry* newValue)
-{
-	thisPtr_ = newValue;
 }
 
 void TestRegistry::addTestCase(TestCase* testCase)
@@ -326,8 +312,8 @@ SourceLine::SourceLine()
 }
 
 SourceLine::SourceLine(const char* fileName, const int lineNumber)
-        : fileName_(fileName)
-        , lineNumber_(lineNumber)
+: fileName_(fileName)
+, lineNumber_(lineNumber)
 {
 }
 
@@ -359,6 +345,11 @@ const SourceLine& TestException::sourceLine() const
     return sourceLine_;
 }
 
+const char* TestException::what() const
+{
+    return "Unknown TestException";
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TestConditionException::TestConditionException(const SourceLine& sourceLine, const char* condition)
 : Parent(sourceLine)
@@ -370,7 +361,6 @@ TestConditionException::TestConditionException(const TestConditionException& rhs
 : Parent(rhs)
 , condition_(rhs.condition_)
 {
-
 }
 
 TestConditionException& TestConditionException::operator=(const TestConditionException& rhs)
@@ -426,9 +416,7 @@ void TestMessageException<wchar_t>::message(char* buffer, const unsigned int buf
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void makeEqualMessage(char* dst, const unsigned int dstSize,
-                  const bool mustBeEqual,
-                  const wchar_t* expected,
-                  const wchar_t* actual)
+                  const bool mustBeEqual, const wchar_t* expected, const wchar_t* actual)
 {
     size_t writtenBytes = ::wcstombs(dst, expected, dstSize);
     size_t offset = writtenBytes;
@@ -450,8 +438,7 @@ void makeEqualMessage(char* dst, const unsigned int dstSize,
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T1, typename T2>
 TestEqualException<T1, T2>::TestEqualException(const SourceLine& sourceLine,
-                                               const T1 expected,
-                                               const T2 actual,
+                                               const T1 expected, const T2 actual,
                                                bool mustBeEqual)
 : Parent(sourceLine)
 , expected_(expected)
@@ -512,9 +499,7 @@ void TestEqualPointersException::message(char* buffer, const unsigned int buffer
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T>
 TestDoubleEqualException<T>::TestDoubleEqualException(const SourceLine& sourceLine,
-  													  const T expected,
-													  const T actual,
-													  const T delta,
+  													  const T expected, const T actual, const T delta,
 													  bool mustBeEqual)
 : Parent(sourceLine)
 , expected_(expected)
@@ -566,12 +551,12 @@ bool cppunitAssert(const void *expected, const void *actual)
 
 bool cppunitAssert(const char *expected, const char *actual)
 {
-	return expected == actual || (NULL != expected && NULL != actual && 0 == strcmp(expected, actual));
+	return expected == actual || (NULL != expected && NULL != actual && 0 == ::strcmp(expected, actual));
 }
 
 bool cppunitAssert(const wchar_t *expected, const wchar_t *actual)
 {
-	return expected == actual || (NULL != expected && NULL != actual && 0 == wcscmp(expected, actual));
+	return expected == actual || (NULL != expected && NULL != actual && 0 == ::wcscmp(expected, actual));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -588,12 +573,6 @@ void throwException(const SourceLine& sourceLine, const char* message, bool)
 void throwException(const SourceLine& sourceLine, const wchar_t* message, bool)
 {
     throw TestMessageException<wchar_t>(sourceLine, message);
-}
-
-template<typename T1, typename T2>
-void TESTUNIT_API throwException(const SourceLine& sourceLine, const T1 expected, const T2 actual, bool mustBeEqual)
-{
-    throw TestEqualException<T1, T2>(sourceLine, expected, actual, mustBeEqual);
 }
 
 void throwException(const SourceLine& sourceLine, const long long expected, const long long actual, bool mustBeEqual)
@@ -617,12 +596,10 @@ void throwException(const SourceLine& sourceLine, const char* expected, const ch
 }
 
 void throwException(const SourceLine& sourceLine,
-                            const double expected,
-                            const double actual,
-                            const double delta,
-							bool mustBeEqual)
+                    const double expected, const double actual, const double delta,
+					bool mustBeEqual)
 {
     throw TestDoubleEqualException<double>(sourceLine, expected, actual, delta, mustBeEqual);
 }
 
-TESTUNIT_NS_END
+} // namespace TESTUNIT_NS

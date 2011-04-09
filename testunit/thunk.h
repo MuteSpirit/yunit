@@ -10,9 +10,9 @@
 
 #ifndef TESTUNIT_API
 #	if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
-#		if defined(AFL_STATIC_LINKED)
+#		if defined(TESTUNIT_STATIC_LINKED)
 #			define TESTUNIT_API
-#		elif defined(AFL_DLL)
+#		elif defined(TESTUNIT_DLL)
 #			define TESTUNIT_API __declspec(dllimport)
 #		else
 #			define TESTUNIT_API __declspec(dllexport)

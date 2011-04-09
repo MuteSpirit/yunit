@@ -26,7 +26,7 @@ extern "C" {
 #include "test.h"
 
 
-TESTUNIT_NS_BEGIN
+namespace TESTUNIT_NS {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Bindings for Lua
@@ -40,17 +40,17 @@ TESTUNIT_NS_BEGIN
 //		this = userdata,	// pointer to C++ object of class TestCase
 // }
 
-static Thunk getSetUpThunk(TESTUNIT_NS::TestCase* testCase)
+static Thunk getSetUpThunk(TestCase* testCase)
 {
 	return testCase->setUpThunk();
 }
 
-static Thunk getTestThunk(TESTUNIT_NS::TestCase* testCase)
+static Thunk getTestThunk(TestCase* testCase)
 {
 	return testCase->testThunk();
 }
 
-static Thunk getTearDownThunk(TESTUNIT_NS::TestCase* testCase)
+static Thunk getTearDownThunk(TestCase* testCase)
 {
 	return testCase->tearDownThunk();
 }
@@ -77,8 +77,8 @@ static int errorObjectTableToLuaStackTop(lua_State *L,
 }
 
 static bool wereCatchedCppExceptions(lua_State *L,
-                                     Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*),
-                                     TESTUNIT_NS::TestCase* testCase,
+                                     Thunk (*getThunkFunc)(TestCase*),
+                                     TestCase* testCase,
                                      int& countReturnValues)
 {
     countReturnValues = 0;
@@ -86,7 +86,7 @@ static bool wereCatchedCppExceptions(lua_State *L,
     {
         (*getThunkFunc)(testCase).invoke();
     }
-	catch (TESTUNIT_NS::TestException& ex)
+	catch (TestException& ex)
     {
         // status code
 		lua_pushboolean(L, false);
@@ -135,10 +135,10 @@ static bool wereCatchedCppExceptions(lua_State *L,
 	return false;
 }
 
-static int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*))
+static int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TestCase*))
 {
 	lua_getfield(L, -1, "this");
-	TESTUNIT_NS::TestCase* testCase = static_cast<TESTUNIT_NS::TestCase*>(lua_touserdata(L, -1));
+	TESTUNIT_NS::TestCase* testCase = static_cast<TestCase*>(lua_touserdata(L, -1));
     bool thereAreCppExceptions = false;
     int countReturnValues = 0;
 #ifdef _MSC_VER
@@ -174,32 +174,32 @@ static int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::Te
     return countReturnValues;
 }
 
-int luaTestCaseSetUp(lua_State *L)
+static int luaTestCaseSetUp(lua_State *L)
 {
 	return callTestCaseThunk(L, getSetUpThunk);
 }
 
-int luaTestCaseTest(lua_State *L)
+static int luaTestCaseTest(lua_State *L)
 {
 	return callTestCaseThunk(L, getTestThunk);
 }
 
-int luaTestCaseTearDown(lua_State *L)
+static int luaTestCaseTearDown(lua_State *L)
 {
 	return callTestCaseThunk(L, getTearDownThunk);
 }
 
-int getTestList(lua_State *L)
+static int getTestList(lua_State *L)
 {
 	lua_newtable(L); // table of all test cases
 	lua_Number i = 1;
 
-	TESTUNIT_NS::TestRegistry::TestSuiteConstIter it = TESTUNIT_NS::TestRegistry::initialize()->begin();
-	TESTUNIT_NS::TestRegistry::TestSuiteConstIter itEnd = TESTUNIT_NS::TestRegistry::initialize()->end();
+	TestRegistry::TestSuiteConstIter it = TestRegistry::initialize()->begin();
+	TestRegistry::TestSuiteConstIter itEnd = TestRegistry::initialize()->end();
 	for(; it != itEnd; ++it)
 	{
-		TESTUNIT_NS::TestSuite::TestCaseConstIter itTc = (*it)->begin();
-		TESTUNIT_NS::TestSuite::TestCaseConstIter itTcEnd = (*it)->end();
+		TestSuite::TestCaseConstIter itTc = (*it)->begin();
+		TestSuite::TestCaseConstIter itTcEnd = (*it)->end();
 		for(; itTc != itTcEnd; ++itTc)
 		{
 			lua_pushnumber(L, i++);	// order number of TestCase
@@ -209,13 +209,13 @@ int getTestList(lua_State *L)
 			lua_pushlightuserdata(L, (*itTc));
 			lua_setfield(L, -2, "this");
 			// t["setUp"] = luaTestCaseSetUp
-			lua_pushcfunction(L, TESTUNIT_NS::luaTestCaseSetUp);
+			lua_pushcfunction(L, luaTestCaseSetUp);
 			lua_setfield(L, -2, "setUp");
 			// t["test"] = luaTestCaseTest
-			lua_pushcfunction(L, TESTUNIT_NS::luaTestCaseTest);
+			lua_pushcfunction(L, luaTestCaseTest);
 			lua_setfield(L, -2, "test");
 			// t["tearDown"] = luaTestCaseTearDown
-			lua_pushcfunction(L, TESTUNIT_NS::luaTestCaseTearDown);
+			lua_pushcfunction(L, luaTestCaseTearDown);
 			lua_setfield(L, -2, "tearDown");
 			// t["name_"] =
 			lua_pushfstring(L, "%s::%s", (*it)->name(), (*itTc)->name());
@@ -241,7 +241,7 @@ int getTestList(lua_State *L)
 	return 1;
 }
 
-int getTestContainerExtensions(lua_State *L)
+static int getTestContainerExtensions(lua_State *L)
 {
     const char** extList = getTestContainerExtensions();
 
@@ -259,12 +259,12 @@ int getTestContainerExtensions(lua_State *L)
     return 1;
 }
 
-int errLoadContainerHandler(lua_State*)
+static int errLoadContainerHandler(lua_State*)
 {
     return 0;
 }
 
-int loadTestContainer(lua_State *L)
+static int loadTestContainer(lua_State *L)
 {
     if (const char* path = lua_tostring(L, 1))
     {
@@ -287,7 +287,7 @@ int loadTestContainer(lua_State *L)
     return 2;
 }
 
-TESTUNIT_NS_END
+} // namespace TESTUNIT_NS
 
 
 static const struct luaL_Reg cppunitLuaFunctions[] =
