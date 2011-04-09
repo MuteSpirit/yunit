@@ -177,28 +177,28 @@ fixture(SetUpCallCheckFixture)
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-test(test1)
+test(Test1)
 {
     isTrue(true);
     isFalse(false);
 }
 
 // fixtureA::setUp() will be called before testB and fixtureA::tearDown() - after.
-test1(test2, fixtureA)
+test1(Test2, fixtureA)
 {
     areEq(10, a_); 
 }
 
 // fixtureA::setUp() and fixtureB::setUp() will be executed before testC
 // fixtureB::tearDown() and fixtureA::tearDown() will be executed after testC
-test2(test3, fixtureA, fixtureB)
+test2(Test3, fixtureA, fixtureB)
 {
     areEq(10, a_); 
     areEq(11, b_); 
 }
 
 // ignored test case (may have uncompiled code in body)
-_test(test4)
+_test(Test4)
 {
     int uncompiledCode[0] = {1};
 }
@@ -218,56 +218,56 @@ _test2(test6, fixtureA, fixtureB)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // test macro multiple using in one t.cpp file
 
-test(test1bis)
+test(Test1bis)
 {
     isTrue(true);
     isFalse(false);
 }
 
-test1(test2bis, fixtureA)
+test1(Test2bis, fixtureA)
 {
     areEq(10, a_); 
 }
 
-test2(test3bis, fixtureA, fixtureB)
+test2(Test3bis, fixtureA, fixtureB)
 {
     areEq(10, a_); 
     areEq(11, b_); 
 }
 
-_test(test4bis)
+_test(Test4bis)
 {
     // ignored test case
     int uncompiledCode[0] = {1};
 }
 
-_test1(test5bis, fixtureA)
+_test1(Test5bis, fixtureA)
 {
     // ignored test case
     int uncompiledCode[0] = {1};
 }
 
-_test2(test6bis, fixtureA, fixtureB)
+_test2(Test6bis, fixtureA, fixtureB)
 {
     // ignored test case
     int uncompiledCode[0] = {1};
 }
 
-test(getTestContainerExtensions)
+test(GetTestContainerExtensions)
 {
     const char** extList = TESTUNIT_NS::getTestContainerExtensions();
     areEq(".t.dll", extList[0]);
     isNull(extList[1]);
 }
 
-test(isNullAssert)
+test(IsNullAssert)
 {
     void* p = NULL;
     isNull(p);
     willThrow(isNull(1), TESTUNIT_NS::TestException);
 }
 
-test(testBoolAssert)
+test(TestBoolAssert)
 {
 	isTrue(true);
 	isTrue(!false);
@@ -292,7 +292,7 @@ test(testBoolAssert)
 	isTrue(1 != -1);
 }
 
-test(testBoolAssertNot)
+test(TestBoolAssertNot)
 {
 	isFalse(false);
 	isFalse(!true);
@@ -315,7 +315,7 @@ test(testBoolAssertNot)
 	isFalse(-1 == 1);
 }
 
-test(testAssertEqual)
+test(TestAssertEqual)
 {
 	areEq(1, 1);
 
@@ -331,7 +331,7 @@ test(testAssertEqual)
     areEq((int)-1, (int)-1);
 }
 
-test(testAssertEqualWithTypedefs)
+test(TestAssertEqualWithTypedefs)
 {
     typedef unsigned int uint_max_t;
     areEq((uint_max_t)1, (uint_max_t)1);
@@ -341,7 +341,7 @@ test(testAssertEqualWithTypedefs)
     areEq((int_max_t)-1, (int_max_t)-1);
 }
 
-test(testAssertEqualNot)
+test(TestAssertEqualNot)
 {
 	areNotEq(1, 0);
 	areNotEq(0, 1);
@@ -353,7 +353,7 @@ test(testAssertEqualNot)
 	areNotEq(1, -1);
 }
 
-test(testDoubleEqualAssertForFloats)
+test(TestDoubleEqualAssertForFloats)
 {
 	areDoubleEq(1.0f, 1.0f, 0.0f);
 	areDoubleEq(0.0f, 0.0f, 0.0f);
@@ -363,7 +363,7 @@ test(testDoubleEqualAssertForFloats)
 	areDoubleEq(-1.1f, -1.2f, 0.1f);
 }
 
-test(testDoubleEqualAssertForDoubles)
+test(TestDoubleEqualAssertForDoubles)
 {
 	areDoubleEq(1.1, 1.2, 0.1);
 	areDoubleEq(-1.1, -1.2, 0.1);
@@ -379,7 +379,7 @@ test(testDoubleEqualAssertForDoubles)
 	areDoubleEq(-1.0, -1.0, 0.5);
 }
 
-test(testDoubleEqualAssertNotForFloats)
+test(TestDoubleEqualAssertNotForFloats)
 {
 	areDoubleNotEq(1.0f, 0.0f, 0.0f);
 	areDoubleNotEq(0.0f, 1.0f, 0.0f);
@@ -396,7 +396,7 @@ test(testDoubleEqualAssertNotForFloats)
 	areDoubleNotEq(1.0f, -1.0f, 0.5f);
 }
 
-test(testDoubleEqualAssertNotForDoubles)
+test(TestDoubleEqualAssertNotForDoubles)
 {
 	areDoubleNotEq(1.0, 0.0, 0.0);
 	areDoubleNotEq(0.0, 1.0, 0.0);
@@ -418,13 +418,13 @@ test1(testCheckSetUpCall, SetUpCallCheckFixture)
 	isTrue(setUpCall_);
 }
 
-test(testSourceLineCreation)
+test(TestSourceLineCreation)
 {
 	TESTUNIT_SOURCELINE();
 	TESTUNIT_NS::SourceLine sourceLine(__FILE__, __LINE__);
 }
 
-test(assertEqualStringsTest)
+test(AssertEqualStringsTest)
 {
 	areEq( "",  "");
 	areEq(L"", L"");
@@ -442,7 +442,7 @@ test(assertEqualStringsTest)
 	areEq(std::wstring(L"\n"), std::wstring(L"\n"));
 }
 
-test(assertEqualWideCharConstStringsAnsStlStringsTest)
+test(AssertEqualWideCharConstStringsAnsStlStringsTest)
 {
     std::wstring expected = L"abc";
 	areEq(expected, L"abc");
@@ -470,7 +470,7 @@ test(assertEqualWideCharConstStringsAnsStlStringsTest)
     areEq(expected.data(), expected.data());
 }
 
-test(assertEqualMultiByteCharConstStringsAnsStlStringsTest)
+test(AssertEqualMultiByteCharConstStringsAnsStlStringsTest)
 {
     std::string expectedStlStr = "abc";
     std::string expectedStlStr2 = expectedStlStr;
@@ -487,13 +487,13 @@ test(assertEqualMultiByteCharConstStringsAnsStlStringsTest)
     areEq(expectedStr, expectedStr);
 }
 
-test(assertEqualStringCompareCrash)
+test(AssertEqualStringCompareCrash)
 {
     areNotEq(L"", reinterpret_cast<const wchar_t*>(NULL));
     areNotEq("", reinterpret_cast<const char*>(NULL));
 }
 
-test(exceptionDerivedFromStdException)
+test(ExceptionDerivedFromStdException)
 {
     try
     {
@@ -511,12 +511,12 @@ test(exceptionDerivedFromStdException)
     }
 }
 
-test(singleWillThrowTest)
+test(SingleWillThrowTest)
 {
     willThrow(isTrue(false), TESTUNIT_NS::TestException);
 }
 
-test(checkForUnreachableCodeWarningWhenUseWillThrow)
+test(CheckForUnreachableCodeWarningWhenUseWillThrow)
 {
     class Exception {};
     struct ThrowException
@@ -531,7 +531,7 @@ test(checkForUnreachableCodeWarningWhenUseWillThrow)
     willThrow(ThrowException::foo(), Exception);
 }
 
-test(compareConstAndNonConstCharPointer)
+test(CompareConstAndNonConstCharPointer)
 {
     char a[] = "abc";
     char b[] = "abcd";
@@ -542,7 +542,7 @@ test(compareConstAndNonConstCharPointer)
     areNotEq(a, b);
 }
 
-test(compareConstAndNonConstWcharPointer)
+test(CompareConstAndNonConstWcharPointer)
 {
     wchar_t a[] = L"abc";
     wchar_t b[] = L"abcd";
@@ -553,7 +553,7 @@ test(compareConstAndNonConstWcharPointer)
     areNotEq(a, b);
 }
 
-test(testSetGoodWorkingDir)
+test(TestSetGoodWorkingDir)
 {
     std::wifstream f(L".\\cppunit.t.dll", std::ios::in | std::ios::binary);
     bool exist = f.good();
@@ -562,7 +562,7 @@ test(testSetGoodWorkingDir)
     isTrue(exist);
 }
 
-test(wrongMessageTextWhere)
+test(WrongMessageTextWhere)
 {
     try
     {
@@ -577,7 +577,7 @@ test(wrongMessageTextWhere)
     }
 }
 
-test(charStringMustBeBoundedWithDoubleQuotesAtFailedEquationMessage)
+test(CharStringMustBeBoundedWithDoubleQuotesAtFailedEquationMessage)
 {
     try
     {
@@ -603,7 +603,8 @@ test(charStringMustBeBoundedWithDoubleQuotesAtFailedEquationMessage)
         areEq("\"s1\" == \"s2\"", buffer);
     }
 }
-test(wideCharStringMustBeBoundedWithDoubleQuotesAtFailedEquationMessage)
+
+test(WideCharStringMustBeBoundedWithDoubleQuotesAtFailedEquationMessage)
 {
     try
     {
@@ -629,3 +630,15 @@ test(wideCharStringMustBeBoundedWithDoubleQuotesAtFailedEquationMessage)
         areEq("\"s1\" == \"s2\"", buffer);
     }
 }
+
+test(ComparePointers)
+{
+	int value, other;
+	void* p = &value;
+	areEq(&value, p);
+	areNotEq(&value, &other);
+
+	areNotEq(&value, NULL);
+	areNotEq(NULL, &value);
+}
+

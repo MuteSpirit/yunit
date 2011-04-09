@@ -271,8 +271,11 @@ bool TESTUNIT_API cppunitAssert(const double expected, const double actual, cons
 /// \param[in] delta must be at [0.000000000000001, +INFINITE)
 bool TESTUNIT_API cppunitAssert(const long double expected, const long double actual, const long double delta);
 
+bool TESTUNIT_API cppunitAssert(const void *expected, const void *actual);
+
 bool TESTUNIT_API cppunitAssert(const char *expected, const char *actual);
 bool TESTUNIT_API cppunitAssert(const wchar_t *expected, const wchar_t *actual);
+
 
 inline bool cppunitAssert(const std::wstring& expected, const std::wstring& actual)
 {
@@ -288,6 +291,9 @@ inline bool cppunitAssert(const std::string& expected, const std::string& actual
 void TESTUNIT_API throwException(const SourceLine& sourceLine, const char* condition);
 void TESTUNIT_API throwException(const SourceLine& sourceLine, const char* message, bool);
 void TESTUNIT_API throwException(const SourceLine& sourceLine, const wchar_t* message, bool);
+
+void TESTUNIT_API throwException(const SourceLine& sourceLine, const void* expected, const void* actual,
+							bool mustBeEqual);
 
 void TESTUNIT_API throwException(const SourceLine& sourceLine, const long long expected, const long long actual,
 							bool mustBeEqual);
