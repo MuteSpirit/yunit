@@ -1,6 +1,10 @@
 #ifdef _MSC_VER
 #pragma once
 #endif
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// test.h
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef _MSC_VER
 // Two or more members have the same name. The one in class2 is inherited because it is a base class for the
@@ -10,29 +14,11 @@
 #endif
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// test.h
-//
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#ifndef _TESTUNIT_PORTABILITY_HEADER_
-#define _TESTUNIT_PORTABILITY_HEADER_
+#ifndef _TESTUNIT_TEST_HEADER_
+#define _TESTUNIT_TEST_HEADER_
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined(TESTUNIT_NO_NAMESPACE)
-#   define TESTUNIT_NS_BEGIN
-#   define TESTUNIT_NS_END
-#   define TESTUNIT_NS
-#else   // defined(TESTUNIT_NO_NAMESPACE)
-#   define TESTUNIT_NS_BEGIN    \
-namespace TestUnit {
-
-#   define TESTUNIT_NS_END  \
-}
-
-#   define TESTUNIT_NS TestUnit
-#endif // defined(TESTUNIT_NO_NAMESPACE)
+#define TESTUNIT_NS TestUnit
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef TS_T
@@ -43,26 +29,11 @@ namespace TestUnit {
 #	endif
 #endif
 
-#endif // _TESTUNIT_PORTABILITY_HEADER_
-
-#ifndef _TESTUNIT_TEST_HEADER_
-#define _TESTUNIT_TEST_HEADER_
-
-#ifndef _STL_LIST_HEADER_
-#define _STL_LIST_HEADER_
 #include <list>
-#endif
-
-#ifndef _STL_STRING_HEADER_
-#define _STL_STRING_HEADER_
 #include <string>
-#endif
-
-#ifndef _TESTUNIT_THUNK_HEADER_
 #include "thunk.h"
-#endif
 
-TESTUNIT_NS_BEGIN
+namespace TESTUNIT_NS {
 
 TESTUNIT_API const char** getTestContainerExtensions();
 
@@ -181,7 +152,6 @@ private:
 
 public:
 	TESTUNIT_API static TestRegistry* initialize();
-	static void reinitialize(TestRegistry* newValue);	// for tests
 
     TESTUNIT_API void addTestCase(TestCase* testCase);
 
@@ -195,7 +165,7 @@ protected:
     TestSuite* getTestSuite(const SourceLine& source);
 
 private:
-	static TESTUNIT_API TestRegistry* thisPtr_;
+	static TestRegistry* thisPtr_;
 
 	TestSuiteList testSuiteList_;
 };
@@ -222,6 +192,8 @@ public:
     const SourceLine& sourceLine() const;
 
     virtual void message(char* buffer, const unsigned int bufferSize) const = 0;
+
+    const char* what() const;
 
 protected:
     TestException(const SourceLine& sourceLine);
@@ -536,6 +508,6 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-TESTUNIT_NS_END
+} // namespace TESTUNIT_NS
 
 #endif // _TESTUNIT_TEST_HEADER_

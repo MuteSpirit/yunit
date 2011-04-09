@@ -501,7 +501,7 @@ test(ExceptionDerivedFromStdException)
     }
     catch(std::exception& ex)
     {
-        areEq("Unknown exception", ex.what());
+        areEq("Unknown TestException", ex.what());
         return; // succesfull test execution
     }
     catch(...)
