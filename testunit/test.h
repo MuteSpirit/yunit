@@ -428,6 +428,22 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
     registerIgnoredTest(name, TESTUNIT_SOURCELINE())\
     ignoredTestBodyDef(name)
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define example(name)\
+	test_(name)\
+	testBodyDef(name) {}\
+	void example##name()
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define __test(name)\
+    test_(name)\
+    registerTest(name, TESTUNIT_SOURCELINE())\
+    testBodyDef(name)\
+	{\
+		throwException(TESTUNIT_SOURCELINE(), L"You want to make this test as soon as possible", true);\
+	}\
+	void futureTest##name()
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ASSERTS

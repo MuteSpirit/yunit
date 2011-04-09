@@ -642,3 +642,13 @@ test(ComparePointers)
 	areNotEq(NULL, &value);
 }
 
+example(ExampleWhichIsCompiledButNotRun)
+{
+	int a = 0;
+	int b = 10 / a;
+	(void)b;
+}
+
+__test(ForFutureCreation)/// \todo Add this test in future
+{
+}
