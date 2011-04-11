@@ -649,6 +649,6 @@ example(ExampleWhichIsCompiledButNotRun)
 	(void)b;
 }
 
-__test(ForFutureCreation)/// \todo Add this test in future
+todo(ForFutureCreation)/// \todo Add this test in future
 {
 }
