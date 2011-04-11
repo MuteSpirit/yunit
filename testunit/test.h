@@ -407,7 +407,7 @@ void TESTUNIT_API throwException(const SourceLine& sourceLine, const double expe
 	void example##name()
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define __test(name)\
+#define todo(name)\
     test_(name)\
     registerTest(name, TESTUNIT_SOURCELINE())\
     testBodyDef(name)\
