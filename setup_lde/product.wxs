@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="9069FE50-65E9-4117-A906-1EAB08C9DB45" Name="Lua For Development Environment" Language="1033"
-           Version="0.3.4.1" Manufacturer="Techsystem" UpgradeCode="92882211-b420-4cf1-8872-da9649f28ff4">
-    <Package InstallerVersion="200" Compressed="yes" />
+  <Product Id="085A5ED8-6124-4BC9-B5F5-DA71168B56F5" Name="Lua For Development Environment" Language="1033"
+           Version="0.3.5.1" Manufacturer="Techsystem" UpgradeCode="92882211-b420-4cf1-8872-da9649f28ff4">
+    <Package InstallerVersion="300" Compressed="yes" />
     <MajorUpgrade
       DowngradeErrorMessage="Более поздняя версия [ProductName] уже установлена. Установка будет прекращена."/>
 
@@ -13,7 +13,7 @@
     <Icon Id="app_lua_icon.ico" SourceFile="lua_icon.ico"/>
     <Property Id="ARPPRODUCTICON" Value="app_lua_icon.ico" />
 
-    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id='ProgramFilesFolder' Name='PFiles'>
         <Directory Id="INSTALLLOCATION" Name="lua">
           <Directory Id="Lua51dir" Name="5.1">
@@ -117,7 +117,21 @@
       </Directory>
     </Directory>
 
-    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLLOCATION" />
+    <!-- Visual C++ 2010 x86 -->
+    <Property Id="HASVCPP2010">
+        <RegistrySearch Id="HasVCPP2010Search" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\10.0\VC\VCRedist\x86" Name="Installed" Type="raw" />
+    </Property>
+      
+    <DirectoryRef Id="TARGETDIR">
+        <Merge Id="VCRedist" SourceFile="C:\Program Files\Common Files\Merge Modules\Microsoft_VC100_CRT_x86.msm" DiskId="1" Language="0"/>
+    </DirectoryRef>
+
+    <Feature Id="VCRedist" Title="Visual C++ 10.0 Runtime" AllowAdvertise="no" Display="hidden" Level="1">
+        <MergeRef Id="VCRedist"/>
+        <Condition Level="0">HASVCPP2010</Condition>
+    </Feature>
+
+      <Property Id="WIXUI_INSTALLDIR" Value="INSTALLLOCATION" />
     <UIRef Id="Ts_InstallSet" />
 
     <Feature Id="Lua514" Title="Lua 5.1.4" Level="1">
