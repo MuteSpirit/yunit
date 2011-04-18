@@ -420,16 +420,13 @@ function setTestFilename(testcases, testContainerName)
     end
 end
 -------------------------------------------------------
-function defineTestLineNumber(testcases, testContainerSourceCode) 
+function defineTestLineNumber(testcases) 
 -------------------------------------------------------
-    local lineNumber = 0;
-    for line in string.gmatch(testContainerSourceCode, '([^\r\n]*)[\r]*\n') do
-        lineNumber = lineNumber + 1;
-        for _, testcase in ipairs(testcases) do
-            if string.find(line, testcase.name_ .. '%s*%([^%)]*%)') then
-                testcase.lineNumber_ = lineNumber;
-                break;
-            end
+    for _, test in ipairs(testcases) do
+        if 'function' == type(test.test) then
+            test.lineNumber_ = debug.getinfo(test.test, 'S')['linedefined']
+        else
+            test.lineNumber_ = 0
         end
     end
 end
@@ -446,7 +443,7 @@ function loadTestChunk(testContainerSourceCode, testContainerName)
     testSuite.testcases = collectPureTestCaseList(env)
     
     setTestFilename(testSuite.testcases, testContainerName)
-    defineTestLineNumber(testSuite.testcases, testContainerSourceCode) 
+    defineTestLineNumber(testSuite.testcases) 
     
     curTestRegistry:addTestSuite(testSuite)
     

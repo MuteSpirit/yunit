@@ -442,17 +442,8 @@ function setTestFilenameTest()
 end
 
 function defineTestLineNumberTest()
-    local testcases = {
-    {['name_'] = 'test1',}, 
-    {['name_'] = 'test2',}, 
-    {['name_'] = '_test3',}, 
-    {['name_'] = 'test4',}, 
-    {['name_'] = 'test5',}, 
-    {['name_'] = 'test6',}, 
-    {['name_'] = 'test7',}, 
-    };
-    local testConteinerSource = 
-    [[                                          -- 1
+    local testSource = 
+    [[fix = {}                               -- 1
         function test1()                -- 2
         end                                     -- 3
                                                     -- 4
@@ -463,8 +454,21 @@ function defineTestLineNumberTest()
         function fix.test6 ( ) end    -- 9
         function fix.test7 ( self ) end    -- 10
       ]];
+    local testContainerName = 'define_test_line_number_test.t.leda'
+    local env = luaUnit.getTestEnv(testContainerName)
+    local res, msg = luaUnit.executeTestChunk(testSource, env, testContainerName)
+
+    local testcases = {
+    {['name_'] = 'test1', test = env.test1}, 
+    {['name_'] = 'test2', test = env.test2},  
+    {['name_'] = '_test3', test = env._test3},  
+    {['name_'] = 'test4', test = env.fix.test4},  
+    {['name_'] = 'test5', test = env.fix.test5},  
+    {['name_'] = 'test6', test = env.fix.test6},  
+    {['name_'] = 'test7', test = env.fix.test7},  
+    };
     
-    luaUnit.defineTestLineNumber(testcases, testConteinerSource);
+    luaUnit.defineTestLineNumber(testcases);
     areEq(2, testcases[1].lineNumber_);
     areEq(5, testcases[2].lineNumber_);
     areEq(6, testcases[3].lineNumber_);
