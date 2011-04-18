@@ -234,14 +234,15 @@ bool TESTUNIT_API cppunitAssert(const bool condition);
 
 bool TESTUNIT_API cppunitAssert(const long long expected, const long long actual);
 
-/// \param[in] delta must be at [0.00000001f, +INFINITE)
-bool TESTUNIT_API cppunitAssert(const float expected, const float actual, const float delta);
 
-/// \param[in] delta must be at [0.000000000000001, +INFINITE)
-bool TESTUNIT_API cppunitAssert(const double expected, const double actual, const double delta);
-
-/// \param[in] delta must be at [0.000000000000001, +INFINITE)
+/// \param[in] delta must be at [0.000000000000001, +INFINITE) for long double comparison
 bool TESTUNIT_API cppunitAssert(const long double expected, const long double actual, const long double delta);
+
+/// \param[in] delta must be at [0.000000000000001, +INFINITE) for double comparison
+bool TESTUNIT_API cppunitAssert(const double expected, const double actual, const long double delta);
+
+/// \param[in] delta must be at [0.00000001f, +INFINITE) for float comparison
+bool TESTUNIT_API cppunitAssert(const float expected, const float actual, const long double delta);
 
 bool TESTUNIT_API cppunitAssert(const void *expected, const void *actual);
 

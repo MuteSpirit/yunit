@@ -528,20 +528,24 @@ bool cppunitAssert(const long long expected, const long long actual)
 
 /// \brief All float point types have imprecission, so we must know precission of type for normal check
 /// \param[in] delta must be positive
-template<typename T>
-bool cppunitAssert(const T expected, const T actual, const T delta, const T typePrecission = 0)
+bool cppunitAssert(const long double expected, const long double actual, const long double  delta, const long double typePrecission = 0)
 {
     return cppunitAssert((fabs(expected - actual) - fabs(delta)) <= typePrecission);
 }
 
-bool cppunitAssert(const float expected, const float actual, const float delta)
+bool cppunitAssert(const float expected, const float actual, const long double delta)
 {
-    return cppunitAssert<float>(expected, actual, delta, 0.0000001f);
+    return cppunitAssert(expected, actual, delta, 0.0000001f);
 }
 
-bool cppunitAssert(const double expected, const double actual, const double delta)
+bool cppunitAssert(const double expected, const double actual, const long double delta)
 {
-    return cppunitAssert<double>(expected, actual, delta, 0.000000000000001);
+    return cppunitAssert(expected, actual, delta, 0.000000000000001);
+}
+
+bool cppunitAssert(const long double expected, const long double actual, const long double delta)
+{
+    return cppunitAssert(expected, actual, delta, 0.000000000000001);
 }
 
 bool cppunitAssert(const void *expected, const void *actual)
