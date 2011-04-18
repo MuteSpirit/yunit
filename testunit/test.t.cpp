@@ -413,6 +413,14 @@ test(TestDoubleEqualAssertNotForDoubles)
 	areDoubleNotEq(1.0, -1.0, 0.5);
 }
 
+test(equationLongDoubleVariables)
+{
+    areDoubleEq((long double)0.1, (long double)0.1, LDBL_EPSILON);
+    areDoubleEq((long double)0.0, (long double)0.0, LDBL_EPSILON);
+    areDoubleEq((long double)-0.1, (long double)-0.1, LDBL_EPSILON);
+    areDoubleEq((long double)0.000000000000001, (long double)0.000000000000001, LDBL_EPSILON);
+}
+
 test1(testCheckSetUpCall, SetUpCallCheckFixture)
 {
 	isTrue(setUpCall_);
@@ -652,3 +660,4 @@ example(ExampleWhichIsCompiledButNotRun)
 todo(ForFutureCreation)/// \todo Add this test in future
 {
 }
+

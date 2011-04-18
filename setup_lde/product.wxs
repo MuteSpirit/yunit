@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="085A5ED8-6124-4BC9-B5F5-DA71168B56F5" Name="Lua For Development Environment" Language="1033"
-           Version="0.3.5.1" Manufacturer="Techsystem" UpgradeCode="92882211-b420-4cf1-8872-da9649f28ff4">
+  <Product Id="895F15DD-8C4F-4CD7-88B4-F298968B7F55" Name="Lua For Development Environment" Language="1033"
+           Version="0.3.6.1" Manufacturer="Techsystem" UpgradeCode="92882211-b420-4cf1-8872-da9649f28ff4">
     <Package InstallerVersion="300" Compressed="yes" />
     <MajorUpgrade
       DowngradeErrorMessage="Более поздняя версия [ProductName] уже установлена. Установка будет прекращена."/>
