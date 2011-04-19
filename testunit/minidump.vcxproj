@@ -73,7 +73,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>..\..\_lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;lua5.1.lib</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;lua5.1.lib;dbghelp.lib</AdditionalDependencies>
       <AllowIsolation>
       </AllowIsolation>
       <EnableUAC>
@@ -128,7 +128,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>..\..\_lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;lua5.1.lib</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;lua5.1.lib;dbghelp.lib</AdditionalDependencies>
       <AllowIsolation>
       </AllowIsolation>
       <EnableUAC>
