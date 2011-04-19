@@ -357,24 +357,6 @@ function getTestEnv(moduleName)
     return ns
 end
 
-        
--------------------------------------------------------
-function executeTestChunk(testContainerSourceCode, env, testContainerName)
--------------------------------------------------------
-    local testChunk, msg = loadstring(testContainerSourceCode, '=' .. testContainerName)
-    if not testChunk then
-        return nil, msg
-    end
-    setfenv(testChunk, env)
-    
-    local status, msg = pcall(testChunk)
-    if not status then
-        return status, msg
-    end
-    
-    return true
-end
-
 -------------------------------------------------------
 function collectPureTestCaseList(env)
 -------------------------------------------------------
@@ -413,41 +395,35 @@ function collectPureTestCaseList(env)
 end
 
 -------------------------------------------------------
-function setTestFilename(testcases, testContainerName)
+function loadTestCases(testContainerSourceCode, testContainerName)
 -------------------------------------------------------
+	local env = getTestEnv(testContainerName)
+    
+	local testChunk, msg = loadstring(testContainerSourceCode, '=' .. testContainerName)
+    if not testChunk then
+        return false, msg
+    end
+	
+    setfenv(testChunk, env)
+    
+    local status, msg = pcall(testChunk)
+    if not status then
+        return false, msg
+    end
+	
+	local testcases = collectPureTestCaseList(env)
+
     for _, testcase in ipairs(testcases) do
         testcase.fileName_ = testContainerName;
-    end
-end
--------------------------------------------------------
-function defineTestLineNumber(testcases) 
--------------------------------------------------------
-    for _, test in ipairs(testcases) do
-        if 'function' == type(test.test) then
-            test.lineNumber_ = debug.getinfo(test.test, 'S')['linedefined']
+		
+        if 'function' == type(testcase.test) then
+            testcase.lineNumber_ = debug.getinfo(testcase.test, 'S')['linedefined']
         else
-            test.lineNumber_ = 0
+            testcase.lineNumber_ = 0
         end
     end
-end
--------------------------------------------------------
-function loadTestChunk(testContainerSourceCode, testContainerName)
--------------------------------------------------------
-    local env = getTestEnv(testContainerName)
-    local res, msg = executeTestChunk(testContainerSourceCode, env, testContainerName)
-    if not res then
-        return res, msg
-    end
-    
-    local testSuite = TestSuite:new(testContainerName)
-    testSuite.testcases = collectPureTestCaseList(env)
-    
-    setTestFilename(testSuite.testcases, testContainerName)
-    defineTestLineNumber(testSuite.testcases) 
-    
-    curTestRegistry:addTestSuite(testSuite)
-    
-    return true
+	
+	return testcases
 end
 
 -------------------------------------------------------
@@ -461,13 +437,17 @@ function loadTestContainer(filePath)
     end
     sourceCode = hFile:read('*a');
     hFile:close();
-    
---~     local filenameWithExt = string.match(filePath, '[^/\\]+$');
-    local res, msg = loadTestChunk(sourceCode, filePath);
-    if not res then
-        return res, msg;
+
+    local testcases, msg = loadTestCases(sourceCode, filePath);
+    if false == testcases then
+        return false, msg;
     end
     
+	local testSuite = TestSuite:new(testContainerName)
+    curTestRegistry:addTestSuite(testSuite)
+
+	testSuite.testcases = testcases;
+	
     return true;
 end
 
