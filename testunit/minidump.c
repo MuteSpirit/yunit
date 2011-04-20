@@ -32,15 +32,16 @@ typedef struct _CrashContext
     EXCEPTION_POINTERS* ep_;    //!< pointer for exception information structure
 } CrashContext;
 
+static const wchar_t* coronerCmdLineFmtStr = L"lua5.1.exe -l minidump -e \"minidump.dumpProcess(%u, %u)\"";
+
 static void runCoroner(EXCEPTION_POINTERS* ep)
 {
     enum {cmdLineSize = 2 * MAX_PATH};
-    wchar_t cmdLine[cmdLineSize] = {0};
-    const wchar_t* coronerCmdLineFmtStr = L"lua5.1.exe -l minidump -e \"minidump.dumpProcess(%u, %u)\"";
+    static wchar_t cmdLine[cmdLineSize] = {0};
 
     static CrashContext crashContext = {0};
-    STARTUPINFOW si;
-    PROCESS_INFORMATION pi;
+    static STARTUPINFOW si;
+    static PROCESS_INFORMATION pi;
 
     crashContext.ep_ = ep;
     crashContext.threadId_ = GetCurrentThreadId();
@@ -94,7 +95,7 @@ static int dumpProcess(lua_State* L)
 
     HANDLE hCrashProc = INVALID_HANDLE_VALUE;
     HANDLE hDumpFile = INVALID_HANDLE_VALUE;
-    CrashContext crashContext;
+    CrashContext crashContext = {0};
     wchar_t tempPath[MAX_PATH + 1];
     wchar_t tempFileName[MAX_PATH + 1];
     MINIDUMP_EXCEPTION_INFORMATION mei;
@@ -105,7 +106,7 @@ static int dumpProcess(lua_State* L)
     int rc = 0;
 
     argInd = 1;
-    if (lua_isnumber(L, argInd))
+    if (0 == lua_isnumber(L, argInd))
     {
         lua_pushboolean(L, 0);
         lua_pushfstring(L, "invalide 1st argument (integer expected, got %s)", lua_typename(L, lua_type(L, argInd)));
@@ -113,7 +114,7 @@ static int dumpProcess(lua_State* L)
     }
     pid = lua_tointeger(L, 1);
 
-    if (lua_isnumber(L, argInd))
+    if (0 == lua_isnumber(L, argInd))
     {
         lua_pushboolean(L, 0);
         lua_pushfstring(L, "invalide 2nd argument (integer expected, got %s)", lua_typename(L, lua_type(L, argInd)));
@@ -139,7 +140,7 @@ static int dumpProcess(lua_State* L)
     }
     //
     // Read CrashContext from crashing process memory 
-    if (0 != ReadProcessMemory(hCrashProc, excContextAdr, &crashContext, sizeof(CrashContext), &bytesRead))
+    if (excContextAdr && 0 != ReadProcessMemory(hCrashProc, excContextAdr, &crashContext, sizeof(CrashContext), &bytesRead))
         useCrashContext = 1;
     //
     // Create temporary file for dump writing
@@ -153,7 +154,7 @@ static int dumpProcess(lua_State* L)
 		return 2;
     }
 
-    if (0 == GetTempFileNameW(tempPath, L"_yunit", 0 /*create unique name*/, tempFileName))
+    if (0 == GetTempFileNameW(tempPath, L"_yu", 0 /*create unique name*/, tempFileName))
     {
         CloseHandle(hCrashProc);
 
@@ -162,7 +163,7 @@ static int dumpProcess(lua_State* L)
 		return 2;
     }
 
-    hDumpFile = CreateFileW(tempPath, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+    hDumpFile = CreateFileW(tempFileName, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
     if (INVALID_HANDLE_VALUE == hDumpFile)
     {
         CloseHandle(hCrashProc);
