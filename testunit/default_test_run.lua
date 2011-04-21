@@ -1,5 +1,6 @@
 local fs = require('filesystem')
 local testRunner = require('testunit.test_runner')
+local minidump = require('minidump')
 
 -- test observer alone, because 'run' function may be called multiple times in one test run
 local testObserver = testRunner.TestResultHandlerList:new()
@@ -7,6 +8,8 @@ local testObserver = testRunner.TestResultHandlerList:new()
 if testResultHandler then
     testObserver:addHandler(testResultHandler)
 end
+
+minidump.setCrashHandler()
 
 function run(path)
     local workingDir = fs.dirname(path)
