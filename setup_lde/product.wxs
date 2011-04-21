@@ -112,6 +112,10 @@
             <Component Id="TraceModule" Guid="D4521506-C4B6-49AF-ABAE-9BE03B2C83A6">
               <File Id="trace.dll" Name="trace.dll" DiskId="1" Source="..\..\_bin\trace.dll" />
             </Component>
+
+            <Component Id="MinidumpModule" Guid="F72F29FF-0229-4337-8C09-A6B87B7A57E7">
+                <File Id="minidump.dll" Name="minidump.dll" DiskId="1" Source="..\..\_bin\minidump.dll" />
+            </Component>
           </Directory>
         </Directory>
       </Directory>
@@ -160,6 +164,7 @@
         <ComponentRef Id="LuaTestEngine" />
         <ComponentRef Id="TestRunner" />
         <ComponentRef Id="TraceModule" />
+        <ComponentRef Id="MinidumpModule" />
       </Feature>
       <Feature Id="AdditionalModulesFeature" Title="Additional Modules" Level="1">
         <ComponentRef Id="AdditionalModules" />

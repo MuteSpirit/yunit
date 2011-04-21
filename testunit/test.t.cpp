@@ -129,6 +129,9 @@
 #include <fstream>
 #include <testunit/test.h>
 
+#include <process.h>
+#include <windows.h>
+
 std::wstring getTestWstdStr()
 {
     return L"abc";
@@ -661,3 +664,19 @@ todo(ForFutureCreation)/// \todo Add this test in future
 {
 }
 
+/// \todo use spawn family functions for new thread creation
+test(RaiseExceptionInSeparateThread)
+{
+    struct ___
+    {
+        static unsigned int WINAPI workerThread(void* lpParam)
+        {
+            return (int)lpParam / (int)0;
+        }
+    };
+
+    HANDLE hThread = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0, ___::workerThread, (LPVOID)0, 0, NULL));
+    areNotEq(INVALID_HANDLE_VALUE, hThread);
+    ::WaitForSingleObject(hThread, 100);
+    ::CloseHandle(hThread);
+}
