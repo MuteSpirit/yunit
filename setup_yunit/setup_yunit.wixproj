@@ -6,7 +6,7 @@
     <ProductVersion>3.5</ProductVersion>
     <ProjectGuid>{228d3862-e624-4290-ae08-6ddc7a6357dd}</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <OutputName>setup_lde</OutputName>
+    <OutputName>setup_yunit</OutputName>
     <OutputType>Package</OutputType>
     <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
     <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
@@ -17,12 +17,14 @@
     <DefineConstants>Debug</DefineConstants>
     <Cultures>ru-RU</Cultures>
     <VerboseOutput>False</VerboseOutput>
+    <SuppressPdbOutput>False</SuppressPdbOutput>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>..\..\_bin\</OutputPath>
     <IntermediateOutputPath>../_tmp</IntermediateOutputPath>
     <VerboseOutput>False</VerboseOutput>
     <Cultures>ru-RU</Cultures>
+    <SuppressPdbOutput>True</SuppressPdbOutput>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="product.wxs" />

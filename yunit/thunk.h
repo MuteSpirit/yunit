@@ -5,28 +5,28 @@
 // thunk.h
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef _TESTUNIT_THUNK_HEADER_
-#define _TESTUNIT_THUNK_HEADER_
+#ifndef _YUNIT_THUNK_HEADER_
+#define _YUNIT_THUNK_HEADER_
 
-#ifndef TESTUNIT_API
+#ifndef YUNIT_API
 #	if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
-#		if defined(TESTUNIT_STATIC_LINKED)
-#			define TESTUNIT_API
-#		elif defined(TESTUNIT_DLL)
-#			define TESTUNIT_API __declspec(dllimport)
+#		if defined(YUNIT_STATIC_LINKED)
+#			define YUNIT_API
+#		elif defined(YUNIT_DLL)
+#			define YUNIT_API __declspec(dllimport)
 #		else
-#			define TESTUNIT_API __declspec(dllexport)
+#			define YUNIT_API __declspec(dllexport)
 #		endif
 #	else
 #	   if defined(__GNUC__) && defined(GCC_HASCLASSVISIBILITY)
-#			define TESTUNIT_API __attribute__ ((visibility("default")))
+#			define YUNIT_API __attribute__ ((visibility("default")))
 #	   else
-#			define TESTUNIT_API
+#			define YUNIT_API
 #	   endif
 #	endif
 #endif
 
-class TESTUNIT_API Thunk
+class YUNIT_API Thunk
 {
 public:
     Thunk() throw();
@@ -59,4 +59,4 @@ void Thunk::thunk(void* thisPtr) throw()
     (static_cast<T*>(thisPtr)->*funcPtr)();
 }
 
-#endif // _TESTUNIT_THUNK_HEADER_
+#endif // _YUNIT_THUNK_HEADER_

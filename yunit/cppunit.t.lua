@@ -1,4 +1,4 @@
-local luaUnit = require('testunit.luaunit');
+local luaUnit = require('yunit.luaunit');
 
 function cppunitTest()
     -- load cppunit.dll

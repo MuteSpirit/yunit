@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="895F15DD-8C4F-4CD7-88B4-F298968B7F55" Name="Lua For Development Environment" Language="1033"
-           Version="0.3.6.1" Manufacturer="Techsystem" UpgradeCode="92882211-b420-4cf1-8872-da9649f28ff4">
+  <Product Id="9A8D3406-E89A-4765-93C6-421E1E5DC0BB" Name="yUnit (Yet another xUnit)" Language="1033"
+           Version="0.3.7.1" Manufacturer="Techsystem" UpgradeCode="92882211-b420-4cf1-8872-da9649f28ff4">
     <Package InstallerVersion="300" Compressed="yes" />
     <MajorUpgrade
-      DowngradeErrorMessage="Более поздняя версия [ProductName] уже установлена. Установка будет прекращена."/>
+      DowngradeErrorMessage="Newer [ProductName] version has been already installed. Installation will be cancelled."/>
 
-    <Media Id="1" Cabinet="setup_lde.cab" EmbedCab="yes" />
+    <Media Id="1" Cabinet="setup_yunit.cab" EmbedCab="yes" />
 
     <?include ts_install_set.wxi?>
 
@@ -30,18 +30,17 @@
                 <File Id="aux_test_func.lua" Name="aux_test_func.lua" DiskId="1" Source="..\ts_modules\aux_test_func.lua" />
               </Component>
 
-              <Directory Id="TestunitDir" Name="testunit">
+              <Directory Id="yUnitDir" Name="yunit">
                 <Component Id="LuaTestEngine" Guid="DD353FCA-EDD1-41CA-90CA-A5FCAF1FBE88">
-                  <File Id="luaunit.lua" Name="luaunit.lua" DiskId="1" Source="..\testunit\luaunit.lua" />
+                  <File Id="luaunit.lua" Name="luaunit.lua" DiskId="1" Source="..\yunit\luaunit.lua" />
                 </Component>
 
                 <Component Id="TestRunner" Guid="E7DC4B47-1BFB-4CE8-AD5D-C0A9043E3516">
-                  <File Id="test_runner.lua" Name="test_runner.lua" DiskId="1" Source="..\testunit\test_runner.lua" />
-                  <File Id="default_test_run.lua" Name="default_test_run.lua" DiskId="1" Source="..\testunit\default_test_run.lua" />
-                  <File Id="test_result_handlers.lua" Name="test_result_handlers.lua" DiskId="1" Source="..\testunit\test_result_handlers.lua" />
-                  <File Id="work_in_scite.lua" Name="work_in_scite.lua" DiskId="1" Source="..\testunit\work_in_scite.lua" />
-                  <File Id="work_in_vs.lua" Name="work_in_vs.lua" DiskId="1" Source="..\testunit\work_in_vs.lua" />
-                  <File Id="report.xsl" Name="report.xsl" DiskId="1" Source="..\testunit\report.xsl" />
+                  <File Id="test_runner.lua" Name="test_runner.lua" DiskId="1" Source="..\yunit\test_runner.lua" />
+                  <File Id="default_test_run.lua" Name="default_test_run.lua" DiskId="1" Source="..\yunit\default_test_run.lua" />
+                  <File Id="test_result_handlers.lua" Name="test_result_handlers.lua" DiskId="1" Source="..\yunit\test_result_handlers.lua" />
+                  <File Id="work_in_scite.lua" Name="work_in_scite.lua" DiskId="1" Source="..\yunit\work_in_scite.lua" />
+                  <File Id="work_in_vs.lua" Name="work_in_vs.lua" DiskId="1" Source="..\yunit\work_in_vs.lua" />
                 </Component>
               </Directory>
             </Directory>
@@ -55,10 +54,10 @@
                 <File Id="ldebug.h" Name="ldebug.h" DiskId="1" Source="..\lua\ldebug.h" />
               </Component>
 
-              <Directory Id="TestunitIncludeDir" Name="testunit">
+              <Directory Id="yUnitIncludeDir" Name="yunit">
                 <Component Id="CppTestEngineIncludes" Guid="0F9207E5-8382-404D-A006-AE261AF73BB9">
-                  <File Id="test.h" Name="test.h" DiskId="1" Source="..\testunit\test.h" />
-                  <File Id="thunk.h" Name="thunk.h" DiskId="1" Source="..\testunit\thunk.h" />
+                  <File Id="test.h" Name="test.h" DiskId="1" Source="..\yunit\test.h" />
+                  <File Id="thunk.h" Name="thunk.h" DiskId="1" Source="..\yunit\thunk.h" />
                 </Component>
               </Directory>
             </Directory>
@@ -88,9 +87,9 @@
               <File Id="lua_icon.ico" Name="lua_icon.ico" DiskId="1" Source=".\lua_icon.ico" />
               <!--ассоциируем иконку-->
               <RegistryKey Root="HKCR" Key=".lua" Action="createAndRemoveOnUninstall">
-                <RegistryValue Name="PerceivedType" Type="string" Value="Lde.lua"/>
+                <RegistryValue Name="PerceivedType" Type="string" Value="yUnit.lua"/>
               </RegistryKey>
-              <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\SystemFileAssociations\Lde.lua" Action="createAndRemoveOnUninstall">
+              <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\SystemFileAssociations\yUnit.lua" Action="createAndRemoveOnUninstall">
                 <RegistryKey Key="DefaultIcon" Action="createAndRemoveOnUninstall">
                   <RegistryValue Type="string" Value="[#lua_icon.ico]"/>
                 </RegistryKey>
@@ -145,7 +144,7 @@
     </Feature>
 
     <Feature Id="ExternalModules" Title="External Lua Modules" Level="1">
-      <Feature Id="LuaFileSystemFeature" Title="LuaFileSystem" Level="1">
+      <Feature Id="LuaFileSystemFeature" Title="LuaFileSystem 1.5.0" Level="1">
         <ComponentRef Id="LuaFileSystemBinaries" />
       </Feature>
 
@@ -157,7 +156,7 @@
       <Feature Id="AtdFeature" Title="Active TeX Document" Level="1">
         <ComponentRef Id="Atd" />
       </Feature>
-      <Feature Id="TestunitFeature" Title="Unit Test Engine" Level="1">
+      <Feature Id="yUnitFeature" Title="Unit Test Engine" Level="1">
         <ComponentRef Id="CppTestEngineBinaries" />
         <ComponentRef Id="CppTestEngineLibs" />
         <ComponentRef Id="CppTestEngineIncludes" />

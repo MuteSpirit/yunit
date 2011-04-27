@@ -74,9 +74,9 @@
 
 
 
-local luaUnit = require("testunit.luaunit")
-local testResultHandlers = require("testunit.test_result_handlers");
-local testRunner = require("testunit.test_runner");
+local luaUnit = require("yunit.luaunit")
+local testResultHandlers = require("yunit.test_result_handlers");
+local testRunner = require("yunit.test_runner");
 local fs = require("filesystem");
 local aux = require("aux_test_func");
 
@@ -284,7 +284,7 @@ function loadTestUnitEnginesTest()
     testRunner.loadTestUnitEngines{'cppunit'};
     isTable(testRunner.GlobalTestUnitEngineList['.t.dll']);
     
-    testRunner.loadTestUnitEngines{'testunit.luaunit'};
+    testRunner.loadTestUnitEngines{'yunit.luaunit'};
     isTable(testRunner.GlobalTestUnitEngineList['.t.lua']);
 end
 

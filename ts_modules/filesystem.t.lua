@@ -107,7 +107,7 @@ local fs = require("filesystem")
 local luaExt = require('lua_ext')
 local atf = require('aux_test_func')
 
-local luaUnit = require('testunit.luaunit');
+local luaUnit = require('yunit.luaunit');
 
 
 

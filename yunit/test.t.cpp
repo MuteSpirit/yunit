@@ -44,7 +44,7 @@
 /// \def UNIQUE_TEST_NAMESPACE(name)
 /// \brief Generate "unique" namespace name. 
 
-/// \def TESTUNIT_SOURCELINE()
+/// \def YUNIT_SOURCELINE()
 /// \brief Create temporary object of SourceLine type. Need for saving file name and line of assert crash
 
 /// \def test(testName)
@@ -116,7 +116,7 @@
 /// \param[in] msgBufSize Awailable size of buffer
 /// \return true, if call of invoke() function not throw exception, else return false
 
-/// \fn int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TESTUNIT_NS::TestCase*))
+/// \fn int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(YUNIT_NS::TestCase*))
 /// \brief There is TestCase object on the top of Lua stack. This function call protectTestThunkInvoke
 /// for that Thunk, whitch return function 'getThunkFunc'.
 /// \return 0, or call lua_error in case of unsuccessful protectTestThunkInvoke
@@ -127,7 +127,7 @@
 
 #include <sstream>
 #include <fstream>
-#include <testunit/test.h>
+#include <yunit/test.h>
 
 #include <process.h>
 #include <windows.h>
@@ -258,7 +258,7 @@ _test2(Test6bis, fixtureA, fixtureB)
 
 test(GetTestContainerExtensions)
 {
-    const char** extList = TESTUNIT_NS::getTestContainerExtensions();
+    const char** extList = YUNIT_NS::getTestContainerExtensions();
     areEq(".t.dll", extList[0]);
     isNull(extList[1]);
 }
@@ -267,7 +267,7 @@ test(IsNullAssert)
 {
     void* p = NULL;
     isNull(p);
-    willThrow(isNull(1), TESTUNIT_NS::TestException);
+    willThrow(isNull(1), YUNIT_NS::TestException);
 }
 
 test(TestBoolAssert)
@@ -431,8 +431,8 @@ test1(testCheckSetUpCall, SetUpCallCheckFixture)
 
 test(TestSourceLineCreation)
 {
-	TESTUNIT_SOURCELINE();
-	TESTUNIT_NS::SourceLine sourceLine(__FILE__, __LINE__);
+	YUNIT_SOURCELINE();
+	YUNIT_NS::SourceLine sourceLine(__FILE__, __LINE__);
 }
 
 test(AssertEqualStringsTest)
@@ -524,7 +524,7 @@ test(ExceptionDerivedFromStdException)
 
 test(SingleWillThrowTest)
 {
-    willThrow(isTrue(false), TESTUNIT_NS::TestException);
+    willThrow(isTrue(false), YUNIT_NS::TestException);
 }
 
 test(CheckForUnreachableCodeWarningWhenUseWillThrow)
@@ -579,7 +579,7 @@ test(WrongMessageTextWhere)
     {
         areEq(1, 10);
     }
-    catch(TESTUNIT_NS::TestException& ex)
+    catch(YUNIT_NS::TestException& ex)
     {
         enum {bufferSize = 128};
         char buffer[bufferSize];
@@ -594,7 +594,7 @@ test(CharStringMustBeBoundedWithDoubleQuotesAtFailedEquationMessage)
     {
         areEq("s1", "s2");
     }
-    catch(TESTUNIT_NS::TestException& ex)
+    catch(YUNIT_NS::TestException& ex)
     {
         enum {bufferSize = 128};
         char buffer[bufferSize];
@@ -606,7 +606,7 @@ test(CharStringMustBeBoundedWithDoubleQuotesAtFailedEquationMessage)
     {
         areNotEq("s1", "s2");
     }
-    catch(TESTUNIT_NS::TestException& ex)
+    catch(YUNIT_NS::TestException& ex)
     {
         enum {bufferSize = 128};
         char buffer[bufferSize];
@@ -621,7 +621,7 @@ test(WideCharStringMustBeBoundedWithDoubleQuotesAtFailedEquationMessage)
     {
         areEq(L"s1", L"s2");
     }
-    catch(TESTUNIT_NS::TestException& ex)
+    catch(YUNIT_NS::TestException& ex)
     {
         enum {bufferSize = 128};
         char buffer[bufferSize];
@@ -633,7 +633,7 @@ test(WideCharStringMustBeBoundedWithDoubleQuotesAtFailedEquationMessage)
     {
         areNotEq(L"s1", L"s2");
     }
-    catch(TESTUNIT_NS::TestException& ex)
+    catch(YUNIT_NS::TestException& ex)
     {
         enum {bufferSize = 128};
         char buffer[bufferSize];
@@ -660,23 +660,26 @@ example(ExampleWhichIsCompiledButNotRun)
 	(void)b;
 }
 
-todo(ForFutureCreation)/// \todo Add this test in future
+/* Sample for TODO tests
+todo(ForFutureCreation)
 {
 }
+*/
 
+// this test need to check minidump creation
 /// \todo use spawn family functions for new thread creation
-test(RaiseExceptionInSeparateThread)
-{
-    struct ___
-    {
-        static unsigned int WINAPI workerThread(void* lpParam)
-        {
-            return (int)lpParam / (int)0;
-        }
-    };
-
-    HANDLE hThread = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0, ___::workerThread, (LPVOID)0, 0, NULL));
-    areNotEq(INVALID_HANDLE_VALUE, hThread);
-    ::WaitForSingleObject(hThread, 100);
-    ::CloseHandle(hThread);
-}
+//test(RaiseExceptionInSeparateThread)
+//{
+//    struct ___
+//    {
+//        static unsigned int WINAPI workerThread(void* lpParam)
+//        {
+//            return (int)lpParam / (int)0;
+//        }
+//    };
+//
+//    HANDLE hThread = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0, ___::workerThread, (LPVOID)0, 0, NULL));
+//    areNotEq(INVALID_HANDLE_VALUE, hThread);
+//    ::WaitForSingleObject(hThread, 100);
+//    ::CloseHandle(hThread);
+//}

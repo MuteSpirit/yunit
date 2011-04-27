@@ -30,11 +30,11 @@
 
 
 
-local testRunner = require("testunit.test_runner");
+local testRunner = require("yunit.test_runner");
 local luaExt = require("lua_ext")
 local fs = require("filesystem")
-local luaUnit = require('testunit.luaunit');
-local testResultHandlers = require('testunit.test_result_handlers');
+local luaUnit = require('yunit.luaunit');
+local testResultHandlers = require('yunit.test_result_handlers');
 
 assertsAtSetUpFixture = 
 {
@@ -227,7 +227,7 @@ end
 
     
 function getTestEnvTest()
-    local testContainerName = 'testunit.luaunit'
+    local testContainerName = 'yunit.luaunit'
     local testChunk = luaUnit.getTestEnv(testContainerName)
     
     local mt = getmetatable(testChunk)
@@ -298,7 +298,7 @@ function collectTestcasesFromSimpleTestCaseEnvironment()
         },
     }
     
-    local testContainerName = 'testunit.luaunit'
+    local testContainerName = 'yunit.luaunit'
     local testList = luaUnit.collectPureTestCaseList(env)
     
     isTrue(table.isEqual(expectedTestList, testList))
