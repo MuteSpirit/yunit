@@ -5,17 +5,17 @@ local files = arg
 if not files[1] then
     table.insert(files, 'lua_ext.t.lua')
     table.insert(files, 'filesystem.t.lua')
-    table.insert(files, '..\\testunit\\test_result_handlers.t.lua')
-    table.insert(files, '..\\testunit\\test_runner.t.lua')
-    table.insert(files, '..\\testunit\\cppunit.t.lua')
+    table.insert(files, '..\\yunit\\test_result_handlers.t.lua')
+    table.insert(files, '..\\yunit\\test_runner.t.lua')
+    table.insert(files, '..\\yunit\\cppunit.t.lua')
     table.insert(files, 'aux_test_func.t.lua')
-    table.insert(files, '..\\testunit\\lua_test_sample.t.lua')
-    table.insert(files, '..\\testunit\\luaunit.t.lua')
+    table.insert(files, '..\\yunit\\lua_test_sample.t.lua')
+    table.insert(files, '..\\yunit\\luaunit.t.lua')
 end
 
 local reStr = 
 {
-    ['local luaUnit = require%("testunit%.luaunit"%)'] = '',
+    ['local luaUnit = require%("yunit%.luaunit"%)'] = '',
     ['module%(.+'] = '',
     ['TEST_CASE{"([^"]+)", function%(self%)'] = 'function %1()',
     ['teardown'] = 'tearDown',

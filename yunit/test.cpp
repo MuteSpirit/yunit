@@ -18,7 +18,7 @@
 #include <stdlib.h>
 
 
-namespace TESTUNIT_NS {
+namespace YUNIT_NS {
 
 const char** getTestContainerExtensions()
 {
@@ -606,4 +606,4 @@ void throwException(const SourceLine& sourceLine,
     throw TestDoubleEqualException<double>(sourceLine, expected, actual, delta, mustBeEqual);
 }
 
-} // namespace TESTUNIT_NS
+} // namespace YUNIT_NS

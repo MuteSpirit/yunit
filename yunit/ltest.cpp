@@ -26,7 +26,7 @@ extern "C" {
 #include "test.h"
 
 
-namespace TESTUNIT_NS {
+namespace YUNIT_NS {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Bindings for Lua
@@ -138,7 +138,7 @@ static bool wereCatchedCppExceptions(lua_State *L,
 static int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(TestCase*))
 {
 	lua_getfield(L, -1, "this");
-	TESTUNIT_NS::TestCase* testCase = static_cast<TestCase*>(lua_touserdata(L, -1));
+	YUNIT_NS::TestCase* testCase = static_cast<TestCase*>(lua_touserdata(L, -1));
     bool thereAreCppExceptions = false;
     int countReturnValues = 0;
 #ifdef _MSC_VER
@@ -287,19 +287,19 @@ static int loadTestContainer(lua_State *L)
     return 2;
 }
 
-} // namespace TESTUNIT_NS
+} // namespace YUNIT_NS
 
 
 static const struct luaL_Reg cppunitLuaFunctions[] =
 {
-	{"loadTestContainer", TESTUNIT_NS::loadTestContainer},
-	{"getTestContainerExtensions", TESTUNIT_NS::getTestContainerExtensions},
-	{"getTestList", TESTUNIT_NS::getTestList},
+	{"loadTestContainer", YUNIT_NS::loadTestContainer},
+	{"getTestContainerExtensions", YUNIT_NS::getTestContainerExtensions},
+	{"getTestList", YUNIT_NS::getTestList},
 	{NULL, NULL},
 };
 
 extern "C"
-int TESTUNIT_API luaopen_cppunit(lua_State *L)
+int YUNIT_API luaopen_cppunit(lua_State *L)
 {
 	luaL_register(L, "cppunit", cppunitLuaFunctions);
 	return 0;

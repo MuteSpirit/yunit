@@ -1,8 +1,8 @@
 local file = arg[1];
 --~ file = 'lua_ext.t.lua';
 --~ file = 'filesystem.t.lua';
---~ file = '..\\testunit\\test_result_handlers.t.lua';
-file = '..\\testunit\\cppunit.t.lua';
+--~ file = '..\\yunit\\test_result_handlers.t.lua';
+file = '..\\yunit\\cppunit.t.lua';
 if not file then
     error('Use filename as 1st arg');
 end
@@ -17,7 +17,7 @@ local reStr =
     ['ASSERT_PASS'] = 'ASSERT_NO_THROW',
     ['%-%-%-%-[%-]+'] = '',
     ['assert_error'] = 'ASSERT_THROW',
-    ['local lunit = require%([\'"]lunit[\'"]%)'] = 'local luaUnit = require(\'testunit.luaunit\');\nmodule(\''.. string.gsub(file, '%.lua$', '') .. '\', luaUnit.testmodule, package.seeall);',
+    ['local lunit = require%([\'"]lunit[\'"]%)'] = 'local luaUnit = require(\'yunit.luaunit\');\nmodule(\''.. string.gsub(file, '%.lua$', '') .. '\', luaUnit.testmodule, package.seeall);',
 };
 
 

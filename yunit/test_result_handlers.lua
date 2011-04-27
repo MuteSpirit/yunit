@@ -5,7 +5,7 @@ module(...)
 _G.setmetatable(_M, {__index = _G})
 --------------------------------------------------------------------------------------------------------------
 
-local testRunner = require("testunit.test_runner");
+local testRunner = require("yunit.test_runner");
 --~ require("LuaXML");
 --~ local xml = xml;
 

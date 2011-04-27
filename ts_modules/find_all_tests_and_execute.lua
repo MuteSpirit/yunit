@@ -37,8 +37,8 @@ fs.applyOnFiles(path, adtArg);
 
 package.path='./?.lua;./?/init.lua;../ts_modules/?.lua;D:/_portable/lua/5.1/lua/?.lua;D:/_portable/lua/5.1/lua/?/init.lua;../?.lua;../?/init.lua;' .. package.path;
 package.cpath='./?.dll;D:/_portable/lua/5.1/lua/?.dll;D:/_portable/lua/5.1/clibs/?.dll;../_bin/?.dll;../_bin/?.so;' .. package.cpath;
-local testRunner = require('testunit.test_runner');
-local testResultHandlers = require('testunit.test_result_handlers');
+local testRunner = require('yunit.test_runner');
+local testResultHandlers = require('yunit.test_result_handlers');
 testRunner.loadTestContainers(adtArg.state.paths);
 local testObserver = testRunner.TestResultHandlerList:new();
 testObserver:addHandler(testResultHandlers.SciteTextTestProgressHandler:new());

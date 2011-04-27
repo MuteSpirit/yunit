@@ -1,1 +1,1 @@
-testResultHandler = require('testunit.test_result_handlers').SciteTextTestProgressHandler:new()
+testResultHandler = require('yunit.test_result_handlers').SciteTextTestProgressHandler:new()

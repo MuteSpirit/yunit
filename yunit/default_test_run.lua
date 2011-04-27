@@ -1,5 +1,5 @@
 local fs = require('filesystem')
-local testRunner = require('testunit.test_runner')
+local testRunner = require('yunit.test_runner')
 local minidump = require('minidump')
 
 -- test observer alone, because 'run' function may be called multiple times in one test run
@@ -15,7 +15,7 @@ function run(path)
     local workingDir = fs.dirname(path)
     lfs.chdir(workingDir)
     
-    testRunner.loadTestUnitEngines{'cppunit', 'testunit.luaunit'};
+    testRunner.loadTestUnitEngines{'cppunit', 'yunit.luaunit'};
     testRunner.loadTestContainers{fs.canonizePath(path)}
     testRunner.runAllTestCases(testObserver)
 end
