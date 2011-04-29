@@ -668,18 +668,19 @@ todo(ForFutureCreation)
 
 // this test need to check minidump creation
 /// \todo use spawn family functions for new thread creation
-//test(RaiseExceptionInSeparateThread)
-//{
-//    struct ___
-//    {
-//        static unsigned int WINAPI workerThread(void* lpParam)
-//        {
-//            return (int)lpParam / (int)0;
-//        }
-//    };
-//
-//    HANDLE hThread = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0, ___::workerThread, (LPVOID)0, 0, NULL));
-//    areNotEq(INVALID_HANDLE_VALUE, hThread);
-//    ::WaitForSingleObject(hThread, 100);
-//    ::CloseHandle(hThread);
-//}
+_test(RaiseExceptionInSeparateThread)
+{
+    struct ___
+    {
+        static unsigned int WINAPI workerThread(void* lpParam)
+        {
+            return (int)lpParam / (int)0;
+        }
+    };
+
+    HANDLE hThread = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0, ___::workerThread, (LPVOID)0, 0, NULL));
+    areNotEq(INVALID_HANDLE_VALUE, hThread);
+    ::WaitForSingleObject(hThread, 100);
+    ::CloseHandle(hThread);
+}
+
