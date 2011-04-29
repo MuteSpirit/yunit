@@ -660,7 +660,7 @@ example(ExampleWhichIsCompiledButNotRun)
 	(void)b;
 }
 
-/* Sample for TODO tests
+/* Sample TODO test
 todo(ForFutureCreation)
 {
 }
