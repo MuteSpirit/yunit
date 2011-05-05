@@ -9,6 +9,10 @@ if testResultHandler then
     testObserver:addHandler(testResultHandler)
 end
 
+--~ if testResultHandler2 then
+--~     testObserver:addHandler(testResultHandler2)
+--~ end
+
 --~ minidump.setCrashHandler()
 
 function run(path)
@@ -18,7 +22,7 @@ function run(path)
     io.stdout:setvbuf("no")
     io.stderr:setvbuf("no")
     
-    testRunner.loadTestUnitEngines{'cppunit', 'yunit.luaunit'}
+    testRunner.loadTestUnitEngines{'yunit.luaunit'}
     testRunner.loadTestContainers{fs.canonizePath(path)}
     testRunner.runAllTestCases(testObserver)
 end
