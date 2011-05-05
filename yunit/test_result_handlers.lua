@@ -6,9 +6,6 @@ _G.setmetatable(_M, {__index = _G})
 --------------------------------------------------------------------------------------------------------------
 
 local testRunner = require("yunit.test_runner");
---~ require("LuaXML");
---~ local xml = xml;
-
 
 ------------------------------------------------------
 TextTestProgressHandler = testRunner.TestResultHandler:new{
@@ -114,12 +111,6 @@ function TextTestProgressHandler:onTestIgnore(testCaseName, errorObject)
     self:outputMessage("I");
 end
 
-function TextTestProgressHandler:onTestBegin(testCaseName)
-end
-
-function TextTestProgressHandler:onTestEnd(testCaseName)
-end
-
 function TextTestProgressHandler:onTestsBegin()
     self:resetCounters();
     self:outputMessage('[');
@@ -214,53 +205,70 @@ end
 SciteTextTestProgressHandler = TextTestProgressHandler:new()
 ------------------------------------------------------
 
-SciteTextTestProgressHandler.editorSpecifiedErrorLine = TextTestProgressHandler.sciteErrorLine--~ local defaultXmlReportPath = 'report.xml';
+SciteTextTestProgressHandler.editorSpecifiedErrorLine = TextTestProgressHandler.sciteErrorLine
 
---~ ------------------------------------------------------
---~ XmlListenerAlaCppUnitXmlOutputter = testRunner.TestResultHandler:new{
---~         reportContent =
---~         {
---~             FailedTests = {},
---~             SuccessfulTests = {},
---~             ErrorTests = {},
---~             IgnoredTests = {},
---~             Statistics = {},
---~         },
---~         testCount = 0,
---~         xmlFilePath = defaultXmlReportPath,
---~     };
---~ ------------------------------------------------------
+local defaultXmlReportPath = 'report.xml'
 
---~ function XmlListenerAlaCppUnitXmlOutputter:new(o)
---~     o = o or {
---~         reportContent =
---~         {
---~             FailedTests = {},
---~             SuccessfulTests = {},
---~             ErrorTests = {},
---~             IgnoredTests = {},
---~             Statistics = {},
---~         },
---~         testCount = 0,
---~         xmlFilePath = defaultXmlReportPath,
---~     };
---~     setmetatable(o, self);
---~     self.__index = self;
---~     return o;
---~ end
+------------------------------------------------------
+XmlTestResultHandler = testRunner.TestResultHandler:new{
+        tableWithSuccesses = {},
+        tableWithIgnores = {},
+        tableWithErrors = {},
+        tableWithFailures = {},
+        reportPath = defaultReportPath,
+    };
 
---~ function XmlListenerAlaCppUnitXmlOutputter:xmlPath(newPath)
---~     self.xmlFilePath = newPath;
---~ end
+------------------------------------------------------
+function XmlTestResultHandler:new()
+    local o =
+    {
+        tableWithSuccesses = {},
+        tableWithIgnores = {},
+        tableWithErrors = {},
+        tableWithFailures = {},
+        reportPath = defaultReportPath,
+    };
+    setmetatable(o, self);
+    self.__index = self;
+    return o;
+end
 
---~ function XmlListenerAlaCppUnitXmlOutputter:succesfullTestInfo(testCaseName)
+function XmlTestResultHandler:outputMessage(message)
+    io.write(message);
+    io.output():flush();
+end
+
+function TextTestProgressHandler:onTestSuccessfull(testCaseName)
+    table.insert(self.tableWithSuccesses, {testCaseName});
+end
+
+function TextTestProgressHandler:onTestFailure(testCaseName, errorObject)
+    table.insert(self.tableWithFailures, {testCaseName, errorObject});
+end
+
+function TextTestProgressHandler:onTestError(testCaseName, errorObject)
+    table.insert(self.tableWithErrors, {testCaseName, errorObject});
+end
+
+function TextTestProgressHandler:onTestIgnore(testCaseName, errorObject)
+    table.insert(self.tableWithIgnores, {testCaseName, errorObject});
+end
+
+function XmlTestResultHandler:onTestsBegin()
+    self.tableWithSuccesses = {}
+    self.tableWithIgnores = {}
+    self.tableWithErrors = {}
+    self.tableWithFailures = {}
+end
+
+--~ function XmlTestResultHandler:succesfullTestInfo(testCaseName)
 --~     return {
 --~         id = self.testCount,
 --~         Name = {testCaseName},
 --~     };
 --~ end
 
---~ function XmlListenerAlaCppUnitXmlOutputter:notSuccesfullTestInfo(testCaseName, errorObject)
+--~ function XmlTestResultHandler:notSuccesfullTestInfo(testCaseName, errorObject)
 --~     return {
 --~         id = self.testCount,
 --~         Name = {testCaseName},
@@ -274,78 +282,38 @@ SciteTextTestProgressHandler.editorSpecifiedErrorLine = TextTestProgressHandler.
 --~     };
 --~ end
 
---~ function XmlListenerAlaCppUnitXmlOutputter:onTestSuccessfull(testCaseName)
---~     self.testCount = self.testCount + 1;
---~     table.insert(self.reportContent.SuccessfulTests, xml.str(self:succesfullTestInfo(testCaseName), 2, 'Test'));
---~ end
+function XmlTestResultHandler:onTestsEnd()
+    self:outputMessage('Make XML report "' .. self.reportPath .. '"...');
 
---~ function XmlListenerAlaCppUnitXmlOutputter:onTestIgnore(testCaseName)
---~     self.testCount = self.testCount + 1;
---~     table.insert(self.reportContent.IgnoredTests, xml.str(self:succesfullTestInfo(testCaseName), 2, 'IgnoredTest'));
---~ end
+    local f, errMsg = io.open(self.reportPath, 'w')
+    if not f then
+        self:outputMessage('Cannot create xml report file "' .. self.reportPath .. '": ' .. errMsg .. '\r\n', 0)
+        return
+    end
 
---~ function XmlListenerAlaCppUnitXmlOutputter:onTestFailure(testCaseName, errorObject)
---~     self.testCount = self.testCount + 1;
---~     table.insert(self.reportContent.FailedTests, xml.str(self:notSuccesfullTestInfo(testCaseName, errorObject), 2, 'FailedTest'));
---~ end
+    repLines = {}
+    table.insert(repLines, '<?xml version="1.0"?>'
+    table.insert(repLines, '<!-- File has been generated by XmlTestResultHandler -->')
+    table.insert(repLines, '')
+    table.insert(repLines, '<TestRun>')
 
---~ function XmlListenerAlaCppUnitXmlOutputter:onTestError(testCaseName, errorObject)
---~     self.testCount = self.testCount + 1;
---~     table.insert(self.reportContent.ErrorTests, xml.str(self:notSuccesfullTestInfo(testCaseName, errorObject), 2, 'ErrorTest'));
---~ end
+    table.insert(repLines, '\t<FailedTests>');
+--~     table.insert(repLines, table.concat(self.reportContent.FailedTests));
+    table.insert(repLines, '\t</FailedTests>');
 
---~ function XmlListenerAlaCppUnitXmlOutputter:onTestBegin(testCaseName)
---~ end
+    table.insert(repLines, '\t<ErrorTests>');
+--~     table.insert(repLines, table.concat(self.reportContent.ErrorTests));
+    table.insert(repLines, '\t</ErrorTests>');
 
---~ function XmlListenerAlaCppUnitXmlOutputter:onTestEnd(testCaseName)
---~ end
+    table.insert(repLines, '\t<IgnoredTests>');
+--~     table.insert(repLines, table.concat(self.reportContent.IgnoredTests));
+    table.insert(repLines, '\t</IgnoredTests>');
 
---~ function XmlListenerAlaCppUnitXmlOutputter:onTestsBegin()
---~     self.reportContent =
---~     {
---~         FailedTests = {},
---~         SuccessfulTests = {},
---~         ErrorTests = {},
---~         IgnoredTests = {},
---~         Statistics = {},
---~     };
---~     self.testCount = 0;
---~ end
+    table.insert(repLines, '\t<SuccessfulTests>');
+--~     table.insert(repLines, table.concat(self.reportContent.SuccessfulTests));
+    table.insert(repLines, '\t</SuccessfulTests>');
 
---~ function XmlListenerAlaCppUnitXmlOutputter:onTestsEnd()
---~     if not self.xmlFilePath then
---~         self:outputMessage('Wrong setting xml report file path. Using default path.');
---~         self.xmlFilePath = defaultXmlReportPath;
---~     end
-
---~     self:outputMessage('Begin xml test report "'..self.xmlFilePath..'" creation...\n');
-
---~     local hXml, errMsg = io.open(self.xmlFilePath, 'w');
---~     if not hXml then
---~         error('Cannot create xml report file "' .. self.xmlFilePath .. '": ' .. errMsg .. '\n', 0);
---~     end
-
---~     hXml:write("<?xml version=\"1.0\"?>\n<!-- file \"", self.xmlFilePath, "\", generated by XmlListenerAlaCppUnitXmlOutputter -->\n\n")
---~     hXml:write('<?xml-stylesheet type="text/xsl" href="report.xsl"?>');
---~     hXml:write('<TestRun>\n');
-
---~     hXml:write(' <FailedTests>\n');
---~     hXml:write(table.concat(self.reportContent.FailedTests));
---~     hXml:write(' </FailedTests>\n');
-
---~     hXml:write(' <ErrorTests>\n');
---~     hXml:write(table.concat(self.reportContent.ErrorTests));
---~     hXml:write(' </ErrorTests>\n');
-
---~     hXml:write(' <IgnoredTests>\n');
---~     hXml:write(table.concat(self.reportContent.IgnoredTests));
---~     hXml:write(' </IgnoredTests>\n');
-
---~     hXml:write(' <SuccessfulTests>\n');
---~     hXml:write(table.concat(self.reportContent.SuccessfulTests));
---~     hXml:write(' </SuccessfulTests>\n');
-
---~     hXml:write(
+--~     table.insert(repLines, 
 --~         xml.str(
 --~         {
 --~             Tests = {self.testCount},
@@ -356,14 +324,10 @@ SciteTextTestProgressHandler.editorSpecifiedErrorLine = TextTestProgressHandler.
 --~         }, 1, 'Statistics')
 --~     );
 
---~     hXml:write('</TestRun>\n');
---~     hXml:flush();
---~     hXml:close();
+    table.insert(repLines, '</TestRun>');
+    f:write(table.concat(repLines, '\r\n'));
+    f:close();
 
---~     self:outputMessage('Xml test report "'..self.xmlFilePath..'" creation finished succesfully\n');
---~ end
+    self:outputMessage(' done\r\n');
+end
 
---~ function XmlListenerAlaCppUnitXmlOutputter:outputMessage(message)
---~     io.write(message);
---~     io.output():flush();
---~ end
