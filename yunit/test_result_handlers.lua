@@ -61,27 +61,27 @@ end
 function TextTestProgressHandler:totalResultsStr()
     local message = "Execution of tests has been completed:\n";
 
-    message = message.."\t\t\tFailed:      "..tostring(#self.tableWithFailures);
+    message = message.."\t\t\tFailed:\t\t"..tostring(#self.tableWithFailures);
     if #self.tableWithFailures > 0 then
         message = message.."\t(0_-) BUGS !!!";
     end
     message = message.."\n";
 
-    message = message.."\t\t\tErrors:       "..tostring(#self.tableWithErrors);
+    message = message.."\t\t\tErrors:\t\t"..tostring(#self.tableWithErrors);
     if #self.tableWithErrors > 0 then
         message = message.."\t(0_0) ???";
     end
     message = message.."\n";
 
-    message = message.."\t\t\tIgnored:     "..tostring(#self.tableWithIgnores);
+    message = message.."\t\t\tIgnored:\t\t"..tostring(#self.tableWithIgnores);
     if #self.tableWithIgnores > 0 then
         message = message.."\to(^_^)o ?";
     end
     message = message.."\n";
 
-    message = message.."\t\t\tSuccessful:  "..tostring(#self.tableWithSuccesses).."\n";
+    message = message.."\t\t\tSuccessful:\t\t" .. tostring(#self.tableWithSuccesses) .. "\n";
 
-    message = message.."\t\t\tTotal:       "..tostring(self:totalTestNum()).."\n";
+    message = message.."\t\t\tTotal:\t\t" .. tostring(self:totalTestNum()) .. "\n";
 
     return message;
 end
