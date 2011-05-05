@@ -182,7 +182,7 @@ function sciteTextTestProgressListenerFixture.derivationTextTestListenerTest()
 end
 
 function errorObjectFixture.testXmlListenerSimulateTestRunning()
-    local ttpl = testResultHandlers.XmlListenerAlaCppUnitXmlOutputter:new()
+    local ttpl = testResultHandlers.XmlTestResultHandler:new()
     
     function ttpl:outputMessage(message)
     end
@@ -191,7 +191,7 @@ function errorObjectFixture.testXmlListenerSimulateTestRunning()
 
     areEq(0, #ttpl.tableWithSuccesses)
     ttpl:onTestBegin(fakeTestCaseName, fakeTestName)
-    ttpl:onTestSuccessfull(fakeTestCaseName, fakeTestName)
+    ttpl:onTestSuccessfull(fakeTestCaseName)
     ttpl:onTestEnd(fakeTestCaseName, fakeTestName)
     areEq(1, #ttpl.tableWithSuccesses)
     
@@ -199,19 +199,19 @@ function errorObjectFixture.testXmlListenerSimulateTestRunning()
     ttpl:onTestBegin(fakeTestCaseName, fakeTestName)
     ttpl:onTestFailure(fakeTestCaseName, fakeErrorObject)
     ttpl:onTestEnd(fakeTestCaseName, fakeTestName)
-    areEq(1, #ttpl.tableWithFailures)
+    isNotNil(next(ttpl.tableWithFailures))
 
-	areEq(0, #ttpl.tableWithErrors)
+    areEq(0, #ttpl.tableWithErrors)
     ttpl:onTestBegin(fakeTestCaseName, fakeTestName)
     ttpl:onTestError(fakeTestCaseName, fakeErrorObject)
     ttpl:onTestEnd(fakeTestCaseName, fakeTestName)
-	areEq(1, #ttpl.tableWithErrors)
+   isNotNil(next(ttpl.tableWithErrors))
 
     areEq(0, #ttpl.tableWithIgnores)
     ttpl:onTestBegin(fakeTestCaseName, fakeTestName)
     ttpl:onTestIgnore(fakeTestCaseName)
     ttpl:onTestEnd(fakeTestCaseName, fakeTestName)
-    areEq(1, #ttpl.tableWithIgnores)
+    isNotNil(next(ttpl.tableWithIgnores))
     
     ttpl:onTestsEnd()
 end

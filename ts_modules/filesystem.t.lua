@@ -171,16 +171,6 @@ useUnixPathDelimiterFixture =
     ;
 }
 
-function whatOsTest()
-    local tmp = os.getenv('TMP');
-    if string.match(tmp, '^%w:') then
-        areEq('win', fs.whatOs())
-    else
-        areEq('unix', fs.whatOs())
-    end
-end
-
-
 function useUnixPathDelimiterFixture.unixCanonizePath()
     areEq('c:/path/to/dir', fs.canonizePath('c:/path/to/dir/'))
     areEq('c:/path/to/dir', fs.canonizePath('c:\\path\\to\\dir\\'))
@@ -374,22 +364,30 @@ end
 
 function isExistTest()
     isTrue(fs.isExist(lfs.currentdir()));
-    isTrue(fs.isExist('c:/'));
-    isTrue(fs.isExist('c:'));
+    if 'win' == fs.whatOs() then
+	isTrue(fs.isExist('c:/'));
+	isTrue(fs.isExist('c:'));
+    else
+	isTrue(fs.isExist('/home/'));
+    end
 end
 
 function isDirTest()
     local path;
     
     isTrue(fs.isDir(lfs.currentdir()));
-    isTrue(fs.isDir('c:/'));
-    isTrue(fs.isDir('c:'));
+    if 'win' == fs.whatOs() then
+	isTrue(fs.isDir('c:/'));
+	isTrue(fs.isDir('c:'));
+	isTrue(fs.isDir('\\'));
+    else
+	isTrue(fs.isDir('/'));
+	isTrue(fs.isDir('/home/'));
+    end
     
     path = '/';
     areEq('directory', lfs.attributes(path, 'mode'));
     isTrue(fs.isDir(path));
-    
-    isTrue(fs.isDir('\\'));
 end
 
 
