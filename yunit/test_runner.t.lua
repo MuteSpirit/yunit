@@ -268,7 +268,7 @@ function globalTestCaseListFixturePlusUseTmpDir.runSomeTestContainer(self)
    
     areEq(0, #self.testRegistry.testsuites)
 
-    require('default_test_run')
+    require('lua_test_run')
     run(testContainerPath)
     
     areEq(1, #self.testRegistry.testsuites)
@@ -281,8 +281,8 @@ function testSetGoodWorkingDir()
 end
 
 function loadTestUnitEnginesTest()
-    testRunner.loadTestUnitEngines{'cppunit'};
-    isTable(testRunner.GlobalTestUnitEngineList['.t.dll']);
+--~     testRunner.loadTestUnitEngines{'cppunit'};
+--~     isTable(testRunner.GlobalTestUnitEngineList['.t.dll']);
     
     testRunner.loadTestUnitEngines{'yunit.luaunit'};
     isTable(testRunner.GlobalTestUnitEngineList['.t.lua']);

@@ -517,7 +517,7 @@ end
 
 
 function useTestTmpDirFixture.DeleteEmptyDirectory()
-    local tmpSubdir = tmpDir .. fs.osSlash() .. os.tmpname();
+    local tmpSubdir = tmpDir .. fs.osSlash() .. tostring(os.time());
     isTrue(lfs.mkdir(tmpSubdir));
     isTrue(lfs.chdir(tmpSubdir));
     isTrue(lfs.chdir(tmpDir));
@@ -527,7 +527,7 @@ function useTestTmpDirFixture.DeleteEmptyDirectory()
 end;
     
 function useTestTmpDirFixture.DeleteDirectoryWithEmptyTextFile()
-    local tmpSubdir = tmpDir .. fs.osSlash() .. os.tmpname();
+    local tmpSubdir = tmpDir .. fs.osSlash() .. tostring(os.time());
     isNil(lfs.chdir(tmpSubdir))
     isTrue(lfs.mkdir(tmpSubdir))
     isTrue(lfs.chdir(tmpSubdir))
@@ -542,7 +542,7 @@ function useTestTmpDirFixture.DeleteDirectoryWithEmptyTextFile()
 end;
 
 function useTestTmpDirFixture.DeleteDirectoryWithNotEmptyTextFile()
-    local tmpSubdir = tmpDir .. fs.osSlash() .. os.tmpname();
+    local tmpSubdir = tmpDir .. fs.osSlash() .. tostring(os.time());
     isNil(lfs.chdir(tmpSubdir))
     isTrue(lfs.mkdir(tmpSubdir))
     isTrue(lfs.chdir(tmpSubdir))
@@ -560,7 +560,7 @@ function useTestTmpDirFixture.DeleteDirectoryWithNotEmptyTextFile()
 end;
 
 function useTestTmpDirFixture.DeleteDirectoryWithEmptySubdirectory()
-    local tmpSubdir = tmpDir .. fs.osSlash() .. os.tmpname();
+    local tmpSubdir = tmpDir .. fs.osSlash() .. tostring(os.time());
     isNil(lfs.chdir(tmpSubdir))
     isTrue(lfs.mkdir(tmpSubdir))
     isTrue(lfs.chdir(tmpSubdir))
@@ -578,7 +578,7 @@ function useTestTmpDirFixture.DeleteDirectoryWithEmptySubdirectory()
 end;
 
 function useTestTmpDirFixture.DeleteDirectoryWithSubdirectoryWithNotEmptyTextFile()
-local tmpSubdir = tmpDir .. fs.osSlash() .. os.tmpname();
+local tmpSubdir = tmpDir .. fs.osSlash() .. tostring(os.time());
 isNil(lfs.chdir(tmpSubdir))
 isTrue(lfs.mkdir(tmpSubdir))
 isTrue(lfs.chdir(tmpSubdir))
@@ -625,13 +625,15 @@ end
 
 
 function useTestTmpDirFixture.isLocalFullPathTest()
-    isTrue(fs.isLocalFullPath('c:/'));
-    isTrue(fs.isLocalFullPath('/'));
-    isTrue(fs.isLocalFullPath('\\'));
-
-    isTrue(fs.isLocalFullPath('c:/file.ext'));
-    isTrue(fs.isLocalFullPath('/file.ext'));
-    isTrue(fs.isLocalFullPath('\\file.ext'));
+    if 'win' == fs.whatOs() then
+        isTrue(fs.isLocalFullPath('\\'));
+        isTrue(fs.isLocalFullPath('c:/'));
+        isTrue(fs.isLocalFullPath('c:/file.ext'));
+        isTrue(fs.isLocalFullPath('\\file.ext'));
+    else
+        isTrue(fs.isLocalFullPath('/'));
+        isTrue(fs.isLocalFullPath('/file.ext'));
+    end
 
     isFalse(fs.isLocalFullPath([[\\172.22.3.20\folder\]]));
     isFalse(fs.isLocalFullPath([[\\alias\folder\]]));
@@ -639,18 +641,19 @@ end
 
 
 function useTestTmpDirFixture.isLocalPathTest()
-    isTrue(fs.isLocalPath('c:/'));
+    if 'win' == fs.whatOs() then
+        isTrue(fs.isLocalPath('c:/'));
+        isTrue(fs.isLocalPath('c:/file.ext'));
+        isTrue(fs.isLocalPath('\\'));
+        isTrue(fs.isLocalPath('\\file.ext'));
+    end
     isTrue(fs.isLocalPath('../'));
     isTrue(fs.isLocalPath('./'));
     isTrue(fs.isLocalPath('/'));
-    isTrue(fs.isLocalPath('\\'));
-
-    isTrue(fs.isLocalPath('c:/file.ext'));
     isTrue(fs.isLocalPath('../file.ext'));
     isTrue(fs.isLocalPath('./file.ext'));
     isTrue(fs.isLocalPath('/file.ext'));
-    isTrue(fs.isLocalPath('\\file.ext'));
-    
+
     isFalse(fs.isLocalPath([[\\172.22.3.20\folder\]]));
     isFalse(fs.isLocalPath([[\\alias\folder\]]));
     
@@ -715,31 +718,44 @@ end
 
 
 function useUnixPathDelimiterFixture.absPathOnFullFilePaths()
-    areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/./dir2/file.txt'));
-    areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/./dir2/./file.txt'));
-    areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/././dir2/file.txt'));
-    areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/../file.txt'));
-    areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/./dir3/../file.txt'));
-    areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/.././file.txt'));
-    areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/./../file.txt'));
-    areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/./.././file.txt'));
-    areEq('d:/dir1/file.txt', fs.absPath('d:/dir1/dir2/../dir3/../file.txt'));
+    if 'win' == fs.whatOs() then
+        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/./dir2/file.txt'));
+        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/./dir2/./file.txt'));
+        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/././dir2/file.txt'));
+        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/../file.txt'));
+        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/./dir3/../file.txt'));
+        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/.././file.txt'));
+        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/./../file.txt'));
+        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/./.././file.txt'));
+        areEq('d:/dir1/file.txt', fs.absPath('d:/dir1/dir2/../dir3/../file.txt'));
 
-    areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\dir2\\file.txt'));
-    areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\dir2\\.\\file.txt'));
-    areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\.\\dir2\\file.txt'));
-    areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\..\\file.txt'));
-    areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\.\\dir3\\..\\file.txt'));
-    areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\..\\.\\file.txt'));
-    areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\.\\..\\file.txt'));
-    areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\.\\..\\.\\file.txt'));
-    areEq('d:/dir1/file.txt', fs.absPath('d:\\dir1\\dir2\\..\\dir3\\..\\file.txt'));
+        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\dir2\\file.txt'));
+        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\dir2\\.\\file.txt'));
+        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\.\\dir2\\file.txt'));
+        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\..\\file.txt'));
+        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\.\\dir3\\..\\file.txt'));
+        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\..\\.\\file.txt'));
+        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\.\\..\\file.txt'));
+        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\.\\..\\.\\file.txt'));
+        areEq('d:/dir1/file.txt', fs.absPath('d:\\dir1\\dir2\\..\\dir3\\..\\file.txt'));
+    else
+        areEq('/dir1/dir2/file.txt', fs.absPath('/dir1/./dir2/file.txt', '/'));
+        areEq('/dir1/dir2/file.txt', fs.absPath('/dir1/./dir2/./file.txt'));
+        areEq('/dir1/dir2/file.txt', fs.absPath('/dir1/././dir2/file.txt'));
+        areEq('/dir1/dir2/file.txt', fs.absPath('/dir1/dir2/dir3/../file.txt'));
+        areEq('/dir1/dir2/file.txt', fs.absPath('/dir1/dir2/./dir3/../file.txt'));
+        areEq('/dir1/dir2/file.txt', fs.absPath('/dir1/dir2/dir3/.././file.txt'));
+        areEq('/dir1/dir2/file.txt', fs.absPath('/dir1/dir2/dir3/./../file.txt'));
+        areEq('/dir1/dir2/file.txt', fs.absPath('/dir1/dir2/dir3/./.././file.txt'));
+        areEq('/dir1/file.txt', fs.absPath('/dir1/dir2/../dir3/../file.txt'));
+    end
 end
 
 
 function useUnixPathDelimiterFixture.absPathOnRelativePaths()
-    areEq(fs.canonizePath(lfs.currentdir()) .. fs.osSlash() .. 'dir1', fs.absPath('./dir1/'));
     areEq('c:/dir1', fs.absPath('./dir1/', 'c:/'));
+    areEq(fs.canonizePath(lfs.currentdir()) .. fs.osSlash() .. 'dir1', fs.absPath('./dir1/'));
+    areEq('/dir/dir1', fs.absPath('/dir/./dir1/'))
 end
 
 function useTestTmpDirFixture.copyDirWithFileTest()
@@ -798,7 +814,6 @@ function useTestTmpDirFixture.copyDirWithCopyFileFuncTest()
     
     isNil(fs.copyFile(srcDir, dstDir))
     isNil(fs.copyFile(srcFile, dstDir))
-    isNil(fs.copyFile(srcDir, dstFile))
 end
 
 function useTestTmpDirFixture.copyDirWithFileTest()
@@ -897,6 +912,8 @@ function useTestTmpDirFixture.applyOnFilesTest()
     local dirname = tmpDir;
     local pathes = {};
 
+    table.insert(pathes, tmpFilePath);
+    
     dirname = dirname  .. slash .. 'dir';
     isTrue(lfs.mkdir(dirname));
     isTrue(atf.createTextFileWithContent(dirname .. slash .. 'file.1'));
@@ -907,8 +924,6 @@ function useTestTmpDirFixture.applyOnFilesTest()
     isTrue(atf.createTextFileWithContent(dirname .. slash .. 'file.2'));
     table.insert(pathes, dirname .. slash .. 'file.2');
     
-    table.insert(pathes, tmpFilePath);
-
 --[=[
     tmp.file
     dir/file.1
@@ -926,6 +941,8 @@ function useTestTmpDirFixture.applyOnFilesTest()
         fs.applyOnFiles(tmpDir, {handler = savePath, state = files, recursive = true});
         
         areEq(#pathes, #files);
+--~         print(table.toLuaCode(pathes))
+--~         print(table.toLuaCode(files))
         isTrue(table.isEqual(pathes, files));
     end
     do
@@ -953,15 +970,15 @@ function useTestTmpDirFixture.bytesToTest()
 end
 
 function useTestTmpDirFixture.fileLastModTimeTest()
-    local filetime = os.date('*t', lfs.attributes('c:/windows/system32/cmd.exe', 'change'))
+    local filetime = os.date('*t', lfs.attributes('win' == fs.whatOs() and 'c:/windows/system32/cmd.exe' or '/bin/sh', 'change'))
     local curTime = os.time()
     isTrue(os.time(filetime) < os.time())
     isTrue(os.difftime(curTime, os.time(filetime)) > 0)
 end
 
-function useTestTmpDirFixture.lfsTest()
-    local size = lfs.attributes('c:/windows/system32/cmd.exe', 'size')
-    local size2 = lfs.attributes('c:/windows/system32/cmd21234534538490.exe', 'size')
+function useTestTmpDirFixture.defineFileSizeTest()
+    local size = lfs.attributes('win' == fs.whatOs() and 'c:/windows/system32/cmd.exe' or '/bin/sh', 'size')
+    local size2 = lfs.attributes('filesystem.t.notlua', 'size')
     isTrue(size > 0);
     isNil(size2)
 end

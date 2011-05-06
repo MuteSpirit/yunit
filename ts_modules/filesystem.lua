@@ -26,36 +26,39 @@ end
 function canonizePath(path)
 --------------------------------------------------------------------------------------------------------------
     local separator = osSlash();
-    -- Skip slashes at NetBios path begin 
-    local beginPos, endPos = string.find(path, '^[/\\]+');
-    
-    local prefixSlashes = '';
-    if beginPos and endPos then
-        prefixSlashes = string.sub(path, beginPos, endPos);
-        path = string.sub(path, endPos + 1, string.len(path));
-    end
-    path = string.gsub(path, '[/\\]+', separator);
     
     local reOnlyDiskLetterWithColon = '^%w%:$';
-    local reDiskLetterWithColonAndSlashes = '^%w%:[/\\]+$';
     if string.find(path, reOnlyDiskLetterWithColon) then
-        path = path .. separator;
-    elseif not string.find(path, reDiskLetterWithColonAndSlashes) then
-        path = string.gsub(path, '[/\\]*$', '');
+        return path .. separator;
+    end
+
+    -- Skip slashes at NetBios path begin 
+    local _, _, prefixSlashes, theRest = string.find(path, '^([/\\]+)(.*)$');
+    
+    path = string.gsub(theRest or path, '[/\\]+', separator);
+
+    local reDiskLetterWithColonAndSlashes = '^%w%:[/\\]+$';
+    if not string.find(path, reDiskLetterWithColonAndSlashes) then
+        path = string.gsub(path, '[/\\]+$', '');
     end
     
-    return prefixSlashes .. path;
+    return (prefixSlashes or '') .. path;
 end
 
 --------------------------------------------------------------------------------------------------------------
 function tmpDirName()
 --------------------------------------------------------------------------------------------------------------
-    local slash = osSlash();
-    local tmp, curDir = canonizePath(os.getenv('TMP')), lfs.currentdir();
-    lfs.chdir(tmp);
-    local path = canonizePath(tmp .. os.tmpname() .. tostring(os.time()));
-    lfs.chdir(curDir);
-    return path;
+    local curDir = lfs.currentdir()
+    
+    if 'win' == whatOs() then
+        local tmpDir = canonizePath(os.getenv('TMP'))
+        lfs.chdir(tmpDir);
+        local path = canonizePath(tmpDir .. osSlash() .. os.tmpname() .. tostring(os.time()));
+        lfs.chdir(curDir);
+        return path;
+    else
+        return os.tmpname() .. tostring(os.time())
+    end
 end
 
 --------------------------------------------------------------------------------------------------------------
@@ -205,17 +208,17 @@ function absPath(path, basePath)
     
     local real = {};        -- table, containing names of dirs
 
-    for dir in string.gmatch(dirPath, '[^' .. slash .. ']+') do
-        if '.' ~= dir then
+    for sl, dir in string.gmatch(dirPath, '([/\\]*)([^/\\]*)') do
+        if dir and '.' ~= dir then
             if ".." == dir then
                 table.remove(real);
             else
-                table.insert(real, dir);
+                table.insert(real, (sl or '') .. dir);
             end
         end
     end
 
-    return table.concat(real, slash) .. slash .. file;
+    return table.concat(real, '') .. slash .. file;
 end
 
 --------------------------------------------------------------------------------------------------------------
