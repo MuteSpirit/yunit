@@ -230,7 +230,7 @@ public:
 
     virtual void message(char* buffer, const unsigned int bufferSize) const = 0;
 
-    const char* what() const;
+    const char* what() const throw();
 
 protected:
     TestException(const SourceLine& sourceLine);
