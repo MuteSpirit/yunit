@@ -363,7 +363,7 @@ const SourceLine& TestException::sourceLine() const
     return sourceLine_;
 }
 
-const char* TestException::what() const
+const char* TestException::what() const throw()
 {
     return "Unknown TestException";
 }
@@ -511,7 +511,8 @@ TestEqualPointersException::~TestEqualPointersException() throw()
 
 void TestEqualPointersException::message(char* buffer, const unsigned int bufferSize) const
 {
-	TS_SNPRINTF(buffer, bufferSize - 1, mustBeEqual_ ? "\"0x%X\" != \"0x%X\"" : "\"0x%X\" == \"0x%X\"", expected_, actual_);
+	TS_SNPRINTF(buffer, bufferSize - 1, mustBeEqual_ ? "\"0x%X\" != \"0x%X\"" : "\"0x%X\" == \"0x%X\"",
+        reinterpret_cast<unsigned int>(expected_), reinterpret_cast<unsigned int>(actual_));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
