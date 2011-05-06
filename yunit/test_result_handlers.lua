@@ -79,7 +79,7 @@ function TextTestProgressHandler:totalResultsStr()
     end
     message = message.."\n";
 
-    message = message.."\t\t\tSuccessful:\t\t" .. tostring(#self.tableWithSuccesses) .. "\n";
+    message = message.."\t\t\tSuccessful:\t" .. tostring(#self.tableWithSuccesses) .. "\n";
 
     message = message.."\t\t\tTotal:\t\t" .. tostring(self:totalTestNum()) .. "\n";
 
