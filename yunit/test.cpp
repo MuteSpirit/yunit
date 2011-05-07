@@ -540,7 +540,7 @@ bool cppunitAssert(const bool condition)
     return condition;
 }
 
-bool cppunitAssert(const long long expected, const long long actual)
+bool cppunitAssert(const long long int expected, const long long int actual)
 {
     return expected == actual;
 }
