@@ -127,10 +127,12 @@
 
 #include <sstream>
 #include <fstream>
-#include <yunit/test.h>
+#include "test.h"
 
-#include <process.h>
-#include <windows.h>
+#ifdef WIN32
+#  include <process.h>
+#  include <windows.h>
+#endif
 
 std::wstring getTestWstdStr()
 {

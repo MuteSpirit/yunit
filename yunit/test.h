@@ -282,7 +282,7 @@ RegisterIgnoredTestCase<TestCaseClass>::RegisterIgnoredTestCase(const char* name
 
 bool YUNIT_API cppunitAssert(const bool condition);
 
-bool YUNIT_API cppunitAssert(const long long expected, const long long actual);
+bool YUNIT_API cppunitAssert(const long long int expected, const long long int actual);
 
 
 /// \param[in] delta must be at [0.000000000000001, +INFINITE) for long double comparison
