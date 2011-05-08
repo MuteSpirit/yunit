@@ -22,7 +22,11 @@ namespace YUNIT_NS {
 
 const char** getTestContainerExtensions()
 {
+#ifdef WIN32
     static const char* mas[] = {".t.dll", NULL};
+#else
+    static const char* mas[] = {".t.so", NULL};
+#endif
     return mas;
 }
 

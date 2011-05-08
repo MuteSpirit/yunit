@@ -73,7 +73,7 @@ function TextTestProgressHandler:totalResultsStr()
     end
     message = message.."\n";
 
-    message = message.."\t\t\tIgnored:\t\t"..tostring(#self.tableWithIgnores);
+    message = message.."\t\t\tIgnored:\t"..tostring(#self.tableWithIgnores);
     if #self.tableWithIgnores > 0 then
         message = message.."\to(^_^)o ?";
     end

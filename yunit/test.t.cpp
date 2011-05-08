@@ -134,6 +134,11 @@
 #  include <windows.h>
 #endif
 
+#ifndef WIN32
+#  include <float.h>
+#endif
+
+
 std::wstring getTestWstdStr()
 {
     return L"abc";
@@ -568,7 +573,11 @@ test(CompareConstAndNonConstWcharPointer)
 
 test(TestSetGoodWorkingDir)
 {
+#ifdef WIN32
     std::wifstream f(L".\\cppunit.t.dll", std::ios::in | std::ios::binary);
+#else
+    std::ifstream f(".\\cppunit.t.dll", std::ifstream::in | std::ifstream::binary);
+#endif
     bool exist = f.good();
     if (exist)
         f.close();
@@ -668,21 +677,32 @@ todo(ForFutureCreation)
 }
 */
 
-// this test need to check minidump creation
-/// \todo use spawn family functions for new thread creation
-_test(RaiseExceptionInSeparateThread)
+template<typename T>
+class A
 {
-    struct ___
+    inline int foo()
     {
-        static unsigned int WINAPI workerThread(void* lpParam)
-        {
-            return (int)lpParam / (int)0;
-        }
+        HANDLE hThread = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0, ___::workerThread, (LPVOID)0, 0, NULL));
+        areNotEq(INVALID_HANDLE_VALUE, hThread);
+        ::WaitForSingleObject(hThread, 100);
+        ::CloseHandle(hThread);
     };
+};
 
-    HANDLE hThread = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0, ___::workerThread, (LPVOID)0, 0, NULL));
-    areNotEq(INVALID_HANDLE_VALUE, hThread);
-    ::WaitForSingleObject(hThread, 100);
-    ::CloseHandle(hThread);
-}
+// this test need to check minidump creation
+//~ _test(RaiseExceptionInSeparateThread)
+//~ {
+    //~ struct ___
+    //~ {
+        //~ static unsigned int WINAPI workerThread(void* lpParam)
+        //~ {
+            //~ return (int)lpParam / (int)0;
+        //~ }
+    //~ };
+
+    //~ HANDLE hThread = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0, ___::workerThread, (LPVOID)0, 0, NULL));
+    //~ areNotEq(INVALID_HANDLE_VALUE, hThread);
+    //~ ::WaitForSingleObject(hThread, 100);
+    //~ ::CloseHandle(hThread);
+//~ }
 
