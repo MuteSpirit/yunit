@@ -10,7 +10,11 @@ extern "C" {
 }
 #endif
 
-#include <windows.h>
+#ifdef _WIN32
+#  include <windows.h>
+#else
+#  include <syslog.h>
+#endif
 
 #ifndef TRACE_API
 #	if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
@@ -27,7 +31,15 @@ int ltrace(lua_State* L)
 {
     const int msgArgInd = -1;
     if (lua_isstring(L, msgArgInd))
-        OutputDebugStringA(lua_tostring(L, msgArgInd));
+    {
+        const char* msg = lua_tostring(L, msgArgInd);
+        lua_pop(L, 1);
+#ifdef WIN32
+        OutputDebugStringA(msg);
+#else
+        syslog(LOG_USER, "%s", msg); 
+#endif
+    }
     return 0;
 }
 
