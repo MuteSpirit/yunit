@@ -13,7 +13,9 @@ INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
 # ADD_DEFINITIONS(-Wall -Wextra -pedantic -O3 -std=c++0x -fno-implicit-templates)
 ADD_LIBRARY(cppunit SHARED test.cpp ltest.cpp)
+
 TARGET_LINK_LIBRARIES(cppunit lua5.1lib)
+ADD_DEPENDENCIES(cppunit lua5.1lib)
 
 if(WIN32)
     ADD_LIBRARY(trace SHARED trace.c)
@@ -26,7 +28,7 @@ endif(WIN32)
 
 ADD_LIBRARY(sample.t SHARED sample.t.cpp)
 TARGET_LINK_LIBRARIES(sample.t cppunit)
-ADD_DEPENDENCIES(sample.t trace)
+ADD_DEPENDENCIES(sample.t cppunit)
 
 # add_test (sampleTest ${EXECUTABLE_OUTPUT_PATH}/lua5.1 -e "package.path=[[${PROJECT_BINARY_DIR}/?.lua;${PROJECT_BINARY_DIR}/ts_modules/?.lua;]] .. package.path" -l yunit.work_in_vs -l yunit.default_test_run -e "run([[${LIBRARY_OUTPUT_PATH}/libsample.t.so]])")
 # set_tests_properties (sampleTest PROPERTIES PASS_REGULAR_EXPRESSION "Errors:.*0")
