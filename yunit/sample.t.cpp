@@ -2,5 +2,5 @@
 
 test(sampleTest)
 {
-	isFalse(true)
+	isFalse(true);
 }
