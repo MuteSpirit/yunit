@@ -33,12 +33,12 @@ int ltrace(lua_State* L)
     if (lua_isstring(L, msgArgInd))
     {
         const char* msg = lua_tostring(L, msgArgInd);
-        lua_pop(L, 1);
-#ifdef WIN32
+#if defined(_WIN32)
         OutputDebugStringA(msg);
 #else
         syslog(LOG_USER, "%s", msg); 
 #endif
+        lua_pop(L, 1); // remove msg from stack after using
     }
     return 0;
 }
