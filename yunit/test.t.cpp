@@ -677,18 +677,6 @@ todo(ForFutureCreation)
 }
 */
 
-template<typename T>
-class A
-{
-    inline int foo()
-    {
-        HANDLE hThread = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0, ___::workerThread, (LPVOID)0, 0, NULL));
-        areNotEq(INVALID_HANDLE_VALUE, hThread);
-        ::WaitForSingleObject(hThread, 100);
-        ::CloseHandle(hThread);
-    };
-};
-
 // this test need to check minidump creation
 //~ _test(RaiseExceptionInSeparateThread)
 //~ {
