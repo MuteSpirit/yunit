@@ -1,16 +1,6 @@
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
-### \todo use in future
-# if(WIN32)
-#    set_target_properties(WindowApplicationExample PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE")
-#    set_target_properties(WindowApplicationExample PROPERTIES COMPILE_DEFINITIONS_DEBUG "_CONSOLE")
-#    set_target_properties(WindowApplicationExample PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:CONSOLE")
-#    set_target_properties(WindowApplicationExample PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "_CONSOLE")
-#    set_target_properties(WindowApplicationExample PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
-#    set_target_properties(WindowApplicationExample PROPERTIES LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS")
-# endif(WIN32)
-
 # ADD_DEFINITIONS(-Wall -Wextra -pedantic -O3 -std=c++0x -fno-implicit-templates)
 ADD_LIBRARY(cppunit SHARED test.cpp ltest.cpp)
 
@@ -38,7 +28,7 @@ ADD_DEPENDENCIES(sample.t cppunit)
 if(WIN32)
     install(TARGETS trace minidump DESTINATION /set/path)
 else(WIN32)
-    install(TARGETS cppunit DESTINATION /usr/lib/lua/5.1)
-    install(FILES test.h DESTINATION /usr/include/lua5.1/yunit)
-    install(FILES default_test_run.lua lua_test_run.lua luaunit.lua test_result_handlers.lua test_runner.lua work_in_scite.lua DESTINATION /usr/lib/lua/5.1/lua/yunit)
+    install(TARGETS cppunit DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/lua/5.1)
+    install(FILES test.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lua5.1/yunit)
+    install(FILES default_test_run.lua lua_test_run.lua luaunit.lua test_result_handlers.lua test_runner.lua work_in_scite.lua DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/lua/5.1/lua/yunit)
 endif(WIN32)
