@@ -1,2 +1,7 @@
 add_library(lfs lfs.c)
 include_directories(. ${PROJECT_BINARY_DIR}/lua)
+if(WIN32)
+else(WIN32)
+    install(TARGETS lfs DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/lua/5.1)
+    install(FILES lfs.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lua5.1)
+endif(WIN32)
