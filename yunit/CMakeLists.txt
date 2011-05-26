@@ -1,24 +1,29 @@
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
-
 # ADD_DEFINITIONS(-Wall -Wextra -pedantic -O3 -std=c++0x -fno-implicit-templates)
-ADD_LIBRARY(cppunit SHARED test.cpp ltest.cpp)
-
-TARGET_LINK_LIBRARIES(cppunit lua5.1)
-ADD_DEPENDENCIES(cppunit lua51lib)
+add_library(cppunit SHARED test.cpp ltest.cpp)
+target_link_libraries(cppunit lua5.1)
+add_dependencies(cppunit lua51lib)
 
 if(WIN32)
-    ADD_LIBRARY(trace SHARED trace.c)
-    ADD_LIBRARY(minidump SHARED minidump.c)
+    add_library(trace SHARED trace.c)
+    target_link_libraries(trace lua5.1)
+
+    add_library(minidump SHARED minidump.c)
+    target_link_libraries(minidump dbghelp lua5.1)
 endif(WIN32)
 
 ### \todo Compile under Linux with GCC
-# ADD_LIBRARY(cppunit.t SHARED test.t.cpp)
-# TARGET_LINK_LIBRARIES(cppunit.t cppunit)
+# add_library(cppunit.t SHARED test.t.cpp)
+# target_link_libraries(cppunit.t cppunit)
 
-ADD_LIBRARY(sample.t SHARED sample.t.cpp)
-TARGET_LINK_LIBRARIES(sample.t cppunit)
-ADD_DEPENDENCIES(sample.t cppunit)
+add_library(sample.t SHARED sample.t.cpp)
+target_link_libraries(sample.t cppunit)
+add_dependencies(sample.t cppunit)
+if(WIN32)
+add_custom_command(TARGET sample.t 
+                   POST_BUILD
+                   COMMAND "${RUNTIME_OUTPUT_DIRECTORY}/lua5.1.exe" -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;${CMAKE_CURRENT_SOURCE_DIR}/../ts_modules/?.lua;]] .. package.path" -l yunit.work_in_vs -l yunit.default_test_run -e \"run([[${LIBRARY_OUTPUT_PATH}/$(Configuration)/sample.t.dll]])\"
+                  )
+endif(WIN32)
 
 # add_test (sampleTest ${EXECUTABLE_OUTPUT_PATH}/lua5.1 -e "package.path=[[${PROJECT_BINARY_DIR}/?.lua;${PROJECT_BINARY_DIR}/ts_modules/?.lua;]] .. package.path" -l yunit.work_in_vs -l yunit.default_test_run -e "run([[${LIBRARY_OUTPUT_PATH}/libsample.t.so]])")
 # set_tests_properties (sampleTest PROPERTIES PASS_REGULAR_EXPRESSION "Errors:.*0")
