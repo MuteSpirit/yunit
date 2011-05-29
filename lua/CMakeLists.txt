@@ -1,5 +1,7 @@
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
+#
+# lua51lib
+#
 add_definitions(-DLUA_COMPAT_OPENLIB)
 if(WIN32)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -DLUA_BUILD_AS_DLL -DLUA_COMPAT_OPENLIB)
@@ -7,11 +9,15 @@ endif(WIN32)
 add_library(lua51lib SHARED lapi.c lauxlib.c lbaselib.c lcode.c ldblib.c ldebug.c ldo.c ldump.c lfunc.c lgc.c linit.c  liolib.c llex.c lmathlib.c lmem.c loadlib.c lobject.c lopcodes.c loslib.c lparser.c  lstate.c lstring.c lstrlib.c ltable.c ltablib.c ltm.c lundump.c lvm.c lzio.c version_lib.rc)
 set_target_properties(lua51lib PROPERTIES OUTPUT_NAME lua5.1)
 get_property(LIB_OUT_DIR TARGET lua51lib PROPERTY LIBRARY_OUTPUT_DIRECTORY)
-
+#
+# lua51proxy
+#
 add_library(lua51proxy SHARED lua_proxy.c version_proxy.rc)
 set_target_properties(lua51proxy PROPERTIES OUTPUT_NAME lua51)
 target_link_libraries(lua51proxy lua5.1)
-
+#
+# lua51int
+#
 add_executable(lua51int lua.c version_int.rc)
 set_target_properties(lua51int PROPERTIES OUTPUT_NAME lua5.1)
 if(WIN32)
@@ -21,10 +27,12 @@ else(WIN32)
 endif(WIN32)
 add_dependencies(lua51int lua51lib)
 
-if(WIN32)
-else(WIN32)
+#
+# Installation
+#
+if(NOT WIN32)
     install(TARGETS lua51lib DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
     install(TARGETS lua51proxy DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
     install(TARGETS lua51int DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
     install(FILES lua.h lualib.h lauxlib.h luaconf.h ldebug.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lua5.1)
-endif(WIN32)
+endif(NOT WIN32)
