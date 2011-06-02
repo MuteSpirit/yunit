@@ -131,7 +131,8 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class YUNIT_API TestCase : public Test, public virtual Fixture
+class YUNIT_API TestCase : public Test
+                         , public virtual Fixture
 {
 public:
 	virtual ~TestCase();

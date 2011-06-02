@@ -95,11 +95,11 @@ function runTestCase(testcase, testResultHandler)
         message = "";
     };
     local status, errorObject = true, errorObjectDefault;
-    local testName = testcase.name_ or 'unknownTestCase';
+    local testName = testcase:name() or 'unknownTestCase';
 
     testResultHandler:onTestBegin(testName);
 
-    if not testcase.isIgnored_ then
+    if not testcase:isIgnored() then
         if testcase.setUp and isFunction(testcase.setUp) then
             status, errorObject = testcase:setUp();
         else
@@ -132,8 +132,8 @@ function runTestCase(testcase, testResultHandler)
             testResultHandler:onTestError(testName, errorObject or errorObjectDefault);
         end
     else
-        errorObject.line = testcase.lineNumber_
-        errorObject.source = testcase.fileName_
+        errorObject.line = testcase:lineNumber()
+        errorObject.source = testcase:fileName()
         testResultHandler:onTestIgnore(testName, errorObject);
     end
 
@@ -178,6 +178,8 @@ function loadTestContainers(filePathList)
             io.stderr:write('Can\'t load test container "' .. filePath .. '". Error: "' .. errMsg .. '"\n');
         elseif not res then
             io.stderr:write('Can\'t load test container "' .. filePath .. '". Error: "There are not Test Unit Engine, support such test container"\n');
+        else
+            io.stdout:write('Test container "' .. filePath .. '" has been loaded\n');
         end
     end
 
@@ -192,7 +194,8 @@ function loadTestContainers(filePathList)
 end
 
 function operatorLess(test1, test2)
-	return test1.fileName_ < test2.fileName_ or (test1.fileName_ == test2.fileName_ and test1.lineNumber_ < test2.lineNumber_)
+    local filename1, filename2 = test1:fileName(), test2:fileName()
+	return filename1 < filename2 or (filename1 == filename2 and test1:lineNumber() < test2:lineNumber())
 end
 
 function runAllTestCases(testResultHandler)

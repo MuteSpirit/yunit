@@ -1,5 +1,8 @@
-add_library(lfs lfs.c)
 include_directories(. "${PROJECT_SOURCE_DIR}/lua")
+add_library(lfs SHARED lfs.c lfs.def)
+target_link_libraries(lfs lua5.1)
+add_dependencies(lfs lua51lib)
+
 if(WIN32)
 else(WIN32)
     install(TARGETS lfs DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/lua/5.1)

@@ -187,6 +187,12 @@ function getTestList()
             test.tearDown = callTestCaseTearDown;
             
             test.name_ = testsuiteName.."::"..testcaseName;
+            test.name = function(self) return self.name_ end
+            
+            test.isIgnored = function(self) return self.isIgnored_ end
+            test.fileName = function(self) return self.fileName_ end
+            test.lineNumber = function(self) return self.lineNumber_ end
+            
             table.insert(testList, test);
         end
     end
