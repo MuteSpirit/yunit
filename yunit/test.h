@@ -387,9 +387,9 @@ void YUNIT_API throwException(const SourceLine& sourceLine, const double expecte
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define test_(name)\
-	struct TestCase##name : public YUNIT_NS::TestCase\
+	struct TestCase__##name : public YUNIT_NS::TestCase\
 	{\
-		TestCase##name(const char* name, bool isIgnored, const YUNIT_NS::SourceLine& source)\
+		TestCase__##name(const char* name, bool isIgnored, const YUNIT_NS::SourceLine& source)\
 		: YUNIT_NS::TestCase(name, isIgnored, source)\
 		{}\
 		virtual void innerSetUp() {}\
@@ -398,25 +398,25 @@ void YUNIT_API throwException(const SourceLine& sourceLine, const double expecte
     };
 
 #define test1_(name, usedFixture)\
-	struct TestCase##name : public YUNIT_NS::TestCase, public usedFixture\
+	struct TestCase__##name : public YUNIT_NS::TestCase, public usedFixture\
 	{\
-		TestCase##name(const char* name, bool isIgnored, const YUNIT_NS::SourceLine& source)\
+		TestCase__##name(const char* name, bool isIgnored, const YUNIT_NS::SourceLine& source)\
 		: YUNIT_NS::TestCase(name, isIgnored, source)\
 		{}\
 		virtual void execute();\
     };
 
 #define registerTest(name, source)\
-    YUNIT_NS::RegisterTestCase<TestCase##name> UNIQUENAME(name)(#name, source);
+    YUNIT_NS::RegisterTestCase<TestCase__##name> UNIQUENAME(name)(#name, source);
 
 #define registerIgnoredTest(name, source)\
-    YUNIT_NS::RegisterIgnoredTestCase<TestCase##name> UNIQUENAME(name)(#name, source);
+    YUNIT_NS::RegisterIgnoredTestCase<TestCase__##name> UNIQUENAME(name)(#name, source);
 
 #define testBodyDef(name)\
-    void TestCase##name::execute()
+    void TestCase__##name::execute()
 
 #define ignoredTestBodyDef(name)\
-    void TestCase##name::execute() {}\
+    void TestCase__##name::execute() {}\
     template<typename T> void TestCase ## name ## Fake()
 
 #define test(name)\
