@@ -292,27 +292,27 @@ function sortTestCasesAccordingFileAndLine()
 	local tests = 
 	{
 		{
-			['fileName_'] = 'test_b.t.lua',
-			['lineNumber_'] = 9,
+			fileName = function() return 'test_b.t.lua' end,
+			lineNumber = function() return 9 end,
 		},
 		{
-			['fileName_'] = 'test_a.t.lua',
-			['lineNumber_'] = 11,
+			fileName = function() return 'test_a.t.lua' end,
+			lineNumber = function() return 11 end,
 		},
 		{
-			['fileName_'] = 'test_a.t.lua',
-			['lineNumber_'] = 10,
+			fileName = function() return 'test_a.t.lua' end,
+			lineNumber = function() return 10 end,
 		},
 	}
 	
 	table.sort(tests, testRunner.operatorLess)
 	
-	areEq('test_a.t.lua', tests[1].fileName_)
-	areEq(10, tests[1].lineNumber_)
+	areEq('test_a.t.lua', tests[1]:fileName())
+	areEq(10, tests[1]:lineNumber())
 
-	areEq('test_a.t.lua', tests[2].fileName_)
-	areEq(11, tests[2].lineNumber_)
+	areEq('test_a.t.lua', tests[2]:fileName())
+	areEq(11, tests[2]:lineNumber())
 
-	areEq('test_b.t.lua', tests[3].fileName_)
-	areEq(9, tests[3].lineNumber_)
+	areEq('test_b.t.lua', tests[3]:fileName())
+	areEq(9, tests[3]:lineNumber())
 end

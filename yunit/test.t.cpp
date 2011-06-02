@@ -206,7 +206,7 @@ test2(Test3, fixtureA, fixtureB)
     areEq(10, a_); 
     areEq(11, b_); 
 }
-
+#ifdef _MSC_VER
 // ignored test case (may have uncompiled code in body)
 _test(Test4)
 {
@@ -224,7 +224,7 @@ _test2(Test6, fixtureA, fixtureB)
 {
     int uncompiledCode[0] = {1};
 }
-
+#endif
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // test macro multiple using in one t.cpp file
 
@@ -244,7 +244,7 @@ test2(Test3bis, fixtureA, fixtureB)
     areEq(10, a_); 
     areEq(11, b_); 
 }
-
+#ifdef _MSC_VER
 _test(Test4bis)
 {
     // ignored test case
@@ -262,7 +262,7 @@ _test2(Test6bis, fixtureA, fixtureB)
     // ignored test case
     int uncompiledCode[0] = {1};
 }
-
+#endif
 test(GetTestContainerExtensions)
 {
     const char** extList = YUNIT_NS::getTestContainerExtensions();
