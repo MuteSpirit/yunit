@@ -693,4 +693,3 @@ todo(ForFutureCreation)
     //~ ::WaitForSingleObject(hThread, 100);
     //~ ::CloseHandle(hThread);
 //~ }
-

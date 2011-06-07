@@ -213,7 +213,7 @@ static void createTestCaseMetatable(lua_State* L)
     static const struct luaL_Reg testCaseMetods[] = 
     {
         {"setUp", luaTestCaseSetUp},
-        {"test", luaTestCaseTearDown},
+        {"test", luaTestCaseTest},
         {"tearDown", luaTestCaseTearDown},
         {"isIgnored", luaTestCaseIsIgnored},
         {"name", luaTestCaseName},
