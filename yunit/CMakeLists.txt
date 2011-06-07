@@ -60,6 +60,12 @@ if(WIN32)
             RUNTIME DESTINATION 5.1
             LIBRARY DESTINATION 5.1/lib
             ARCHIVE DESTINATION 5.1/lib)
+    install(FILES 
+                "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/cppunit.pdb"
+                "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/trace.pdb"
+                "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/minidump.pdb"
+                CONFIGURATIONS RelWithDebInfo
+                DESTINATION 5.1)
     install(DIRECTORY . 
               DESTINATION 5.1/include/yunit
               FILES_MATCHING PATTERN "*.h")
