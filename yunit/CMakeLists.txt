@@ -26,24 +26,24 @@ endif(WIN32)
 #
 add_library(cppunit.t SHARED test.t.cpp)
 target_link_libraries(cppunit.t cppunit)
-if(NOT WIN32)
-    add_dependencies(cppunit.t cppunit)
-else(NOT WIN32)
-    add_dependencies(cppunit.t trace)
+if(WIN32)
+    add_dependencies(cppunit.t cppunit lua51int trace)
     add_custom_command(TARGET cppunit.t 
                        POST_BUILD
                        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$(Configuration)/lua5.1.exe" -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;${CMAKE_CURRENT_SOURCE_DIR}/../ts_modules/?.lua;]] .. package.path" -l yunit.work_in_vs -l yunit.default_test_run -e \"run([[${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$(Configuration)/cppunit.t.dll]])\"
                       )
-endif(NOT WIN32)
+else(WIN32)
+    add_dependencies(cppunit.t cppunit lua51int)
+endif(WIN32)
 #
 # sample.t
 #
 add_library(sample.t SHARED sample.t.cpp)
 target_link_libraries(sample.t cppunit)
 if(NOT WIN32)
-    add_dependencies(sample.t cppunit)
+    add_dependencies(sample.t cppunit lua51int)
 else(NOT WIN32)
-    add_dependencies(sample.t cppunit trace)
+    add_dependencies(sample.t cppunit trace lua51int)
     add_custom_command(TARGET sample.t 
                        POST_BUILD
                        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$(Configuration)/lua5.1.exe" -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;${CMAKE_CURRENT_SOURCE_DIR}/../ts_modules/?.lua;]] .. package.path" -l yunit.work_in_vs -l yunit.default_test_run -e \"run([[${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$(Configuration)/sample.t.dll]])\"
@@ -56,9 +56,20 @@ endif(NOT WIN32)
 # Installation rules
 #
 if(WIN32)
-#    install(TARGETS trace minidump DESTINATION /set/path)
+    install(TARGETS cppunit trace minidump 
+            RUNTIME DESTINATION 5.1
+            LIBRARY DESTINATION 5.1/lib
+            ARCHIVE DESTINATION 5.1/lib)
+    install(DIRECTORY . 
+              DESTINATION 5.1/include/yunit
+              FILES_MATCHING PATTERN "*.h")
+    install(DIRECTORY . 
+              DESTINATION 5.1/lua/yunit
+              FILES_MATCHING 
+                PATTERN "*.lua"
+                PATTERN "*.t.lua" EXCLUDE)
 else(WIN32)
-    install(TARGETS cppunit DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/lua/5.1)
-    install(FILES test.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lua5.1/yunit)
-    install(FILES default_test_run.lua lua_test_run.lua luaunit.lua test_result_handlers.lua test_runner.lua work_in_scite.lua DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/lua/5.1/lua/yunit)
+    install(TARGETS cppunit DESTINATION lib/lua/5.1)
+    install(FILES test.h DESTINATION include/lua5.1/yunit)
+    install(FILES default_test_run.lua lua_test_run.lua luaunit.lua test_result_handlers.lua test_runner.lua work_in_scite.lua DESTINATION lib/lua/5.1/lua/yunit)
 endif(WIN32)

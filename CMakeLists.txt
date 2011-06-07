@@ -28,7 +28,7 @@ set(CPACK_PACKAGE_CONTACT "mutespirit@gmail.com")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/readme.txt")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/copyright.txt")
 
-set(CPACK_PACKAGE_INSTALL_DIRECTORY yunit)
+set(CPACK_PACKAGE_INSTALL_DIRECTORY lua)
 
 set(CPACK_SOURCE_GENERATOR "TBZ2;TGZ;ZIP")
 
@@ -36,6 +36,7 @@ IF(WIN32 AND NOT UNIX)
     # There is a bug in NSI that does not handle full unix paths properly. Make
     # sure there is at least one set of four (4) backlasshes.
     set(CPACK_GENERATOR "NSIS")
+    set(CPACK_NSIS_DISPLAY_NAME "yUnit (Yet another xUnit)")
     set(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\code.google.com/p/yunit/w/list")
     set(CPACK_NSIS_CONTACT "mutespirit@gmail.com")
     set(CPACK_NSIS_MODIFY_PATH ON)
