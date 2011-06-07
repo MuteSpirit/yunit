@@ -1,5 +1,12 @@
 if(WIN32)
-#
+    install(DIRECTORY .
+              DESTINATION 5.1/lua
+              FILES_MATCHING 
+                PATTERN "*.lua" 
+                PATTERN "*.t.lua" EXCLUDE
+                PATTERN "migrate_*.lua" EXCLUDE)
 else(WIN32)
-    install(FILES atd.lua aux_test_func.lua clean.lua filesystem.lua lopt.lua lua_ext.lua DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/lua/yunit)
+    install(DIRECTORY .
+              DESTINATION lib/lua/5.1/lua
+              FILES_MATCHING PATTERN "*.lua")
 endif(WIN32)

@@ -27,13 +27,18 @@ else(WIN32)
     target_link_libraries(lua51int lua5.1 m)
 endif(WIN32)
 add_dependencies(lua51int lua51lib)
-
 #
 # Installation
 #
-if(NOT WIN32)
+if(WIN32)
+    install(TARGETS lua51int lua51lib lua51proxy
+            RUNTIME DESTINATION 5.1
+            LIBRARY DESTINATION 5.1/lib
+            ARCHIVE DESTINATION 5.1/lib)
+    install(FILES lauxlib.h ldebug.h lua.h luaconf.h lualib.h DESTINATION 5.1/include)
+else(WIN32)
     install(TARGETS lua51lib DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
     install(TARGETS lua51proxy DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
     install(TARGETS lua51int DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
     install(FILES lua.h lualib.h lauxlib.h luaconf.h ldebug.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/lua5.1)
-endif(NOT WIN32)
+endif(WIN32)
