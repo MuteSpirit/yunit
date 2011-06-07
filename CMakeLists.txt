@@ -1,21 +1,31 @@
-PROJECT(yunit CXX C)
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+project(yunit CXX C)
+cmake_minimum_required(VERSION 2.6)
+cmake_policy(VERSION 2.6)
 
-ENABLE_TESTING()
+enable_testing()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/../_bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/../_lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
-cmake_policy(VERSION 2.6)
 link_directories("${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
 include_directories("${PROJECT_SOURCE_DIR}")
 
+if(WIN32)
+    add_definitions(/EHsc) # Enable C++ exceptions
+else(WIN32)
+    add_definitions(-fexceptions) # Enable C++ exceptions
+endif(WIN32)
+#
+# Subfolders
+#
 add_subdirectory(lua)
 add_subdirectory(lfs)
 add_subdirectory(ts_modules)
 add_subdirectory(yunit)
-
+#
+# CPack commands
+#
 set(CPACK_PACKAGE_NAME "yUnit")
 set(CPACK_PACKAGE_VENDOR "Ivan Efimov aka MuteSpirit")
 
