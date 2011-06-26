@@ -57,10 +57,10 @@ endif(NOT WIN32)
 #
 
 if(WIN32)
-    install(TARGETS cppunit trace minidump 
-            RUNTIME DESTINATION 5.1
-            LIBRARY DESTINATION 5.1/lib
-            ARCHIVE DESTINATION 5.1/lib)
+    set(YUNIT_TARGETS cppunit trace minidump)
+    set(YUNIT_RUNTIME_DIR 5.1)
+    set(YUNIT_LIBRARY_DIR 5.1/lib)
+    set(YUNIT_ARCHIVE_DIR 5.1/lib)
     install(FILES 
                 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/cppunit.pdb"
                 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/trace.pdb"
@@ -70,11 +70,18 @@ if(WIN32)
     set(YUNIT_HEADERS_DIR 5.1/include/yunit)
     set(YUNIT_LUA_MODULES_DIR 5.1/lua/yunit)
 else(WIN32)
-    install(TARGETS cppunit DESTINATION lib/lua/5.1)
+    set(YUNIT_TARGETS cppunit)
+    set(YUNIT_RUNTIME_DIR lib/lua/5.1)
+    set(YUNIT_LIBRARY_DIR lib/lua/5.1)
+    set(YUNIT_ARCHIVE_DIR lib/lua/5.1)
     set(YUNIT_HEADERS_DIR include/lua5.1/yunit)
     set(YUNIT_LUA_MODULES_DIR lib/lua/5.1/lua/yunit)
 endif(WIN32)
 
+install(TARGETS ${YUNIT_TARGETS} 
+        RUNTIME DESTINATION ${YUNIT_RUNTIME_DIR}
+        LIBRARY DESTINATION ${YUNIT_LIBRARY_DIR}
+        ARCHIVE DESTINATION ${YUNIT_ARCHIVE_DIR})
 install(DIRECTORY . 
           DESTINATION ${YUNIT_HEADERS_DIR}
           FILES_MATCHING PATTERN "*.h")
