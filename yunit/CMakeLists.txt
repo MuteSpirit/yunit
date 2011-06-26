@@ -55,6 +55,7 @@ endif(NOT WIN32)
 #
 # Installation rules
 #
+
 if(WIN32)
     install(TARGETS cppunit trace minidump 
             RUNTIME DESTINATION 5.1
@@ -66,16 +67,19 @@ if(WIN32)
                 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/minidump.pdb"
                 CONFIGURATIONS RelWithDebInfo
                 DESTINATION 5.1)
-    install(DIRECTORY . 
-              DESTINATION 5.1/include/yunit
-              FILES_MATCHING PATTERN "*.h")
-    install(DIRECTORY . 
-              DESTINATION 5.1/lua/yunit
-              FILES_MATCHING 
-                PATTERN "*.lua"
-                PATTERN "*.t.lua" EXCLUDE)
+    set(YUNIT_HEADERS_DIR 5.1/include/yunit)
+    set(YUNIT_LUA_MODULES_DIR 5.1/lua/yunit)
 else(WIN32)
     install(TARGETS cppunit DESTINATION lib/lua/5.1)
-    install(FILES test.h DESTINATION include/lua5.1/yunit)
-    install(FILES default_test_run.lua lua_test_run.lua luaunit.lua test_result_handlers.lua test_runner.lua work_in_scite.lua DESTINATION lib/lua/5.1/lua/yunit)
+    set(YUNIT_HEADERS_DIR include/lua5.1/yunit)
+    set(YUNIT_LUA_MODULES_DIR lib/lua/5.1/lua/yunit)
 endif(WIN32)
+
+install(DIRECTORY . 
+          DESTINATION ${YUNIT_HEADERS_DIR}
+          FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY . 
+          DESTINATION ${YUNIT_LUA_MODULES_DIR}
+          FILES_MATCHING 
+            PATTERN "*.lua"
+            PATTERN "*.t.lua" EXCLUDE)
