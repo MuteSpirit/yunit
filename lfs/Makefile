@@ -39,10 +39,10 @@ RM = /usr/bin/cmake -E remove -f
 CMAKE_EDIT_COMMAND = /usr/bin/ccmake
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/mutespirit/Sources/yunit
+CMAKE_SOURCE_DIR = /home/mutespirit/ws/yunit
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/mutespirit/Sources/yunit
+CMAKE_BINARY_DIR = /home/mutespirit/ws/yunit
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -101,7 +101,7 @@ list_install_components/fast: list_install_components
 # Special rule for the target package
 package: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Run CPack packaging tool..."
-	cd /home/mutespirit/Sources/yunit && /usr/bin/cpack --config ./CPackConfig.cmake
+	cd /home/mutespirit/ws/yunit && /usr/bin/cpack --config ./CPackConfig.cmake
 .PHONY : package
 
 # Special rule for the target package
@@ -111,7 +111,7 @@ package/fast: package
 # Special rule for the target package_source
 package_source:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Run CPack packaging tool for source..."
-	cd /home/mutespirit/Sources/yunit && /usr/bin/cpack --config ./CPackSourceConfig.cmake /home/mutespirit/Sources/yunit/CPackSourceConfig.cmake
+	cd /home/mutespirit/ws/yunit && /usr/bin/cpack --config ./CPackSourceConfig.cmake /home/mutespirit/ws/yunit/CPackSourceConfig.cmake
 .PHONY : package_source
 
 # Special rule for the target package_source
@@ -128,16 +128,26 @@ rebuild_cache:
 rebuild_cache/fast: rebuild_cache
 .PHONY : rebuild_cache/fast
 
+# Special rule for the target test
+test:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running tests..."
+	/usr/bin/ctest --force-new-ctest-process $(ARGS)
+.PHONY : test
+
+# Special rule for the target test
+test/fast: test
+.PHONY : test/fast
+
 # The main all target
 all: cmake_check_build_system
-	cd /home/mutespirit/Sources/yunit && $(CMAKE_COMMAND) -E cmake_progress_start /home/mutespirit/Sources/yunit/CMakeFiles /home/mutespirit/Sources/yunit/lfs/CMakeFiles/progress.marks
-	cd /home/mutespirit/Sources/yunit && $(MAKE) -f CMakeFiles/Makefile2 lfs/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/mutespirit/Sources/yunit/CMakeFiles 0
+	cd /home/mutespirit/ws/yunit && $(CMAKE_COMMAND) -E cmake_progress_start /home/mutespirit/ws/yunit/CMakeFiles /home/mutespirit/ws/yunit/lfs/CMakeFiles/progress.marks
+	cd /home/mutespirit/ws/yunit && $(MAKE) -f CMakeFiles/Makefile2 lfs/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/mutespirit/ws/yunit/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/mutespirit/Sources/yunit && $(MAKE) -f CMakeFiles/Makefile2 lfs/clean
+	cd /home/mutespirit/ws/yunit && $(MAKE) -f CMakeFiles/Makefile2 lfs/clean
 .PHONY : clean
 
 # The main clean target
@@ -146,17 +156,17 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/mutespirit/Sources/yunit && $(MAKE) -f CMakeFiles/Makefile2 lfs/preinstall
+	cd /home/mutespirit/ws/yunit && $(MAKE) -f CMakeFiles/Makefile2 lfs/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/mutespirit/Sources/yunit && $(MAKE) -f CMakeFiles/Makefile2 lfs/preinstall
+	cd /home/mutespirit/ws/yunit && $(MAKE) -f CMakeFiles/Makefile2 lfs/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/mutespirit/Sources/yunit && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/mutespirit/ws/yunit && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Help Target
@@ -173,6 +183,7 @@ help:
 	@echo "... package"
 	@echo "... package_source"
 	@echo "... rebuild_cache"
+	@echo "... test"
 .PHONY : help
 
 
@@ -184,6 +195,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/mutespirit/Sources/yunit && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/mutespirit/ws/yunit && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 
