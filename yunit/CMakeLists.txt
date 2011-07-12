@@ -27,13 +27,13 @@ endif(WIN32)
 add_library(cppunit.t SHARED test.t.cpp)
 target_link_libraries(cppunit.t cppunit)
 if(WIN32)
-    add_dependencies(cppunit.t cppunit lua51int trace)
+    add_dependencies(cppunit.t cppunit lua51int trace lfs)
     add_custom_command(TARGET cppunit.t 
                        POST_BUILD
                        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$(Configuration)/lua5.1.exe" -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;${CMAKE_CURRENT_SOURCE_DIR}/../ts_modules/?.lua;]] .. package.path" -l yunit.work_in_vs -l yunit.default_test_run -e \"run([[${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$(Configuration)/cppunit.t.dll]])\"
                       )
 else(WIN32)
-    add_dependencies(cppunit.t cppunit lua51int)
+    add_dependencies(cppunit.t cppunit lua51int lfs)
 endif(WIN32)
 #
 # sample.t
@@ -41,9 +41,9 @@ endif(WIN32)
 add_library(sample.t SHARED sample.t.cpp)
 target_link_libraries(sample.t cppunit)
 if(NOT WIN32)
-    add_dependencies(sample.t cppunit lua51int)
+    add_dependencies(sample.t cppunit lua51int lfs)
 else(NOT WIN32)
-    add_dependencies(sample.t cppunit trace lua51int)
+    add_dependencies(sample.t cppunit trace lua51int lfs)
     add_custom_command(TARGET sample.t 
                        POST_BUILD
                        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$(Configuration)/lua5.1.exe" -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;${CMAKE_CURRENT_SOURCE_DIR}/../ts_modules/?.lua;]] .. package.path" -l yunit.work_in_vs -l yunit.default_test_run -e \"run([[${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$(Configuration)/sample.t.dll]])\"

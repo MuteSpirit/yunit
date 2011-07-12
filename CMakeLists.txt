@@ -4,8 +4,8 @@ cmake_policy(VERSION 2.6)
 
 enable_testing()
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/_bin")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/_lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/../_bin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/../_lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
 link_directories("${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
@@ -27,7 +27,7 @@ add_subdirectory(yunit)
 # Package info
 #
 set(YUNIT_NAME "yUnit")
-set(YUNIT_VERSION 0 3 8)
+set(YUNIT_VERSION 0 3 9)
 set(YUNIT_DESCRIPTION "yUnit (Yet another xUnit)")
 set(YUNIT_VENDOR "Ivan Efimov aka MuteSpirit")
 set(YUNIT_CONTACT "mutespirit@gmail.com")

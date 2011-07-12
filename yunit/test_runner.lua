@@ -79,62 +79,95 @@ function TestResultHandlerList:onTestsEnd()
     self:callHandlersMethod('onTestsEnd');
 end
 
+local function isFunction(variable)
+    return "function" == type(variable);
+end
+
 ------------------------------------------------------
 function runTestCase(testcase, testResultHandler)
 ------------------------------------------------------
-
-    local function isFunction(variable)
-        return "function" == type(variable);
-    end
-
-    local errorObjectDefault =
+    local errorObjectDefault = 
     {
-        source = "";
-        func = "";
-        line = 0;
-        message = "";
-    };
-    local status, errorObject = true, errorObjectDefault;
-    local testName = testcase:name() or 'unknownTestCase';
+        source = 'unknown',
+        func = '',
+        line = 0,
+        message = '',
+    }
 
-    testResultHandler:onTestBegin(testName);
+    local errorObject
+    local testName
+    local isTestIgnored
+    
+    -- Define API, used by 'testcase'
+    local testUseApiForVersionLessOrEqual_0_3_7 = (nil ~= testcase.name_) and (nil ~= testcase.isIgnored_) and (nil ~= testcase.lineNumber_) and (nil ~= testcase.fileName_)
+    local testUseApiForVersionMoreOrEqual_0_3_8 = isFunction(testcase.name) and isFunction(testcase.isIgnored) and isFunction(testcase.lineNumber) and isFunction(testcase.fileName)
+    
+    if testUseApiForVersionLessOrEqual_0_3_7 then
+        testName = testcase.name_
+        isTestIgnored = testcase.isIgnored_
+        errorObjectDefault.source = testcase.fileName_
+        errorObjectDefault.line = testcase.lineNumber_
+    elseif testUseApiForVersionMoreOrEqual_0_3_8 then
+        testName = testcase:name() or 'unknown'
+        isTestIgnored = testcase:isIgnored() or false
+        errorObjectDefault.source = testcase:fileName() or errorObjectDefault.source
+        errorObjectDefault.line = testcase:lineNumber() or errorObjectDefault.line
+    else
+        testName = 'unknown'
+        errorObject = errorObjectDefault
+        errorObject.message = 'Test has unknown API or has API mixed from different versions'
+        
+        testResultHandler:onTestBegin(testName)
+        testResultHandler:onTestError(testName, errorObject)
+        testResultHandler:onTestEnd(testName)
+        return
+    end
+    
+    testResultHandler:onTestBegin(testName)
 
-    if not testcase:isIgnored() then
+    if isTestIgnored then
+        testResultHandler:onTestIgnore(testName, errorObjectDefault)    
+    else
+        local setUpSuccess
         if testcase.setUp and isFunction(testcase.setUp) then
-            status, errorObject = testcase:setUp();
+            setUpSuccess, errorObject = testcase:setUp();
         else
-            status, errorObject = true, errorObjectDefault;
+            -- testcase may has not 'setUp' method, but must be run
+            setUpSuccess, errorObject = true, errorObjectDefault
         end
 
-        if status then
-            -- testcase object must have test()
-            status, errorObject = testcase:test();
+        if not setUpSuccess then
+            errorObject.func = 'setUp'
+            testResultHandler:onTestError(testName, errorObject or errorObjectDefault);
+        else
+            local testSuccess
+            if testcase.setUp and isFunction(testcase.setUp) then
+                testSuccess, errorObject = testcase:test()
+            else
+                testSuccess, errorObject = false, errorObjectDefault
+                errorObject.message = 'Test has not "test" method'
+            end
 
-            if not status then
+            if not testSuccess then
                 errorObject.func = ''
                 testResultHandler:onTestFailure(testName, errorObject or errorObjectDefault);
             else
                 testResultHandler:onTestSuccessfull(testName);
             end
 
+            local tearDownSuccess
             if testcase.tearDown and isFunction(testcase.tearDown) then
-                status, errorObject = testcase:tearDown();
+                tearDownSuccess, errorObject = testcase:tearDown();
             else
-                status, errorObject = true, errorObjectDefault;
+            -- testcase may has not 'tearDown' method, but must be run
+                tearDownSuccess, errorObject = true, errorObjectDefault;
             end
 
-            if not status then -- if tearDown failed
+            if not tearDownSuccess then
                 errorObject.func = 'tearDown'
                 testResultHandler:onTestError(testName, errorObject or errorObjectDefault);
             end
-        else -- if setUp failed
-            errorObject.func = 'setUp'
-            testResultHandler:onTestError(testName, errorObject or errorObjectDefault);
         end
-    else
-        errorObject.line = testcase:lineNumber()
-        errorObject.source = testcase:fileName()
-        testResultHandler:onTestIgnore(testName, errorObject);
     end
 
     testResultHandler:onTestEnd(testName);
@@ -194,8 +227,11 @@ function loadTestContainers(filePathList)
 end
 
 function operatorLess(test1, test2)
-    local filename1, filename2 = test1:fileName(), test2:fileName()
-	return filename1 < filename2 or (filename1 == filename2 and test1:lineNumber() < test2:lineNumber())
+    local filename1 = isFunction(test1.fileName) and test1:fileName() or test1.fileName_
+    local filename2 = isFunction(test2.fileName) and test2:fileName() or test2.fileName_
+    local lineNumber1 = isFunction(test1.lineNumber) and test1:lineNumber() or test1.lineNumber_
+    local lineNumber2 = isFunction(test2.lineNumber) and test2:lineNumber() or test2.lineNumber_
+	return filename1 < filename2 or (filename1 == filename2 and lineNumber1 < lineNumber2)
 end
 
 function runAllTestCases(testResultHandler)
