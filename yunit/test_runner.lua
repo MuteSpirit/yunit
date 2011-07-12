@@ -88,40 +88,15 @@ function runTestCase(testcase, testResultHandler)
 ------------------------------------------------------
     local errorObjectDefault = 
     {
-        source = 'unknown',
+        source = testcase:fileName() or 'unknown',
         func = '',
-        line = 0,
+        line = testcase:lineNumber() or 0,
         message = '',
     }
 
-    local errorObject
-    local testName
-    local isTestIgnored
-    
-    -- Define API, used by 'testcase'
-    local testUseApiForVersionLessOrEqual_0_3_7 = (nil ~= testcase.name_) and (nil ~= testcase.isIgnored_) and (nil ~= testcase.lineNumber_) and (nil ~= testcase.fileName_)
-    local testUseApiForVersionMoreOrEqual_0_3_8 = isFunction(testcase.name) and isFunction(testcase.isIgnored) and isFunction(testcase.lineNumber) and isFunction(testcase.fileName)
-    
-    if testUseApiForVersionLessOrEqual_0_3_7 then
-        testName = testcase.name_
-        isTestIgnored = testcase.isIgnored_
-        errorObjectDefault.source = testcase.fileName_
-        errorObjectDefault.line = testcase.lineNumber_
-    elseif testUseApiForVersionMoreOrEqual_0_3_8 then
-        testName = testcase:name() or 'unknown'
-        isTestIgnored = testcase:isIgnored() or false
-        errorObjectDefault.source = testcase:fileName() or errorObjectDefault.source
-        errorObjectDefault.line = testcase:lineNumber() or errorObjectDefault.line
-    else
-        testName = 'unknown'
-        errorObject = errorObjectDefault
-        errorObject.message = 'Test has unknown API or has API mixed from different versions'
-        
-        testResultHandler:onTestBegin(testName)
-        testResultHandler:onTestError(testName, errorObject)
-        testResultHandler:onTestEnd(testName)
-        return
-    end
+    local errorObject = errorObjectDefault
+    local testName = testcase:name() or 'unknown'
+    local isTestIgnored = testcase:isIgnored() or false
     
     testResultHandler:onTestBegin(testName)
 
@@ -129,7 +104,7 @@ function runTestCase(testcase, testResultHandler)
         testResultHandler:onTestIgnore(testName, errorObjectDefault)    
     else
         local setUpSuccess
-        if testcase.setUp and isFunction(testcase.setUp) then
+        if isFunction(testcase.setUp) then
             setUpSuccess, errorObject = testcase:setUp();
         else
             -- testcase may has not 'setUp' method, but must be run
@@ -141,7 +116,7 @@ function runTestCase(testcase, testResultHandler)
             testResultHandler:onTestError(testName, errorObject or errorObjectDefault);
         else
             local testSuccess
-            if testcase.setUp and isFunction(testcase.setUp) then
+            if isFunction(testcase.setUp) then
                 testSuccess, errorObject = testcase:test()
             else
                 testSuccess, errorObject = false, errorObjectDefault
@@ -156,7 +131,7 @@ function runTestCase(testcase, testResultHandler)
             end
 
             local tearDownSuccess
-            if testcase.tearDown and isFunction(testcase.tearDown) then
+            if isFunction(testcase.tearDown) then
                 tearDownSuccess, errorObject = testcase:tearDown();
             else
             -- testcase may has not 'tearDown' method, but must be run
@@ -208,9 +183,9 @@ function loadTestContainers(filePathList)
             end
         end
         if not res and errMsg then
-            io.stderr:write('Can\'t load test container "' .. filePath .. '". Error: "' .. errMsg .. '"\n');
+            io.stderr:write('Cannot load test container "' .. filePath .. '". Error: "' .. errMsg .. '"\n')
         elseif not res then
-            io.stderr:write('Can\'t load test container "' .. filePath .. '". Error: "There are not Test Unit Engine, support such test container"\n');
+            io.stderr:write('Cannot load test container "' .. filePath .. '". Error: "There are not Test Unit Engine, support such test container"\n');
         else
             io.stdout:write('Test container "' .. filePath .. '" has been loaded\n');
         end
@@ -227,16 +202,49 @@ function loadTestContainers(filePathList)
 end
 
 function operatorLess(test1, test2)
-    local filename1 = isFunction(test1.fileName) and test1:fileName() or test1.fileName_
-    local filename2 = isFunction(test2.fileName) and test2:fileName() or test2.fileName_
-    local lineNumber1 = isFunction(test1.lineNumber) and test1:lineNumber() or test1.lineNumber_
-    local lineNumber2 = isFunction(test2.lineNumber) and test2:lineNumber() or test2.lineNumber_
-	return filename1 < filename2 or (filename1 == filename2 and lineNumber1 < lineNumber2)
+    local filename1, filename2 = test1:fileName(), test2:fileName()
+
+	return filename1 < filename2 or (filename1 == filename2 and test1:lineNumber() < test2:lineNumber())
+end
+
+function normalizeTestCaseInterface(testcases)
+    for _, test in ipairs(testcases) do
+        if not isFunction(test.name) then
+            test.name = 
+                function(self)
+                    return self.name_ or 'unknown'
+                end
+        else
+
+        end
+
+        if not isFunction(test.isIgnored) then
+            test.isIgnored = 
+                function(self)
+                    return self.isIgnored_ or false
+                end
+        end
+
+        if not isFunction(test.fileName) then
+            test.fileName = 
+                function(self)
+                    return self.fileName_ or 'unknown'
+                end
+        end
+
+        if not isFunction(test.lineNumber) then
+            test.lineNumber = 
+                function(self)
+                    return self.lineNumber_ or 0
+                end
+        end
+    end
 end
 
 function runAllTestCases(testResultHandler)
     testResultHandler = testResultHandler or TestResultHandlerList;
 
+    normalizeTestCaseInterface(GlobalTestCaseList)
 	table.sort(GlobalTestCaseList, operatorLess)
     
     testResultHandler:onTestsBegin();
