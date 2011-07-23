@@ -1,6 +1,0 @@
-..\_bin\lua5.1.dll
-..\_bin\lua5.1.exe
-..\_bin\lua5.1_int.pdb
-..\_bin\lua5.1_lib.pdb
-..\_bin\lua51.dll
-..\_bin\lua51.pdb
