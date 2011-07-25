@@ -263,18 +263,20 @@ _test2(Test6bis, fixtureA, fixtureB)
     int uncompiledCode[0] = {1};
 }
 #endif
-test(GetTestContainerExtensions)
-{
-    const char** extList = YUNIT_NS::getTestContainerExtensions();
-    areEq(".t.dll", extList[0]);
-    isNull(extList[1]);
-}
 
 test(IsNullAssert)
 {
     void* p = NULL;
     isNull(p);
     willThrow(isNull(1), YUNIT_NS::TestException);
+}
+
+test(isNotNullAssert)
+{
+    static void* pointer = &pointer;
+    isNotNull(pointer);
+
+    willThrow(isNotNull(NULL), YUNIT_NS::TestException);
 }
 
 test(TestBoolAssert)
