@@ -12,7 +12,7 @@ endif(WIN32)
 # cppunit
 #
 # ADD_DEFINITIONS(-Wall -Wextra -pedantic -O3 -std=c++0x -fno-implicit-templates)
-add_library(cppunit SHARED test.cpp ltest.cpp test.h)
+add_library(cppunit SHARED test.cpp test.h)
 target_link_libraries(cppunit ${LUA51_LIBRARY})
 #
 # trace

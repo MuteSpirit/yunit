@@ -3,11 +3,6 @@
 local luaUnit = require('yunit.luaunit');
 local testResultHandlers = require('yunit.test_result_handlers');
 
-
-
-local testResultHandlers = require('yunit.test_result_handlers');
---~ require('LuaXML');
-
 local testModuleName = 'TestListenerTest';
 
 errorObjectFixture = 
