@@ -183,9 +183,9 @@ function loadTestContainers(filePathList)
             end
         end
         if not res and errMsg then
-            io.stderr:write('Cannot load test container "' .. filePath .. '". Error: "' .. errMsg .. '"\n')
+            io.stderr:write('Cannot load test container "' .. filePath .. '". Error: \n\t"' .. errMsg .. '"\n')
         elseif not res then
-            io.stderr:write('Cannot load test container "' .. filePath .. '". Error: "There are not Test Unit Engine, support such test container"\n');
+            io.stderr:write('Cannot load test container "' .. filePath .. '". Error: \n\t"There are not Test Unit Engine, support such test container"\n');
         else
             io.stdout:write('Test container "' .. filePath .. '" has been loaded\n');
         end
