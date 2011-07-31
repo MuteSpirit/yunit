@@ -8,7 +8,7 @@ find_library(LUA51_LIBRARY lua5.1)
 if(MSVC)
     add_definitions(/EHsc)
 else(MSVC)
-    add_definitions(-fexceptions)
+    add_definitions(-fexceptions -fnon-call-exceptions)
 endif(MSVC)
 #
 # cppunit
@@ -44,24 +44,25 @@ else(WIN32)
     add_dependencies(cppunit.t cppunit)
 #    message(${CMAKE_CURRENT_SOURCE_DIR})
 #    message(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-    add_test(cppunit.t lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib?.so;]]..package.cpath" -l yunit.work_in_scite -l yunit.default_test_run -e "run[[$<TARGET_FILE:cppunit.t>]]")
+
+    add_test(cppunit.t lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib?.so;]]..package.cpath" -l yunit.work_in_scite -l yunit.default_test_run -e "run([[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libcppunit.t.so]])")
+    
+    add_test(cppunit.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib?.so;]]..package.cpath" -l yunit.work_in_scite -l yunit.lua_test_run -e "run([[${CMAKE_CURRENT_SOURCE_DIR}/cppunit.t.lua]])")
 endif(WIN32)
 #
 # Tests
 #
-add_test(filesystem.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.lua_test_run -l yunit.work_in_scite -e "run[[${CMAKE_CURRENT_SOURCE_DIR}/filesystem.t.lua]]")
+add_test(filesystem.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.work_in_scite -l yunit.lua_test_run -e "run([[${CMAKE_CURRENT_SOURCE_DIR}/filesystem.t.lua]])")
 
-add_test(aux_test_func.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.lua_test_run -l yunit.work_in_scite -e "run[[${CMAKE_CURRENT_SOURCE_DIR}/aux_test_func.t.lua]]")
+add_test(aux_test_func.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.work_in_scite -l yunit.lua_test_run -e "run([[${CMAKE_CURRENT_SOURCE_DIR}/aux_test_func.t.lua]])")
 
-add_test(lua_ext.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.lua_test_run -l yunit.work_in_scite -e "run[[${CMAKE_CURRENT_SOURCE_DIR}/lua_ext.t.lua]]")
+add_test(lua_ext.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.work_in_scite -l yunit.lua_test_run -e "run([[${CMAKE_CURRENT_SOURCE_DIR}/lua_ext.t.lua]])")
 
-add_test(test_result_handlers.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.lua_test_run -l yunit.work_in_scite -e "run[[${CMAKE_CURRENT_SOURCE_DIR}/test_result_handlers.t.lua]]")
+add_test(test_result_handlers.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.work_in_scite -l yunit.lua_test_run -e "run([[${CMAKE_CURRENT_SOURCE_DIR}/test_result_handlers.t.lua]])")
 
-add_test(luaunit.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.lua_test_run -l yunit.work_in_scite -e "run[[${CMAKE_CURRENT_SOURCE_DIR}/luaunit.t.lua]]")
+add_test(luaunit.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.work_in_scite -l yunit.lua_test_run -e "run([[${CMAKE_CURRENT_SOURCE_DIR}/luaunit.t.lua]])")
 
-add_test(test_runner.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.lua_test_run -l yunit.work_in_scite -e "run[[${CMAKE_CURRENT_SOURCE_DIR}/test_runner.t.lua]]")
-
-add_test(cppunit.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.lua_test_run -l yunit.work_in_scite -e "run[[${CMAKE_CURRENT_SOURCE_DIR}/cppunit.t.lua]]")
+add_test(test_runner.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.work_in_scite -l yunit.lua_test_run -e "run([[${CMAKE_CURRENT_SOURCE_DIR}/test_runner.t.lua]])")
 #
 # Installation rules
 #

@@ -346,3 +346,27 @@ function XmlTestResultHandler:onTestsEnd()
     self:outputMessage(' done\r\n');
 end
 
+FixFailed = testRunner.TestResultHandler:new()
+
+------------------------------------------------------
+function FixFailed:new()
+    local o =
+    {
+        passed_ = true,
+    };
+    setmetatable(o, self);
+    self.__index = self;
+    return o;
+end
+
+function FixFailed:passed()
+    return self.passed_
+end
+
+function FixFailed:onTestFailure(testCaseName, errorObject)
+    self.passed_ = false
+end
+
+function FixFailed:onTestError(testCaseName, errorObject)
+    self.passed_ = false
+end

@@ -449,7 +449,7 @@ function loadTestContainer(filePath)
         return false, msg;
     end
     
-	local testSuite = TestSuite:new(testContainerName)
+	local testSuite = TestSuite:new(filePath)
     curTestRegistry:addTestSuite(testSuite)
 
 	testSuite.testcases = testcases;

@@ -24,6 +24,142 @@
 namespace YUNIT_NS {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define test(name)\
+    test_(name)\
+    registerTest(name, YUNIT_SOURCELINE())\
+    testBodyDef(name)
+
+#define test1(name, usedFixture)\
+    test1_(name, fixtureName(usedFixture))\
+    registerTest(name, YUNIT_SOURCELINE())\
+    testBodyDef(name)
+
+#define test2(name, usedFixture1, usedFixture2)\
+    fixture2(fixtureName2(name, usedFixture1, usedFixture2),\
+             fixtureName(usedFixture1),\
+             fixtureName(usedFixture2))\
+    test1_(name, fixtureName2(name, usedFixture1, usedFixture2))\
+    registerTest(name, YUNIT_SOURCELINE())\
+    testBodyDef(name)
+
+#define _test(name)\
+    test_(name)\
+    registerIgnoredTest(name, YUNIT_SOURCELINE())\
+    ignoredTestBodyDef(name)
+
+#define _test1(name, usedFixture)\
+    test_(name)\
+    registerIgnoredTest(name, YUNIT_SOURCELINE())\
+    ignoredTestBodyDef(name)
+
+#define _test2(name, usedFixture1, usedFixture2)\
+    test_(name)\
+    registerIgnoredTest(name, YUNIT_SOURCELINE())\
+    ignoredTestBodyDef(name)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define example(name)\
+    test_(name)\
+    testBodyDef(name) {}\
+    void example##name()
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define todo(name)\
+    test_(name)\
+    registerTest(name, YUNIT_SOURCELINE())\
+    testBodyDef(name)\
+    {\
+        throwException(YUNIT_SOURCELINE(), L"You want to make this test as soon as possible", true);\
+    }\
+    void futureTest##name()
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ASSERTS
+
+#define isNull(actual)\
+    if(!YUNIT_NS::cppunitAssert((actual) == NULL))\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), L ## #actual L" is not NULL", false)
+
+#define isNotNull(actual)\
+    if(!YUNIT_NS::cppunitAssert((actual) != NULL))\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), L ## #actual L" is NULL", false)
+
+#define isTrue(condition)\
+    if(!YUNIT_NS::cppunitAssert(condition))\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), #condition)
+
+#define isFalse(condition)\
+    if(YUNIT_NS::cppunitAssert(condition))\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), #condition " != false", false)
+
+#define areEq(expected, actual)\
+    if(!YUNIT_NS::cppunitAssert((expected), (actual)))\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), (expected), (actual), true)
+
+#define areNotEq(expected, actual)\
+    if(YUNIT_NS::cppunitAssert((expected), (actual)))\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), (expected), (actual), false)
+
+#define areDoubleEq(expected, actual, delta)\
+    if(!YUNIT_NS::cppunitAssert((expected), (actual), (delta)))\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), (expected), (actual), (delta), true)
+
+#define areDoubleNotEq(expected, actual, delta)\
+    if(YUNIT_NS::cppunitAssert((expected), (actual), (delta)))\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), (expected), (actual), (delta), false)
+
+#define willThrow(expression, exceptionType)																\
+    {                                                                                                       \
+        bool catched = false;                                                                               \
+        try																									\
+        {																									\
+            expression;																			            \
+        }																									\
+        catch(const exceptionType&)																			\
+        {																									\
+            catched = true;																					\
+        }																									\
+        if (!catched)																						\
+        {                                                                                                   \
+            YUNIT_NS::throwException(YUNIT_SOURCELINE(),												\
+            "Expected exception "" #exceptionType "" hasn't been not thrown.", true);						\
+        }                                                                                                   \
+    }
+
+#define noSpecificThrow(expression, exceptionType)														\
+    try																									\
+    {																									\
+        expression;																						\
+    }																									\
+    catch(const exceptionType&)																			\
+    {																									\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(),													\
+            "Not expected exception \"" #exceptionType "\" has been thrown.", true);			\
+    }
+
+#define noAnyCppThrow(expression)														\
+    try																									\
+    {																									\
+        expression;																						\
+    }																									\
+    catch(...)																			\
+    {																									\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(),													\
+            "Unwanted C++ exception has been thrown.", true);			\
+    }
+
+#define noSehThrow(expression)																	\
+    __try																									\
+    {																										\
+        expression;																							\
+    }																										\
+    __except(EXCEPTION_EXECUTE_HANDLER)																		\
+    {																										\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), "Unwanted SEH exception has been thrown.", true);		\
+    }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef YUNIT_API
 #	if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
 #		if defined(YUNIT_STATIC_LINKED)
@@ -415,144 +551,6 @@ void YUNIT_API throwException(const SourceLine& sourceLine, const double expecte
 #define ignoredTestBodyDef(name)\
     void TestCase__##name::execute() {}\
     template<typename T> void TestCase ## name ## Fake()
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define test(name)\
-    test_(name)\
-    registerTest(name, YUNIT_SOURCELINE())\
-    testBodyDef(name)
-
-#define test1(name, usedFixture)\
-    test1_(name, fixtureName(usedFixture))\
-    registerTest(name, YUNIT_SOURCELINE())\
-    testBodyDef(name)
-
-#define test2(name, usedFixture1, usedFixture2)\
-    fixture2(fixtureName2(name, usedFixture1, usedFixture2),\
-             fixtureName(usedFixture1),\
-             fixtureName(usedFixture2))\
-    test1_(name, fixtureName2(name, usedFixture1, usedFixture2))\
-    registerTest(name, YUNIT_SOURCELINE())\
-    testBodyDef(name)
-
-#define _test(name)\
-    test_(name)\
-    registerIgnoredTest(name, YUNIT_SOURCELINE())\
-    ignoredTestBodyDef(name)
-
-#define _test1(name, usedFixture)\
-    test_(name)\
-    registerIgnoredTest(name, YUNIT_SOURCELINE())\
-    ignoredTestBodyDef(name)
-
-#define _test2(name, usedFixture1, usedFixture2)\
-    test_(name)\
-    registerIgnoredTest(name, YUNIT_SOURCELINE())\
-    ignoredTestBodyDef(name)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define example(name)\
-    test_(name)\
-    testBodyDef(name) {}\
-    void example##name()
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define todo(name)\
-    test_(name)\
-    registerTest(name, YUNIT_SOURCELINE())\
-    testBodyDef(name)\
-    {\
-        throwException(YUNIT_SOURCELINE(), L"You want to make this test as soon as possible", true);\
-    }\
-    void futureTest##name()
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ASSERTS
-
-#define isNull(actual)\
-    if(!YUNIT_NS::cppunitAssert((actual) == NULL))\
-        YUNIT_NS::throwException(YUNIT_SOURCELINE(), L ## #actual L" is not NULL", false)
-
-#define isNotNull(actual)\
-    if(!YUNIT_NS::cppunitAssert((actual) != NULL))\
-        YUNIT_NS::throwException(YUNIT_SOURCELINE(), L ## #actual L" is NULL", false)
-
-#define isTrue(condition)\
-    if(!YUNIT_NS::cppunitAssert(condition))\
-        YUNIT_NS::throwException(YUNIT_SOURCELINE(), #condition)
-
-#define isFalse(condition)\
-    if(YUNIT_NS::cppunitAssert(condition))\
-        YUNIT_NS::throwException(YUNIT_SOURCELINE(), #condition " != false", false)
-
-#define areEq(expected, actual)\
-    if(!YUNIT_NS::cppunitAssert((expected), (actual)))\
-        YUNIT_NS::throwException(YUNIT_SOURCELINE(), (expected), (actual), true)
-
-#define areNotEq(expected, actual)\
-    if(YUNIT_NS::cppunitAssert((expected), (actual)))\
-        YUNIT_NS::throwException(YUNIT_SOURCELINE(), (expected), (actual), false)
-
-#define areDoubleEq(expected, actual, delta)\
-    if(!YUNIT_NS::cppunitAssert((expected), (actual), (delta)))\
-        YUNIT_NS::throwException(YUNIT_SOURCELINE(), (expected), (actual), (delta), true)
-
-#define areDoubleNotEq(expected, actual, delta)\
-    if(YUNIT_NS::cppunitAssert((expected), (actual), (delta)))\
-        YUNIT_NS::throwException(YUNIT_SOURCELINE(), (expected), (actual), (delta), false)
-
-#define willThrow(expression, exceptionType)																\
-    {                                                                                                       \
-        bool catched = false;                                                                               \
-        try																									\
-        {																									\
-            expression;																			            \
-        }																									\
-        catch(const exceptionType&)																			\
-        {																									\
-            catched = true;																					\
-        }																									\
-        if (!catched)																						\
-        {                                                                                                   \
-            YUNIT_NS::throwException(YUNIT_SOURCELINE(),												\
-            "Expected exception "" #exceptionType "" hasn't been not thrown.", true);						\
-        }                                                                                                   \
-    }
-
-#define noSpecificThrow(expression, exceptionType)														\
-    try																									\
-    {																									\
-        expression;																						\
-    }																									\
-    catch(const exceptionType&)																			\
-    {																									\
-        YUNIT_NS::throwException(YUNIT_SOURCELINE(),													\
-            "Not expected exception \"" #exceptionType "\" has been thrown.", true);			\
-    }
-
-#define noAnyCppThrow(expression)														\
-    try																									\
-    {																									\
-        expression;																						\
-    }																									\
-    catch(...)																			\
-    {																									\
-        YUNIT_NS::throwException(YUNIT_SOURCELINE(),													\
-            "Unwanted C++ exception has been thrown.", true);			\
-    }
-
-#define noSehThrow(expression)																	\
-    __try																									\
-    {																										\
-        expression;																							\
-    }																										\
-    __except(EXCEPTION_EXECUTE_HANDLER)																		\
-    {																										\
-        YUNIT_NS::throwException(YUNIT_SOURCELINE(), "Unwanted SEH exception has been thrown.", true);		\
-    }
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 } // namespace YUNIT_NS
 
