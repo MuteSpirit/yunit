@@ -78,7 +78,7 @@ local luaUnit = require("yunit.luaunit")
 local testResultHandlers = require("yunit.test_result_handlers");
 local testRunner = require("yunit.test_runner");
 local fs = require("filesystem");
-local aux = require("aux_test_func");
+local aux = require("yunit.aux_test_func");
 
 -- This fixture save (at setUp) and restore (at tearDown) currentSuite variable at luaunit module for possibility TEST_* macro testing
 substitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir = 

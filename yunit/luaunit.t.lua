@@ -181,7 +181,7 @@ function luaUnitSelfTestFixture.protectTestCaseMethodCallTest()
 	isFalse(statusCode)
 	isNotNil(errorObject)
 
-	areEq('luaunit.t.lua', errorObject.source)
+	isTrue(string.find(errorObject.source, 'luaunit%.t%.lua$'))
 	areEq("testFunc", errorObject.func);
 	
 	isNotNil(errorObject.line);
