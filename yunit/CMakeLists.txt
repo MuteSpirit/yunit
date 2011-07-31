@@ -2,16 +2,17 @@ find_path(LUA51_INCLUDE_DIR lua5.1/lua.h)
 include_directories(${LUA51_INCLUDE_DIR}/lua5.1)
 
 find_library(LUA51_LIBRARY lua5.1)
-
-if(WIN32)
-    add_definitions(/EHsc) # Enable C++ exceptions
-else(WIN32)
-    add_definitions(-fexceptions) # Enable C++ exceptions
-endif(WIN32)
+#
+# Enable C++ exceptions
+#
+if(MSVC)
+    add_definitions(/EHsc)
+else(MSVC)
+    add_definitions(-fexceptions)
+endif(MSVC)
 #
 # cppunit
 #
-# ADD_DEFINITIONS(-Wall -Wextra -pedantic -O3 -std=c++0x -fno-implicit-templates)
 add_library(cppunit SHARED test.cpp test.h)
 target_link_libraries(cppunit ${LUA51_LIBRARY})
 #
@@ -41,7 +42,26 @@ if(WIN32)
                       )
 else(WIN32)
     add_dependencies(cppunit.t cppunit)
+#    message(${CMAKE_CURRENT_SOURCE_DIR})
+#    message(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+    add_test(cppunit.t lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib?.so;]]..package.cpath" -l yunit.work_in_scite -l yunit.default_test_run -e "run[[$<TARGET_FILE:cppunit.t>]]")
 endif(WIN32)
+#
+# Tests
+#
+add_test(filesystem.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.lua_test_run -l yunit.work_in_scite -e "run[[${CMAKE_CURRENT_SOURCE_DIR}/filesystem.t.lua]]")
+
+add_test(aux_test_func.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.lua_test_run -l yunit.work_in_scite -e "run[[${CMAKE_CURRENT_SOURCE_DIR}/aux_test_func.t.lua]]")
+
+add_test(lua_ext.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.lua_test_run -l yunit.work_in_scite -e "run[[${CMAKE_CURRENT_SOURCE_DIR}/lua_ext.t.lua]]")
+
+add_test(test_result_handlers.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.lua_test_run -l yunit.work_in_scite -e "run[[${CMAKE_CURRENT_SOURCE_DIR}/test_result_handlers.t.lua]]")
+
+add_test(luaunit.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.lua_test_run -l yunit.work_in_scite -e "run[[${CMAKE_CURRENT_SOURCE_DIR}/luaunit.t.lua]]")
+
+add_test(test_runner.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.lua_test_run -l yunit.work_in_scite -e "run[[${CMAKE_CURRENT_SOURCE_DIR}/test_runner.t.lua]]")
+
+add_test(cppunit.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -l yunit.lua_test_run -l yunit.work_in_scite -e "run[[${CMAKE_CURRENT_SOURCE_DIR}/cppunit.t.lua]]")
 #
 # Installation rules
 #

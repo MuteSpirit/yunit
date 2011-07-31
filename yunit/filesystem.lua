@@ -6,7 +6,7 @@ module(...)
 _G.setmetatable(_M, {__index = _G})
 --------------------------------------------------------------------------------------------------------------
 
-local luaExt = require('lua_ext');
+local luaExt = require('yunit.lua_ext');
 local lfs = require("lfs")
 
 --- \brief Define on what operating system script is run

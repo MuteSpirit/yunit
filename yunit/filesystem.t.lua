@@ -103,9 +103,9 @@
 --- \return true if 'path' is path of file or folder on local disk location
 
 local lfs = require ('lfs')
-local fs = require("filesystem")
-local luaExt = require('lua_ext')
-local atf = require('aux_test_func')
+local fs = require("yunit.filesystem")
+local luaExt = require('yunit.lua_ext')
+local atf = require('yunit.aux_test_func')
 
 local luaUnit = require('yunit.luaunit');
 
