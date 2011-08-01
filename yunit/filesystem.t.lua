@@ -903,33 +903,32 @@ end
 
 function useTestTmpDirFixture.applyOnFilesTest()
     local slash = fs.osSlash();
-    -- Test defining if it is directory or not
-    isTrue(fs.isDir(tmpDir));
-    local tmpFilePath = tmpDir .. slash .. 'tmp.file';
-    isTrue(atf.createTextFileWithContent(tmpFilePath));
-    isFalse(fs.isDir(tmpFilePath))
-
     local dirname = tmpDir;
     local pathes = {};
-
-    table.insert(pathes, tmpFilePath);
-    
-    dirname = dirname  .. slash .. 'dir';
-    isTrue(lfs.mkdir(dirname));
-    isTrue(atf.createTextFileWithContent(dirname .. slash .. 'file.1'));
-    table.insert(pathes, dirname .. slash .. 'file.1');
-
-    dirname = dirname .. slash .. 'subdir';
-    isTrue(lfs.mkdir(dirname));
-    isTrue(atf.createTextFileWithContent(dirname .. slash .. 'file.2'));
-    table.insert(pathes, dirname .. slash .. 'file.2');
-    
 --[=[
     tmp.file
     dir/file.1
     dir/subdir/file.2
 --]=]
+    local tmpFilePath = dirname .. slash .. 'tmp.file';
+    isTrue(atf.createTextFileWithContent(tmpFilePath));
+    isTrue(fs.isFile(tmpFilePath))
+    table.insert(pathes, tmpFilePath);
+    
+    dirname = dirname  .. slash .. 'dir';
 
+    local file1path = dirname .. slash .. 'file.1'
+    isTrue(lfs.mkdir(dirname));
+    isTrue(atf.createTextFileWithContent(file1path));
+    table.insert(pathes, file1path);
+
+    dirname = dirname .. slash .. 'subdir';
+
+    local file2path = dirname .. slash .. 'file.2'
+    isTrue(lfs.mkdir(dirname));
+    isTrue(atf.createTextFileWithContent(file2path));
+    table.insert(pathes, file2path);
+    
     do    
         local files = {};
         local function savePath(path, state)
@@ -941,9 +940,9 @@ function useTestTmpDirFixture.applyOnFilesTest()
         fs.applyOnFiles(tmpDir, {handler = savePath, state = files, recursive = true});
         
         areEq(#pathes, #files);
---~         print(table.toLuaCode(pathes))
---~         print(table.toLuaCode(files))
-        isTrue(table.isEqual(pathes, files));
+        isTrue(luaExt.findValue(pathes, tmpFilePath));
+        isTrue(luaExt.findValue(pathes, file1path));
+        isTrue(luaExt.findValue(pathes, file2path));
     end
     do
         local function fileFilter(path)
@@ -957,8 +956,11 @@ function useTestTmpDirFixture.applyOnFilesTest()
         local files = {};
         
         fs.applyOnFiles(tmpDir, {handler = savePath, filter = fileFilter, state = files, recursive = true});
+
         areEq(#pathes, #files);
-        isTrue(table.isEqual(pathes, files));
+        isTrue(luaExt.findValue(pathes, tmpFilePath));
+        isTrue(luaExt.findValue(pathes, file1path));
+        isTrue(luaExt.findValue(pathes, file2path));
     end
 end
 
