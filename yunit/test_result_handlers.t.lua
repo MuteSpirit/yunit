@@ -3,11 +3,6 @@
 local luaUnit = require('yunit.luaunit');
 local testResultHandlers = require('yunit.test_result_handlers');
 
-
-
-local testResultHandlers = require('yunit.test_result_handlers');
---~ require('LuaXML');
-
 local testModuleName = 'TestListenerTest';
 
 errorObjectFixture = 
@@ -216,3 +211,25 @@ function errorObjectFixture.testXmlListenerSimulateTestRunning()
     ttpl:onTestsEnd()
 end
 
+function errorObjectFixture.fixed_failed_test_result_handler_return_ok()
+	local testResHandler = testResultHandlers.FixFailed:new()
+	isTrue(testResHandler:passed())
+
+    testResHandler:onTestSuccessfull(fakeTestCaseName)
+	isTrue(testResHandler:passed())
+	
+    testResHandler:onTestIgnore(fakeTestCaseName)
+	isTrue(testResHandler:passed())
+end
+
+function errorObjectFixture.fixed_failed_test_result_handler_return_not_ok_on_test_error()
+	local testResHandler = testResultHandlers.FixFailed:new()
+    testResHandler:onTestError(fakeTestCaseName, fakeErrorObject)
+	isFalse(testResHandler:passed())
+end
+
+function errorObjectFixture.fixed_failed_test_result_handler_return_not_ok_on_test_failed()
+	local testResHandler = testResultHandlers.FixFailed:new()
+    testResHandler:onTestFailure(fakeTestCaseName, fakeErrorObject)
+	isFalse(testResHandler:passed())
+end
