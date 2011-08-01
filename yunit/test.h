@@ -1,22 +1,165 @@
 #ifdef _MSC_VER
-#pragma once
+#  pragma once
 #endif
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // test.h
-//
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef _MSC_VER
 // Two or more members have the same name. The one in class2 is inherited because it is a base class for the
 // other classes that contained this member.
 // This situation with TestFixture and TestCase, inherited from it
-#pragma warning(disable : 4250)
+#  pragma warning(disable : 4250)
 #endif
-
 
 #ifndef _YUNIT_TEST_HEADER_
 #define _YUNIT_TEST_HEADER_
 
+#define YUNIT_NS yUnit
+
+#include <list>
+#include <string>
+
+
+namespace YUNIT_NS {
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define test(name)\
+    test_(name)\
+    registerTest(name, YUNIT_SOURCELINE())\
+    testBodyDef(name)
+
+#define test1(name, usedFixture)\
+    test1_(name, fixtureName(usedFixture))\
+    registerTest(name, YUNIT_SOURCELINE())\
+    testBodyDef(name)
+
+#define test2(name, usedFixture1, usedFixture2)\
+    fixture2(fixtureName2(name, usedFixture1, usedFixture2),\
+             fixtureName(usedFixture1),\
+             fixtureName(usedFixture2))\
+    test1_(name, fixtureName2(name, usedFixture1, usedFixture2))\
+    registerTest(name, YUNIT_SOURCELINE())\
+    testBodyDef(name)
+
+#define _test(name)\
+    test_(name)\
+    registerIgnoredTest(name, YUNIT_SOURCELINE())\
+    ignoredTestBodyDef(name)
+
+#define _test1(name, usedFixture)\
+    test_(name)\
+    registerIgnoredTest(name, YUNIT_SOURCELINE())\
+    ignoredTestBodyDef(name)
+
+#define _test2(name, usedFixture1, usedFixture2)\
+    test_(name)\
+    registerIgnoredTest(name, YUNIT_SOURCELINE())\
+    ignoredTestBodyDef(name)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define example(name)\
+    test_(name)\
+    testBodyDef(name) {}\
+    void example##name()
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define todo(name)\
+    test_(name)\
+    registerTest(name, YUNIT_SOURCELINE())\
+    testBodyDef(name)\
+    {\
+        throwException(YUNIT_SOURCELINE(), L"You want to make this test as soon as possible", true);\
+    }\
+    void futureTest##name()
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ASSERTS
+
+#define isNull(actual)\
+    if(!YUNIT_NS::cppunitAssert((actual) == NULL))\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), L ## #actual L" is not NULL", false)
+
+#define isNotNull(actual)\
+    if(!YUNIT_NS::cppunitAssert((actual) != NULL))\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), L ## #actual L" is NULL", false)
+
+#define isTrue(condition)\
+    if(!YUNIT_NS::cppunitAssert(condition))\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), #condition)
+
+#define isFalse(condition)\
+    if(YUNIT_NS::cppunitAssert(condition))\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), #condition " != false", false)
+
+#define areEq(expected, actual)\
+    if(!YUNIT_NS::cppunitAssert((expected), (actual)))\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), (expected), (actual), true)
+
+#define areNotEq(expected, actual)\
+    if(YUNIT_NS::cppunitAssert((expected), (actual)))\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), (expected), (actual), false)
+
+#define areDoubleEq(expected, actual, delta)\
+    if(!YUNIT_NS::cppunitAssert((expected), (actual), (delta)))\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), (expected), (actual), (delta), true)
+
+#define areDoubleNotEq(expected, actual, delta)\
+    if(YUNIT_NS::cppunitAssert((expected), (actual), (delta)))\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), (expected), (actual), (delta), false)
+
+#define willThrow(expression, exceptionType)																\
+    {                                                                                                       \
+        bool catched = false;                                                                               \
+        try																									\
+        {																									\
+            expression;																			            \
+        }																									\
+        catch(const exceptionType&)																			\
+        {																									\
+            catched = true;																					\
+        }																									\
+        if (!catched)																						\
+        {                                                                                                   \
+            YUNIT_NS::throwException(YUNIT_SOURCELINE(),												\
+            "Expected exception "" #exceptionType "" hasn't been not thrown.", true);						\
+        }                                                                                                   \
+    }
+
+#define noSpecificThrow(expression, exceptionType)														\
+    try																									\
+    {																									\
+        expression;																						\
+    }																									\
+    catch(const exceptionType&)																			\
+    {																									\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(),													\
+            "Not expected exception \"" #exceptionType "\" has been thrown.", true);			\
+    }
+
+#define noAnyCppThrow(expression)														\
+    try																									\
+    {																									\
+        expression;																						\
+    }																									\
+    catch(...)																			\
+    {																									\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(),													\
+            "Unwanted C++ exception has been thrown.", true);			\
+    }
+
+#define noSehThrow(expression)																	\
+    __try																									\
+    {																										\
+        expression;																							\
+    }																										\
+    __except(EXCEPTION_EXECUTE_HANDLER)																		\
+    {																										\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), "Unwanted SEH exception has been thrown.", true);		\
+    }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef YUNIT_API
 #	if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
 #		if defined(YUNIT_STATIC_LINKED)
@@ -35,9 +178,6 @@
 #	endif
 #endif
 
-#define YUNIT_NS yUnit
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef TS_T
 #	if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
 #		define TS_SNPRINTF	_snprintf
@@ -45,13 +185,6 @@
 #		define TS_SNPRINTF	snprintf
 #	endif
 #endif
-
-#include <list>
-#include <string>
-
-namespace YUNIT_NS {
-
-YUNIT_API const char** getTestContainerExtensions();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class YUNIT_API Thunk
@@ -78,56 +211,56 @@ private:
 class YUNIT_API SourceLine
 {
 public:
-	SourceLine(const char* fileName, const int lineNumber);
+    SourceLine(const char* fileName, const int lineNumber);
 
-	const char* fileName() const;
-	int lineNumber() const;
+    const char* fileName() const;
+    int lineNumber() const;
 
 public:
-	static const char* unknownFileName_;
-	static const int unknownLineNumber_;
+    static const char* unknownFileName_;
+    static const int unknownLineNumber_;
 
 protected:
     SourceLine();
 
 private:
-	const char* fileName_;
-	int lineNumber_;
+    const char* fileName_;
+    int lineNumber_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class YUNIT_API Test
 {
 public:
-	virtual void execute() = 0;
-	virtual Thunk testThunk();
-	virtual ~Test();
+    virtual void execute() = 0;
+    virtual Thunk testThunk();
+    virtual ~Test();
 
 protected:
-	Test();
+    Test();
 
 private:
-	Thunk testThunk_;
+    Thunk testThunk_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class YUNIT_API Fixture
 {
 public:
-	virtual void innerSetUp() = 0;
-	virtual void innerTearDown() = 0;
+    virtual void innerSetUp() = 0;
+    virtual void innerTearDown() = 0;
 
-	virtual Thunk setUpThunk();
-	virtual Thunk tearDownThunk();
+    virtual Thunk setUpThunk();
+    virtual Thunk tearDownThunk();
 
-	virtual ~Fixture();
+    virtual ~Fixture();
 
 protected:
-	Fixture();
+    Fixture();
 
 private:
-	Thunk setUpThunk_;
-	Thunk tearDownThunk_;
+    Thunk setUpThunk_;
+    Thunk tearDownThunk_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -135,20 +268,20 @@ class YUNIT_API TestCase : public Test
                          , public virtual Fixture
 {
 public:
-	virtual ~TestCase();
+    virtual ~TestCase();
 
-	const char* name() const;
+    const char* name() const;
     bool isIgnored() const;
     const SourceLine& source() const;
 
 protected:
-	TestCase(const char* name, const bool isIgnored, const SourceLine& source);
-	TestCase(const TestCase& rhs);
-	TestCase& operator=(const TestCase& rhs);
+    TestCase(const char* name, const bool isIgnored, const SourceLine& source);
+    TestCase(const TestCase& rhs);
+    TestCase& operator=(const TestCase& rhs);
 
 private:
-	const char* name_;
-	bool isIgnored_;
+    const char* name_;
+    bool isIgnored_;
     SourceLine source_;
 };
 
@@ -156,70 +289,70 @@ private:
 class TestSuite
 {
 public:
-	typedef std::list<TestCase*> TestCaseList;
-	typedef TestCaseList::const_iterator TestCaseConstIter;
+    typedef std::list<TestCase*> TestCaseList;
+    typedef TestCaseList::const_iterator TestCaseConstIter;
 private:
-	typedef TestCaseList::iterator TestCaseIter;
+    typedef TestCaseList::iterator TestCaseIter;
 
 public:
-	YUNIT_API TestSuite(const char* name = 0);
-	TestSuite(const TestSuite& rhs);
-	TestSuite& operator=(const TestSuite& rhs);
-	virtual ~TestSuite();
+    YUNIT_API TestSuite(const char* name = 0);
+    TestSuite(const TestSuite& rhs);
+    TestSuite& operator=(const TestSuite& rhs);
+    virtual ~TestSuite();
 
-	const char* name() const;
+    const char* name() const;
 
-	TestCaseConstIter begin();
-	TestCaseConstIter end();
+    TestCaseConstIter begin();
+    TestCaseConstIter end();
 
-	void addTestCase(TestCase* testCase);
+    void addTestCase(TestCase* testCase);
 
 private:
-	const char* name_;
-	TestCaseList testCases_;
+    const char* name_;
+    TestCaseList testCases_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class TestRegistry
 {
 public:
-	typedef std::list<TestSuite*> TestSuiteList;
-	typedef TestSuiteList::const_iterator TestSuiteConstIter;
+    typedef std::list<TestSuite*> TestSuiteList;
+    typedef TestSuiteList::const_iterator TestSuiteConstIter;
 private:
-	typedef TestSuiteList::iterator TestSuiteIter;
+    typedef TestSuiteList::iterator TestSuiteIter;
 
 public:
-	YUNIT_API static TestRegistry* initialize();
+    YUNIT_API static TestRegistry* initialize();
 
     YUNIT_API void addTestCase(TestCase* testCase);
 
-	TestSuiteConstIter begin();
-	TestSuiteConstIter end();
+    TestSuiteConstIter begin();
+    TestSuiteConstIter end();
 
 protected:
-	TestRegistry();
-	~TestRegistry();
+    TestRegistry();
+    ~TestRegistry();
 
     TestSuite* getTestSuite(const SourceLine& source);
 
 private:
-	static TestRegistry* thisPtr_;
+    static TestRegistry* thisPtr_;
 
-	TestSuiteList testSuiteList_;
+    TestSuiteList testSuiteList_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename TestCaseClass>
 struct RegisterTestCase
 {
-	RegisterTestCase(const char* name, const SourceLine& source);
+    RegisterTestCase(const char* name, const SourceLine& source);
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename TestCaseClass>
 struct RegisterIgnoredTestCase
 {
-	RegisterIgnoredTestCase(const char* name, const SourceLine& source);
+    RegisterIgnoredTestCase(const char* name, const SourceLine& source);
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -241,7 +374,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Templates realization
+// Templates implementation
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -263,8 +396,8 @@ RegisterTestCase<TestCaseClass>::RegisterTestCase(const char* name,
                                                   const SourceLine& source)
 {
     const bool ignore = true;
-	static TestCaseClass testcase(name, !ignore, source);
-	TestRegistry::initialize()->addTestCase(&testcase);
+    static TestCaseClass testcase(name, !ignore, source);
+    TestRegistry::initialize()->addTestCase(&testcase);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -273,8 +406,8 @@ RegisterIgnoredTestCase<TestCaseClass>::RegisterIgnoredTestCase(const char* name
                                                                 const SourceLine& source)
 {
     const bool ignore = true;
-	static TestCaseClass testcase(name, ignore, source);
-	TestRegistry::initialize()->addTestCase(&testcase);
+    static TestCaseClass testcase(name, ignore, source);
+    TestRegistry::initialize()->addTestCase(&testcase);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -317,12 +450,12 @@ void YUNIT_API throwException(const SourceLine& sourceLine, const char* message,
 void YUNIT_API throwException(const SourceLine& sourceLine, const wchar_t* message, bool);
 
 void YUNIT_API throwException(const SourceLine& sourceLine, const void* expected, const void* actual,
-							bool mustBeEqual);
+                            bool mustBeEqual);
 
 void YUNIT_API throwException(const SourceLine& sourceLine, const long long expected, const long long actual,
-							bool mustBeEqual);
+                            bool mustBeEqual);
 void YUNIT_API throwException(const SourceLine& sourceLine, const char* expected, const char* actual,
-							bool mustBeEqual);
+                            bool mustBeEqual);
 
 inline void throwException(const SourceLine& sourceLine,
                     const std::string& expected,
@@ -333,18 +466,18 @@ inline void throwException(const SourceLine& sourceLine,
 }
 
 void YUNIT_API throwException(const SourceLine& sourceLine, const wchar_t* expected, const wchar_t* actual,
-							bool mustBeEqual);
+                            bool mustBeEqual);
 
 inline void throwException(const SourceLine& sourceLine,
                                  const std::wstring& expected,
                                  const std::wstring& actual,
-							     bool mustBeEqual)
+                                 bool mustBeEqual)
 {
     throwException(sourceLine, expected.c_str(), actual.c_str(), mustBeEqual);
 }
 
 void YUNIT_API throwException(const SourceLine& sourceLine, const double expected, const double actual,
-							const double delta, bool mustBeEqual);
+                            const double delta, bool mustBeEqual);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define CONCAT(a, b) a ## b
@@ -367,12 +500,12 @@ void YUNIT_API throwException(const SourceLine& sourceLine, const double expecte
     struct derived : public base1,\
                      public base2 \
     {\
-		virtual void innerSetUp()\
+        virtual void innerSetUp()\
         {\
             base1::innerSetUp();\
             base2::innerSetUp();\
         }\
-		virtual void innerTearDown()\
+        virtual void innerTearDown()\
         {\
             base1::innerTearDown();\
             base2::innerTearDown();\
@@ -387,23 +520,23 @@ void YUNIT_API throwException(const SourceLine& sourceLine, const double expecte
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define test_(name)\
-	struct TestCase__##name : public YUNIT_NS::TestCase\
-	{\
-		TestCase__##name(const char* name, bool isIgnored, const YUNIT_NS::SourceLine& source)\
-		: YUNIT_NS::TestCase(name, isIgnored, source)\
-		{}\
-		virtual void innerSetUp() {}\
+    struct TestCase__##name : public YUNIT_NS::TestCase\
+    {\
+        TestCase__##name(const char* name, bool isIgnored, const YUNIT_NS::SourceLine& source)\
+        : YUNIT_NS::TestCase(name, isIgnored, source)\
+        {}\
+        virtual void innerSetUp() {}\
         virtual void execute();\
-		virtual void innerTearDown() {}\
+        virtual void innerTearDown() {}\
     };
 
 #define test1_(name, usedFixture)\
-	struct TestCase__##name : public YUNIT_NS::TestCase, public usedFixture\
-	{\
-		TestCase__##name(const char* name, bool isIgnored, const YUNIT_NS::SourceLine& source)\
-		: YUNIT_NS::TestCase(name, isIgnored, source)\
-		{}\
-		virtual void execute();\
+    struct TestCase__##name : public YUNIT_NS::TestCase, public usedFixture\
+    {\
+        TestCase__##name(const char* name, bool isIgnored, const YUNIT_NS::SourceLine& source)\
+        : YUNIT_NS::TestCase(name, isIgnored, source)\
+        {}\
+        virtual void execute();\
     };
 
 #define registerTest(name, source)\
@@ -418,147 +551,6 @@ void YUNIT_API throwException(const SourceLine& sourceLine, const double expecte
 #define ignoredTestBodyDef(name)\
     void TestCase__##name::execute() {}\
     template<typename T> void TestCase ## name ## Fake()
-
-#define test(name)\
-    test_(name)\
-    registerTest(name, YUNIT_SOURCELINE())\
-    testBodyDef(name)
-
-#define test1(name, usedFixture)\
-    test1_(name, fixtureName(usedFixture))\
-    registerTest(name, YUNIT_SOURCELINE())\
-    testBodyDef(name)
-
-#define test2(name, usedFixture1, usedFixture2)\
-    fixture2(fixtureName2(name, usedFixture1, usedFixture2),\
-             fixtureName(usedFixture1),\
-             fixtureName(usedFixture2))\
-    test1_(name, fixtureName2(name, usedFixture1, usedFixture2))\
-    registerTest(name, YUNIT_SOURCELINE())\
-    testBodyDef(name)
-
-#define _test(name)\
-    test_(name)\
-    registerIgnoredTest(name, YUNIT_SOURCELINE())\
-    ignoredTestBodyDef(name)
-
-#define _test1(name, usedFixture)\
-    test_(name)\
-    registerIgnoredTest(name, YUNIT_SOURCELINE())\
-    ignoredTestBodyDef(name)
-
-#define _test2(name, usedFixture1, usedFixture2)\
-    test_(name)\
-    registerIgnoredTest(name, YUNIT_SOURCELINE())\
-    ignoredTestBodyDef(name)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define example(name)\
-	test_(name)\
-	testBodyDef(name) {}\
-	void example##name()
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define todo(name)\
-    test_(name)\
-    registerTest(name, YUNIT_SOURCELINE())\
-    testBodyDef(name)\
-	{\
-		throwException(YUNIT_SOURCELINE(), L"You want to make this test as soon as possible", true);\
-	}\
-	void futureTest##name()
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ASSERTS
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#define isNull(actual)\
-	if(!YUNIT_NS::cppunitAssert((actual) == NULL))\
-        YUNIT_NS::throwException(YUNIT_SOURCELINE(), L ## #actual L" is not NULL", false)
-
-#define isTrue(condition)\
-	if(!YUNIT_NS::cppunitAssert(condition))\
-		YUNIT_NS::throwException(YUNIT_SOURCELINE(), #condition)
-
-#define isFalse(condition)\
-	if(YUNIT_NS::cppunitAssert(condition))\
-		YUNIT_NS::throwException(YUNIT_SOURCELINE(), #condition " != false", false)
-
-#define areEq(expected, actual)\
-	if(!YUNIT_NS::cppunitAssert((expected), (actual)))\
-        YUNIT_NS::throwException(YUNIT_SOURCELINE(), (expected), (actual), true)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define areNotEq(expected, actual)\
-	if(YUNIT_NS::cppunitAssert((expected), (actual)))\
-		YUNIT_NS::throwException(YUNIT_SOURCELINE(), (expected), (actual), false)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define areDoubleEq(expected, actual, delta)\
-	if(!YUNIT_NS::cppunitAssert((expected), (actual), (delta)))\
-		YUNIT_NS::throwException(YUNIT_SOURCELINE(), (expected), (actual), (delta), true)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define areDoubleNotEq(expected, actual, delta)\
-	if(YUNIT_NS::cppunitAssert((expected), (actual), (delta)))\
-		YUNIT_NS::throwException(YUNIT_SOURCELINE(), (expected), (actual), (delta), false)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define willThrow(expression, exceptionType)																\
-	{                                                                                                       \
-        bool catched = false;                                                                               \
-		try																									\
-		{																									\
-			expression;																			            \
-		}																									\
-		catch(const exceptionType&)																			\
-		{																									\
-			catched = true;																					\
-		}																									\
-		if (!catched)																						\
-		{                                                                                                   \
-            YUNIT_NS::throwException(YUNIT_SOURCELINE(),												\
-			"Expected exception "" #exceptionType "" hasn't been not thrown.", true);						\
-        }                                                                                                   \
-	}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define noSpecificThrow(expression, exceptionType)														\
-	try																									\
-	{																									\
-		expression;																						\
-	}																									\
-	catch(const exceptionType&)																			\
-	{																									\
-		YUNIT_NS::throwException(YUNIT_SOURCELINE(),													\
-			"Not expected exception \"" #exceptionType "\" has been thrown.", true);			\
-	}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define noAnyCppThrow(expression)														\
-	try																									\
-	{																									\
-		expression;																						\
-	}																									\
-	catch(...)																			\
-	{																									\
-		YUNIT_NS::throwException(YUNIT_SOURCELINE(),													\
-			"Unwanted C++ exception has been thrown.", true);			\
-	}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define noSehThrow(expression)																	\
-	__try																									\
-	{																										\
-		expression;																							\
-	}																										\
-	__except(EXCEPTION_EXECUTE_HANDLER)																		\
-	{																										\
-		YUNIT_NS::throwException(YUNIT_SOURCELINE(), "Unwanted SEH exception has been thrown.", true);		\
-	}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 } // namespace YUNIT_NS
 

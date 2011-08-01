@@ -263,18 +263,20 @@ _test2(Test6bis, fixtureA, fixtureB)
     int uncompiledCode[0] = {1};
 }
 #endif
-test(GetTestContainerExtensions)
-{
-    const char** extList = YUNIT_NS::getTestContainerExtensions();
-    areEq(".t.dll", extList[0]);
-    isNull(extList[1]);
-}
 
 test(IsNullAssert)
 {
     void* p = NULL;
     isNull(p);
     willThrow(isNull(1), YUNIT_NS::TestException);
+}
+
+test(isNotNullAssert)
+{
+    static void* pointer = &pointer;
+    isNotNull(pointer);
+
+    willThrow(isNotNull(NULL), YUNIT_NS::TestException);
 }
 
 test(TestBoolAssert)
@@ -571,6 +573,7 @@ test(CompareConstAndNonConstWcharPointer)
     areNotEq(a, b);
 }
 
+#ifdef WIN32
 test(TestSetGoodWorkingDir)
 {
 #ifdef WIN32
@@ -583,6 +586,7 @@ test(TestSetGoodWorkingDir)
         f.close();
     isTrue(exist);
 }
+#endif
 
 test(WrongMessageTextWhere)
 {
@@ -676,20 +680,3 @@ todo(ForFutureCreation)
 {
 }
 */
-
-// this test need to check minidump creation
-//~ _test(RaiseExceptionInSeparateThread)
-//~ {
-    //~ struct ___
-    //~ {
-        //~ static unsigned int WINAPI workerThread(void* lpParam)
-        //~ {
-            //~ return (int)lpParam / (int)0;
-        //~ }
-    //~ };
-
-    //~ HANDLE hThread = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0, ___::workerThread, (LPVOID)0, 0, NULL));
-    //~ areNotEq(INVALID_HANDLE_VALUE, hThread);
-    //~ ::WaitForSingleObject(hThread, 100);
-    //~ ::CloseHandle(hThread);
-//~ }

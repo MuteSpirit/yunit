@@ -1,4 +1,4 @@
-local fs = require('filesystem')
+local fs = require('yunit.filesystem')
 local testRunner = require('yunit.test_runner')
 --~ local minidump = require('minidump')
 
@@ -8,6 +8,9 @@ local testObserver = testRunner.TestResultHandlerList:new()
 if testResultHandler then
     testObserver:addHandler(testResultHandler)
 end
+
+local fixFailedResHandler = require('yunit.test_result_handlers').FixFailed:new()
+testObserver:addHandler(fixFailedResHandler)
 
 --~ if testResultHandler2 then
 --~     testObserver:addHandler(testResultHandler2)
@@ -25,4 +28,8 @@ function run(path)
     testRunner.loadTestUnitEngines{'yunit.luaunit'}
     testRunner.loadTestContainers{fs.canonizePath(path)}
     testRunner.runAllTestCases(testObserver)
+    
+    if not fixFailedResHandler:passed() then
+        error("Test run has not been passed")
+    end
 end

@@ -1,4 +1,4 @@
-local fs = require('filesystem')
+local fs = require('yunit.filesystem')
 local testRunner = require('yunit.test_runner')
 --~ local minidump = require('minidump')
 

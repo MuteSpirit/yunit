@@ -38,7 +38,7 @@
 
 
 
-local luaExt = require('lua_ext')
+local luaExt = require('yunit.lua_ext')
 
 
 
