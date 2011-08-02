@@ -15,6 +15,7 @@ endif(MSVC)
 #
 add_library(cppunit SHARED test.cpp test.h)
 target_link_libraries(cppunit ${LUA51_LIBRARY})
+set_target_properties(cppunit PROPERTIES PREFIX "")
 #
 # trace
 #
@@ -34,6 +35,7 @@ endif(WIN32)
 #
 add_library(cppunit.t SHARED test.t.cpp)
 target_link_libraries(cppunit.t cppunit)
+set_target_properties(cppunit.t PROPERTIES PREFIX "")
 if(WIN32)
     add_dependencies(cppunit.t cppunit trace)
     add_custom_command(TARGET cppunit.t 

@@ -36,7 +36,7 @@ set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/copyright.txt")
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY lua)
 
-set(CPACK_SOURCE_GENERATOR "TBZ2;TGZ;ZIP")
+set(CPACK_SOURCE_GENERATOR TBZ2;TGZ;ZIP)
 
 IF(WIN32 AND NOT UNIX)
     # There is a bug in NSI that does not handle full unix paths properly. Make
