@@ -26,6 +26,7 @@ endif(MSVC)
 # cppunit
 #
 add_library(cppunit SHARED test.cpp test.h)
+set_target_properties(cppunit PROPERTIES PREFIX "")
 target_link_libraries(cppunit ${LUA51_LIBRARY})
 #
 # trace
@@ -46,6 +47,7 @@ endif(WIN32)
 #
 add_library(cppunit.t SHARED test.t.cpp)
 target_link_libraries(cppunit.t cppunit)
+set_target_properties(cppunit.t PROPERTIES PREFIX "")
 if(WIN32)
     add_dependencies(cppunit.t cppunit trace)
     add_test(cppunit.t lua5.1.exe -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]] .. package.path"  -e "package.cpath=[[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/?.dll;]]..package.cpath" -l yunit.work_in_vs -l yunit.default_test_run -e "run([[$<TARGET_FILE:cppunit.t>]])")
