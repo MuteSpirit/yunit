@@ -5,7 +5,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include <lua/lua.h>
+#include <lua.h>
 #ifdef __cplusplus
 }
 #endif
