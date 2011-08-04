@@ -161,21 +161,28 @@ namespace YUNIT_NS {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef YUNIT_API
-#	if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
-#		if defined(YUNIT_STATIC_LINKED)
-#			define YUNIT_API
-#		elif defined(YUNIT_DLL)
-#			define YUNIT_API __declspec(dllimport)
-#		else
-#			define YUNIT_API __declspec(dllexport)
-#		endif
-#	else
-#	   if defined(__GNUC__) && defined(GCC_HASCLASSVISIBILITY)
-#			define YUNIT_API __attribute__ ((visibility("default")))
-#	   else
-#			define YUNIT_API
-#	   endif
-#	endif
+#   if defined _WIN32 || defined __CYGWIN__
+#       define YUNIT_HELPER_DLL_IMPORT __declspec(dllimport)
+#       define YUNIT_HELPER_DLL_EXPORT __declspec(dllexport)
+#       define YUNIT_HELPER_DLL_LOCAL
+#   else
+#       if __GNUC__ >= 4
+#           define YUNIT_HELPER_DLL_IMPORT __attribute__ ((visibility ("default")))
+#           define YUNIT_HELPER_DLL_EXPORT __attribute__ ((visibility ("default")))
+#           define YUNIT_HELPER_DLL_LOCAL  __attribute__ ((visibility ("hidden")))
+#       else
+#           define YUNIT_HELPER_DLL_IMPORT
+#           define YUNIT_HELPER_DLL_EXPORT
+#           define YUNIT_HELPER_DLL_LOCAL
+#       endif
+#   endif
+
+#   ifdef YUNIT_DLL_EXPORTS // defined if we are building the YUNIT DLL (instead of using it)
+#       define YUNIT_API YUNIT_HELPER_DLL_EXPORT
+#   else
+#       define YUNIT_API YUNIT_HELPER_DLL_IMPORT
+#   endif
+#   define YUNIT_LOCAL YUNIT_HELPER_DLL_LOCAL
 #endif
 
 #ifndef TS_T
@@ -190,18 +197,18 @@ namespace YUNIT_NS {
 class YUNIT_API Thunk
 {
 public:
-    Thunk() throw();
+    Thunk();
 
     template<typename T, void (T::* funcPtr)()>
-    static Thunk create(T* thisPtr) throw();
+    static Thunk create(T* thisPtr);
 
     void invoke();
 
 private:
-    Thunk(void (* thunkPtr)(void*), void* thisPtr) throw();
+    Thunk(void (* thunkPtr)(void*), void* thisPtr);
 
     template<typename T, void (T::* funcPtr)()>
-    static void thunk(void* thisPtr) throw();
+    static void thunk(void* thisPtr);
 
     void (* thunkPtr_)(void*);
     void* thisPtr_;
@@ -286,33 +293,9 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class TestSuite
-{
-public:
-    typedef std::list<TestCase*> TestCaseList;
-    typedef TestCaseList::const_iterator TestCaseConstIter;
-private:
-    typedef TestCaseList::iterator TestCaseIter;
+class TestSuite;
 
-public:
-    YUNIT_API TestSuite(const char* name = 0);
-    TestSuite(const TestSuite& rhs);
-    TestSuite& operator=(const TestSuite& rhs);
-    virtual ~TestSuite();
 
-    const char* name() const;
-
-    TestCaseConstIter begin();
-    TestCaseConstIter end();
-
-    void addTestCase(TestCase* testCase);
-
-private:
-    const char* name_;
-    TestCaseList testCases_;
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class TestRegistry
 {
 public:
@@ -356,7 +339,7 @@ struct RegisterIgnoredTestCase
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class TestException : public std::exception
+class YUNIT_API TestException : public std::exception
 {
 public:
     virtual ~TestException() throw();
@@ -379,13 +362,13 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T, void (T::* funcPtr)()>
-Thunk Thunk::create(T* thisPtr) throw()
+Thunk Thunk::create(T* thisPtr)
 {
     return Thunk(&thunk<T, funcPtr>, thisPtr);
 }
 
 template<typename T, void (T::* funcPtr)()>
-void Thunk::thunk(void* thisPtr) throw()
+void Thunk::thunk(void* thisPtr)
 {
     (static_cast<T*>(thisPtr)->*funcPtr)();
 }
@@ -457,7 +440,7 @@ void YUNIT_API throwException(const SourceLine& sourceLine, const long long expe
 void YUNIT_API throwException(const SourceLine& sourceLine, const char* expected, const char* actual,
                             bool mustBeEqual);
 
-inline void throwException(const SourceLine& sourceLine,
+inline void YUNIT_API throwException(const SourceLine& sourceLine,
                     const std::string& expected,
                     const std::string& actual,
                     bool mustBeEqual)
@@ -468,7 +451,7 @@ inline void throwException(const SourceLine& sourceLine,
 void YUNIT_API throwException(const SourceLine& sourceLine, const wchar_t* expected, const wchar_t* actual,
                             bool mustBeEqual);
 
-inline void throwException(const SourceLine& sourceLine,
+inline void YUNIT_API throwException(const SourceLine& sourceLine,
                                  const std::wstring& expected,
                                  const std::wstring& actual,
                                  bool mustBeEqual)

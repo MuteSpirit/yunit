@@ -21,6 +21,7 @@ extern "C" {
 }
 #endif
 
+#define YUNIT_DLL_EXPORTS
 #include "test.h"
 
 namespace YUNIT_NS {
@@ -30,6 +31,34 @@ static int getTestList(lua_State* L);
 static void createTestCaseMetatable(lua_State* L);
 
 static const char* testCaseMtName = "testCaseMetatable";
+    
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class TestSuite
+{
+public:
+    typedef std::list<TestCase*> TestCaseList;
+    typedef TestCaseList::const_iterator TestCaseConstIter;
+private:
+    typedef TestCaseList::iterator TestCaseIter;
+
+public:
+    YUNIT_API TestSuite(const char* name = 0);
+    TestSuite(const TestSuite& rhs);
+    TestSuite& operator=(const TestSuite& rhs);
+    virtual ~TestSuite();
+
+    const char* name() const;
+
+    TestCaseConstIter begin();
+    TestCaseConstIter end();
+
+    void addTestCase(TestCase* testCase);
+
+private:
+    const char* name_;
+    TestCaseList testCases_;
+};
+    
 } // namespace YUNIT_NS
 
 
@@ -371,13 +400,13 @@ const char** getTestContainerExtensions()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Thunk::Thunk() throw()
+Thunk::Thunk()
 : thunkPtr_(0)
 , thisPtr_(0)
 {
 }
 
-Thunk::Thunk(void (* thunkPtr)(void*), void* thisPtr) throw()
+Thunk::Thunk(void (* thunkPtr)(void*), void* thisPtr)
 : thunkPtr_(thunkPtr)
 , thisPtr_(thisPtr)
 {
@@ -389,7 +418,7 @@ void Thunk::invoke()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class TestConditionException : public TestException
+class YUNIT_API TestConditionException : public TestException
 {
 private:
     typedef TestException Parent;
@@ -407,7 +436,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename CharType>
-class TestMessageException : public TestException
+class YUNIT_API TestMessageException : public TestException
 {
 private:
     typedef TestException Parent;
@@ -425,7 +454,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T1, typename T2>
-class TestEqualException : public TestException
+class YUNIT_API TestEqualException : public TestException
 {
 private:
     typedef TestException Parent;
@@ -442,7 +471,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class TestEqualPointersException : public TestException
+class YUNIT_API TestEqualPointersException : public TestException
 {
 private:
     typedef TestException Parent;
@@ -460,7 +489,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T>
-class TestDoubleEqualException : public TestException
+class YUNIT_API TestDoubleEqualException : public TestException
 {
 private:
     typedef TestException Parent;

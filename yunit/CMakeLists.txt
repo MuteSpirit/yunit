@@ -11,16 +11,13 @@ else(WIN32)
     
     find_library(LUA51_LIBRARY lua5.1)
 endif(WIN32)
-
-
-
 #
 # Enable C++ exceptions
 #
 if(MSVC)
     add_definitions(/EHsc)
 else(MSVC)
-    add_definitions(-fexceptions -fnon-call-exceptions)
+    add_definitions(-fexceptions -std=c++0x)
 endif(MSVC)
 #
 # cppunit
@@ -53,9 +50,10 @@ if(WIN32)
     add_test(cppunit.t lua5.1.exe -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]] .. package.path"  -e "package.cpath=[[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/?.dll;]]..package.cpath" -l yunit.work_in_vs -l yunit.default_test_run -e "run([[$<TARGET_FILE:cppunit.t>]])")
 else(WIN32)
     add_dependencies(cppunit.t cppunit)
-    add_test(cppunit.t lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib?.so;]]..package.cpath" -l yunit.work_in_scite -l yunit.default_test_run -e "run([[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libcppunit.t.so]])")
+    add_test(cppunit.t lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/?.so;]]..package.cpath" -l yunit.work_in_scite -l yunit.default_test_run -e "run([[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cppunit.t.so]])")
+    message(lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/?.so;]]..package.cpath" -l yunit.work_in_scite -l yunit.default_test_run -e "run([[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cppunit.t.so]])")
     
-    add_test(cppunit.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib?.so;]]..package.cpath" -l yunit.work_in_scite -l yunit.lua_test_run -e "run([[${CMAKE_CURRENT_SOURCE_DIR}/cppunit.t.lua]])")
+    add_test(cppunit.t.lua lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/?.so;]]..package.cpath" -l yunit.work_in_scite -l yunit.lua_test_run -e "run([[${CMAKE_CURRENT_SOURCE_DIR}/cppunit.t.lua]])")
 endif(WIN32)
 #
 # Tests
