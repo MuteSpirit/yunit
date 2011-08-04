@@ -9,6 +9,9 @@ if testResultHandler then
     testObserver:addHandler(testResultHandler)
 end
 
+local fixFailedResHandler = require('yunit.test_result_handlers').FixFailed:new()
+testObserver:addHandler(fixFailedResHandler)
+
 --~ minidump.setCrashHandler()
 
 function run(path)
@@ -21,4 +24,9 @@ function run(path)
     testRunner.loadTestUnitEngines{'cppunit', 'yunit.luaunit'}
     testRunner.loadTestContainers{fs.canonizePath(path)}
     testRunner.runAllTestCases(testObserver)
+
+    
+    if not fixFailedResHandler:passed() then
+        error("Test run has not been passed")
+    end
 end
