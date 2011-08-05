@@ -127,6 +127,7 @@
 
 #include <sstream>
 #include <fstream>
+
 #include "test.h"
 
 #ifdef WIN32
@@ -680,3 +681,8 @@ todo(ForFutureCreation)
 {
 }
 */
+
+test(failed)
+{
+    isTrue(false);
+}
