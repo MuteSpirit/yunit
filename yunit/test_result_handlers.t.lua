@@ -222,6 +222,11 @@ function errorObjectFixture.fixed_failed_test_result_handler_return_ok()
 	isTrue(testResHandler:passed())
 end
 
+function errorObjectFixture.fixed_failed_test_result_handler_return_not_ok_on_tests_absent()
+	local testResHandler = testResultHandlers.FixFailed:new()
+	isFalse(testResHandler:passed())
+end
+
 function errorObjectFixture.fixed_failed_test_result_handler_return_not_ok_on_test_error()
 	local testResHandler = testResultHandlers.FixFailed:new()
     testResHandler:onTestError(fakeTestCaseName, fakeErrorObject)

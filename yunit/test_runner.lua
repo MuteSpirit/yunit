@@ -174,10 +174,13 @@ end
 
 function loadTestContainers(filePathList)
     -- load test containers into test case lists inside Test Unit Engines
+    local res, errMsg
     for _, filePath in ipairs(filePathList) do
-        local res, errMsg;
+        res = false
+        errMsg = nil
+        
         for ext, tue in pairs(GlobalTestUnitEngineList) do
-            if string.find(filePath, ext, -string.len(ext), true) then
+            if string.find(string.lower(filePath), string.lower(ext), -string.len(ext), true) then
                 res, errMsg = tue.loadTestContainer(filePath);
                 break;
             end

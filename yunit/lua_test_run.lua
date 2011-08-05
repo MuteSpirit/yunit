@@ -30,6 +30,6 @@ function run(path)
     testRunner.runAllTestCases(testObserver)
     
     if not fixFailedResHandler:passed() then
-        error("Test run has not been passed")
+        error("Test run executed with fail(es) and/or error(s)")
     end
 end

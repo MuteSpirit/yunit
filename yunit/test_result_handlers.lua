@@ -352,7 +352,7 @@ FixFailed = testRunner.TestResultHandler:new()
 function FixFailed:new()
     local o =
     {
-        passed_ = true,
+        passed_ = false,
     };
     setmetatable(o, self);
     self.__index = self;
@@ -361,6 +361,10 @@ end
 
 function FixFailed:passed()
     return self.passed_
+end
+
+function FixFailed:onTestSuccessfull(testCaseName)
+    self.passed_ = true
 end
 
 function FixFailed:onTestFailure(testCaseName, errorObject)
