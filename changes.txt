@@ -1,0 +1,20 @@
+yUnit 0.3.10 ()
+    Rename files and directories for new project name yUnit
+    Refactoring
+    Small bug fix
+    Issue 1 : In summary test results text, number of error tests has indent of 1 space concerning success and failed once
+    Issue 2 : Need XmlResultReporter for using in test run by CI Server (Hudson/Jenkins)
+    Issue 5 : Use CMake for project build process
+    Use CPack for making distributivies and CTest for run tests
+    Issue 7 : Don't see test run progress results during post build event execution in output
+    Issue 9 : Unavailable error message during loading test container
+    Issue 14 : My test titles begin with small letter, so 'TestCase' prifix prevent test name detection
+    Issue 15 : Add line break after 'Error:' and before message with maybe stack traceback
+    Change Lua API of Language Test Unit Engine
+    Issue 16 : Add reverse compatible with Language Test Unit Engine API for version <= 0.3.7
+    Issue 17 : Exlude Lua, LuaFilesystem and other dependencies from project 
+    Issue 19 : Add assert 'isNotNull' into cppunit
+    Remove unused NetBeans projects
+    Issue 22 : One failed C++ test fail whole test run on Linux 
+
+yUnit 0.3.7.1 (27 april 2011)
