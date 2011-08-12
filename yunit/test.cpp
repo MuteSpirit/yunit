@@ -418,7 +418,7 @@ void Thunk::invoke()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class YUNIT_API TestConditionException : public TestException
+class TestConditionException : public TestException
 {
 private:
     typedef TestException Parent;
@@ -436,7 +436,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename CharType>
-class YUNIT_API TestMessageException : public TestException
+class TestMessageException : public TestException
 {
 private:
     typedef TestException Parent;
@@ -454,7 +454,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T1, typename T2>
-class YUNIT_API TestEqualException : public TestException
+class TestEqualException : public TestException
 {
 private:
     typedef TestException Parent;
@@ -471,7 +471,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class YUNIT_API TestEqualPointersException : public TestException
+class TestEqualPointersException : public TestException
 {
 private:
     typedef TestException Parent;
@@ -489,7 +489,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T>
-class YUNIT_API TestDoubleEqualException : public TestException
+class TestDoubleEqualException : public TestException
 {
 private:
     typedef TestException Parent;
@@ -956,42 +956,42 @@ bool cppunitAssert(const wchar_t *expected, const wchar_t *actual)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void throwException(const SourceLine& sourceLine, const char* condition)
+void YUNIT_API throwException(const SourceLine& sourceLine, const char* condition)
 {
     throw TestConditionException(sourceLine, condition);
 }
 
-void throwException(const SourceLine& sourceLine, const char* message, bool)
+void YUNIT_API throwException(const SourceLine& sourceLine, const char* message, bool)
 {
     throw TestMessageException<char>(sourceLine, message);
 }
 
-void throwException(const SourceLine& sourceLine, const wchar_t* message, bool)
+void YUNIT_API throwException(const SourceLine& sourceLine, const wchar_t* message, bool)
 {
     throw TestMessageException<wchar_t>(sourceLine, message);
 }
 
-void throwException(const SourceLine& sourceLine, const long long expected, const long long actual, bool mustBeEqual)
+void YUNIT_API throwException(const SourceLine& sourceLine, const long long expected, const long long actual, bool mustBeEqual)
 {
     throw TestEqualException<long long, long long>(sourceLine, expected, actual, mustBeEqual);
 }
 
-void throwException(const SourceLine& sourceLine, const void* expected, const void* actual, bool mustBeEqual)
+void YUNIT_API throwException(const SourceLine& sourceLine, const void* expected, const void* actual, bool mustBeEqual)
 {
     throw TestEqualPointersException(sourceLine, expected, actual, mustBeEqual);
 }
 
-void throwException(const SourceLine& sourceLine, const wchar_t* expected, const wchar_t* actual, bool mustBeEqual)
+void YUNIT_API throwException(const SourceLine& sourceLine, const wchar_t* expected, const wchar_t* actual, bool mustBeEqual)
 {
     throw TestEqualException<std::wstring, std::wstring>(sourceLine, expected ? expected : L"NULL", actual ? actual : L"NULL", mustBeEqual);
 }
 
-void throwException(const SourceLine& sourceLine, const char* expected, const char* actual, bool mustBeEqual)
+void YUNIT_API throwException(const SourceLine& sourceLine, const char* expected, const char* actual, bool mustBeEqual)
 {
     throw TestEqualException<std::string, std::string>(sourceLine, expected ? expected : "NULL", actual ? actual : "NULL", mustBeEqual);
 }
 
-void throwException(const SourceLine& sourceLine,
+void YUNIT_API throwException(const SourceLine& sourceLine,
                     const double expected, const double actual, const double delta,
 					bool mustBeEqual)
 {

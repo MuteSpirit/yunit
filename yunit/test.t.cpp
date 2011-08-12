@@ -681,8 +681,3 @@ todo(ForFutureCreation)
 {
 }
 */
-
-test(failed)
-{
-    isTrue(false);
-}
