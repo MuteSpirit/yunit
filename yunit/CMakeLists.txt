@@ -68,7 +68,7 @@ endif(WIN32)
 if(WIN32)
     add_custom_command(TARGET cppunit.t
                        POST_BUILD
-                       COMMAND lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.default_test_run -e "run([[${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/cppunit.t.${SHARED_LIB_EXT}]])"
+                       COMMAND lua5.1 -e \"package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path\" -e \"package.cpath=[[${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/?.${SHARED_LIB_EXT};]]..package.cpath\" -l ${WORK_IN} -l yunit.default_test_run -e \"run([[${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/cppunit.t.${SHARED_LIB_EXT}]])\"
                        )
 else(WIN32)
     add_test(cppunit.t lua5.1 -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.default_test_run -e "run([[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cppunit.t.${SHARED_LIB_EXT}]])")

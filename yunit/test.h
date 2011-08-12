@@ -20,6 +20,40 @@
 #include <list>
 #include <string>
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#ifndef YUNIT_API
+#   if defined _WIN32 || defined __CYGWIN__
+#       define YUNIT_HELPER_DLL_IMPORT __declspec(dllimport)
+#       define YUNIT_HELPER_DLL_EXPORT __declspec(dllexport)
+#       define YUNIT_HELPER_DLL_LOCAL
+#   else
+#       if __GNUC__ >= 4
+#           define YUNIT_HELPER_DLL_IMPORT __attribute__ ((visibility ("default")))
+#           define YUNIT_HELPER_DLL_EXPORT __attribute__ ((visibility ("default")))
+#           define YUNIT_HELPER_DLL_LOCAL  __attribute__ ((visibility ("hidden")))
+#       else
+#           define YUNIT_HELPER_DLL_IMPORT
+#           define YUNIT_HELPER_DLL_EXPORT
+#           define YUNIT_HELPER_DLL_LOCAL
+#       endif
+#   endif
+
+#   ifdef YUNIT_DLL_EXPORTS // defined if we are building the YUNIT DLL (instead of using it)
+#       define YUNIT_API YUNIT_HELPER_DLL_EXPORT
+#   else
+#       define YUNIT_API YUNIT_HELPER_DLL_IMPORT
+#   endif
+#   define YUNIT_LOCAL YUNIT_HELPER_DLL_LOCAL
+#endif
+
+#ifndef TS_T
+#	if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
+#		define TS_SNPRINTF	_snprintf
+#	else
+#		define TS_SNPRINTF	snprintf
+#	endif
+#endif
+
 
 namespace YUNIT_NS {
 
@@ -158,40 +192,6 @@ namespace YUNIT_NS {
     {																										\
         YUNIT_NS::throwException(YUNIT_SOURCELINE(), "Unwanted SEH exception has been thrown.", true);		\
     }
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef YUNIT_API
-#   if defined _WIN32 || defined __CYGWIN__
-#       define YUNIT_HELPER_DLL_IMPORT __declspec(dllimport)
-#       define YUNIT_HELPER_DLL_EXPORT __declspec(dllexport)
-#       define YUNIT_HELPER_DLL_LOCAL
-#   else
-#       if __GNUC__ >= 4
-#           define YUNIT_HELPER_DLL_IMPORT __attribute__ ((visibility ("default")))
-#           define YUNIT_HELPER_DLL_EXPORT __attribute__ ((visibility ("default")))
-#           define YUNIT_HELPER_DLL_LOCAL  __attribute__ ((visibility ("hidden")))
-#       else
-#           define YUNIT_HELPER_DLL_IMPORT
-#           define YUNIT_HELPER_DLL_EXPORT
-#           define YUNIT_HELPER_DLL_LOCAL
-#       endif
-#   endif
-
-#   ifdef YUNIT_DLL_EXPORTS // defined if we are building the YUNIT DLL (instead of using it)
-#       define YUNIT_API YUNIT_HELPER_DLL_EXPORT
-#   else
-#       define YUNIT_API YUNIT_HELPER_DLL_IMPORT
-#   endif
-#   define YUNIT_LOCAL YUNIT_HELPER_DLL_LOCAL
-#endif
-
-#ifndef TS_T
-#	if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
-#		define TS_SNPRINTF	_snprintf
-#	else
-#		define TS_SNPRINTF	snprintf
-#	endif
-#endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class YUNIT_API Thunk
@@ -417,12 +417,12 @@ bool YUNIT_API cppunitAssert(const char *expected, const char *actual);
 bool YUNIT_API cppunitAssert(const wchar_t *expected, const wchar_t *actual);
 
 
-inline bool cppunitAssert(const std::wstring& expected, const std::wstring& actual)
+inline bool YUNIT_API cppunitAssert(const std::wstring& expected, const std::wstring& actual)
 {
     return cppunitAssert(expected.c_str(), actual.c_str());
 }
 
-inline bool cppunitAssert(const std::string& expected, const std::string& actual)
+inline bool YUNIT_API cppunitAssert(const std::string& expected, const std::string& actual)
 {
     return cppunitAssert(expected.c_str(), actual.c_str());
 }
