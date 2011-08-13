@@ -112,7 +112,7 @@ namespace YUNIT_NS {
 // ASSERTS
 
 #define isNull(actual)\
-    if(!YUNIT_NS::cppunitAssert((actual) == NULL))\
+    if(!YUNIT_NS::cppunitAssert(0 == (actual)))\
         YUNIT_NS::throwException(YUNIT_SOURCELINE(), L ## #actual L" is not NULL", false)
 
 #define isNotNull(actual)\
