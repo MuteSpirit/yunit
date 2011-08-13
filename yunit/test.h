@@ -78,7 +78,7 @@ namespace YUNIT_NS {
 // ASSERTS
 
 #define isNull(actual)\
-    if(!YUNIT_NS::cppunitAssert((actual) == NULL))\
+    if(!YUNIT_NS::cppunitAssert(0 == (actual)))\
         YUNIT_NS::throwException(YUNIT_SOURCELINE(), L ## #actual L" is not NULL", false)
 
 #define isNotNull(actual)\
@@ -417,12 +417,12 @@ bool YUNIT_API cppunitAssert(const char *expected, const char *actual);
 bool YUNIT_API cppunitAssert(const wchar_t *expected, const wchar_t *actual);
 
 
-inline bool cppunitAssert(const std::wstring& expected, const std::wstring& actual)
+inline bool YUNIT_API cppunitAssert(const std::wstring& expected, const std::wstring& actual)
 {
     return cppunitAssert(expected.c_str(), actual.c_str());
 }
 
-inline bool cppunitAssert(const std::string& expected, const std::string& actual)
+inline bool YUNIT_API cppunitAssert(const std::string& expected, const std::string& actual)
 {
     return cppunitAssert(expected.c_str(), actual.c_str());
 }
