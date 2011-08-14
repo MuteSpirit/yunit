@@ -55,8 +55,6 @@
 #endif
 
 
-namespace YUNIT_NS {
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define test(name)\
     test_(name)\
@@ -192,6 +190,81 @@ namespace YUNIT_NS {
     {																										\
         YUNIT_NS::throwException(YUNIT_SOURCELINE(), "Unwanted SEH exception has been thrown.", true);		\
     }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define CONCAT(a, b) a ## b
+#define CONCAT2(x, y) CONCAT(x, y)
+#define UNIQUENAME(prefix) CONCAT2(prefix, __COUNTER__)
+
+#define UNIQUE_REGISTER_NAME(name) Register ## name
+#define UNIQUE_TEST_NAMESPACE(name) name ## Namespace
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define YUNIT_SOURCELINE()   YUNIT_NS::SourceLine(__FILE__, __LINE__)
+
+#define fixtureName(name) name ## Fixture
+#define fixtureName2(name, name1, name2) fixtureName(name ## name1 ## name2)
+
+#define fixture(name)\
+    struct fixtureName(name) : public virtual YUNIT_NS::Fixture
+
+#define fixture2(derived, base1, base2)\
+    struct derived : public base1,\
+                     public base2 \
+    {\
+        virtual void innerSetUp()\
+        {\
+            base1::innerSetUp();\
+            base2::innerSetUp();\
+        }\
+        virtual void innerTearDown()\
+        {\
+            base1::innerTearDown();\
+            base2::innerTearDown();\
+        }\
+    };
+
+#define setUp()\
+    virtual void innerSetUp()
+
+#define tearDown()\
+    virtual void innerTearDown()
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define test_(name)\
+    struct TestCase__##name : public YUNIT_NS::TestCase\
+    {\
+        TestCase__##name(const char* name, bool isIgnored, const YUNIT_NS::SourceLine& source)\
+        : YUNIT_NS::TestCase(name, isIgnored, source)\
+        {}\
+        virtual void innerSetUp() {}\
+        virtual void execute();\
+        virtual void innerTearDown() {}\
+    };
+
+#define test1_(name, usedFixture)\
+    struct TestCase__##name : public YUNIT_NS::TestCase, public usedFixture\
+    {\
+        TestCase__##name(const char* name, bool isIgnored, const YUNIT_NS::SourceLine& source)\
+        : YUNIT_NS::TestCase(name, isIgnored, source)\
+        {}\
+        virtual void execute();\
+    };
+
+#define registerTest(name, source)\
+    YUNIT_NS::RegisterTestCase<TestCase__##name> UNIQUENAME(name)(#name, source);
+
+#define registerIgnoredTest(name, source)\
+    YUNIT_NS::RegisterIgnoredTestCase<TestCase__##name> UNIQUENAME(name)(#name, source);
+
+#define testBodyDef(name)\
+    void TestCase__##name::execute()
+
+#define ignoredTestBodyDef(name)\
+    void TestCase__##name::execute() {}\
+    template<typename T> void TestCase ## name ## Fake()
+
+namespace YUNIT_NS {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class YUNIT_API Thunk
@@ -461,79 +534,6 @@ inline void YUNIT_API throwException(const SourceLine& sourceLine,
 
 void YUNIT_API throwException(const SourceLine& sourceLine, const double expected, const double actual,
                             const double delta, bool mustBeEqual);
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define CONCAT(a, b) a ## b
-#define CONCAT2(x, y) CONCAT(x, y)
-#define UNIQUENAME(prefix) CONCAT2(prefix, __COUNTER__)
-
-#define UNIQUE_REGISTER_NAME(name) Register ## name
-#define UNIQUE_TEST_NAMESPACE(name) name ## Namespace
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define YUNIT_SOURCELINE()   YUNIT_NS::SourceLine(__FILE__, __LINE__)
-
-#define fixtureName(name) name ## Fixture
-#define fixtureName2(name, name1, name2) fixtureName(name ## name1 ## name2)
-
-#define fixture(name)\
-    struct fixtureName(name) : public virtual YUNIT_NS::Fixture
-
-#define fixture2(derived, base1, base2)\
-    struct derived : public base1,\
-                     public base2 \
-    {\
-        virtual void innerSetUp()\
-        {\
-            base1::innerSetUp();\
-            base2::innerSetUp();\
-        }\
-        virtual void innerTearDown()\
-        {\
-            base1::innerTearDown();\
-            base2::innerTearDown();\
-        }\
-    };
-
-#define setUp()\
-    virtual void innerSetUp()
-
-#define tearDown()\
-    virtual void innerTearDown()
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define test_(name)\
-    struct TestCase__##name : public YUNIT_NS::TestCase\
-    {\
-        TestCase__##name(const char* name, bool isIgnored, const YUNIT_NS::SourceLine& source)\
-        : YUNIT_NS::TestCase(name, isIgnored, source)\
-        {}\
-        virtual void innerSetUp() {}\
-        virtual void execute();\
-        virtual void innerTearDown() {}\
-    };
-
-#define test1_(name, usedFixture)\
-    struct TestCase__##name : public YUNIT_NS::TestCase, public usedFixture\
-    {\
-        TestCase__##name(const char* name, bool isIgnored, const YUNIT_NS::SourceLine& source)\
-        : YUNIT_NS::TestCase(name, isIgnored, source)\
-        {}\
-        virtual void execute();\
-    };
-
-#define registerTest(name, source)\
-    YUNIT_NS::RegisterTestCase<TestCase__##name> UNIQUENAME(name)(#name, source);
-
-#define registerIgnoredTest(name, source)\
-    YUNIT_NS::RegisterIgnoredTestCase<TestCase__##name> UNIQUENAME(name)(#name, source);
-
-#define testBodyDef(name)\
-    void TestCase__##name::execute()
-
-#define ignoredTestBodyDef(name)\
-    void TestCase__##name::execute() {}\
-    template<typename T> void TestCase ## name ## Fake()
 
 } // namespace YUNIT_NS
 

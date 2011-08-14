@@ -29,7 +29,9 @@ endif(MSVC)
 #
 add_library(cppunit SHARED test.cpp test.h)
 target_link_libraries(cppunit ${LUA51_LIBRARY})
-set_target_properties(cppunit PROPERTIES PREFIX "")
+set_target_properties(cppunit PROPERTIES 
+                                    PREFIX ""
+                                    IMPORT-PREFIX "lua5.1-")
 #
 # trace
 #
@@ -116,7 +118,7 @@ else(WIN32)
     set(YUNIT_RUNTIME_DIR local/lib/lua/5.1)
     set(YUNIT_LIBRARY_DIR local/lib/lua/5.1)
     set(YUNIT_ARCHIVE_DIR local/lib/lua/5.1)
-    set(YUNIT_HEADERS_DIR include/lua/5.1/yunit)
+    set(YUNIT_HEADERS_DIR include/lua5.1/yunit)
     set(YUNIT_LUA_MODULES_DIR local/lib/lua/5.1/yunit)
 endif(WIN32)
 
