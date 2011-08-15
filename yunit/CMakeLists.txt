@@ -30,8 +30,7 @@ endif(MSVC)
 add_library(cppunit SHARED test.cpp test.h)
 target_link_libraries(cppunit ${LUA51_LIBRARY})
 set_target_properties(cppunit PROPERTIES 
-                                    PREFIX ""
-                                    IMPORT-PREFIX "lua5.1-")
+                                    PREFIX "")
 #
 # trace
 #
