@@ -31,8 +31,8 @@
 
 
 local testRunner = require("yunit.test_runner");
-local luaExt = require("lua_ext")
-local fs = require("filesystem")
+local luaExt = require("yunit.lua_ext")
+local fs = require("yunit.filesystem")
 local luaUnit = require('yunit.luaunit');
 local testResultHandlers = require('yunit.test_result_handlers');
 
@@ -481,4 +481,11 @@ function assertsAtSetUpFixture.assertsAtSetUp()
 end
 
 function assertsAtTearDownFixture.assertsAtTearDown()
+end
+
+function try_to_load_abscent_test_container()
+    local rc, msg = luaUnit.loadTestContainer('path/with/denied:symbol.txt')
+    isFalse(rc)
+    isNotNil(msg)
+    areNotEq(0, string.len(msg))
 end

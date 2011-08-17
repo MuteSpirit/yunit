@@ -51,7 +51,7 @@ end
 function errorObjectFixture.testSciteErrorFormatterString()
 	local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
   
-	local desiredString = fakeErrorObject.source .. ":" .. tostring(fakeErrorObject.line) .. ": " .. fakeErrorObject.message
+	local desiredString = fakeErrorObject.source .. ":" .. tostring(fakeErrorObject.line) .. ": " .. fakeErrorObject.message .. "\n"
 	areEq(desiredString, ttpl:sciteErrorLine(fakeErrorObject))
 end
 
@@ -213,7 +213,6 @@ end
 
 function errorObjectFixture.fixed_failed_test_result_handler_return_ok()
 	local testResHandler = testResultHandlers.FixFailed:new()
-	isTrue(testResHandler:passed())
 
     testResHandler:onTestSuccessfull(fakeTestCaseName)
 	isTrue(testResHandler:passed())

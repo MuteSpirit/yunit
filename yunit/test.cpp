@@ -8,6 +8,14 @@
 #  include <string.h>
 #endif
 
+#ifdef _WIN32
+#  include <io.h>
+#  define ACCESS_FUNC _access
+#else
+#  include <unistd.h> 
+#  define ACCESS_FUNC access
+#endif
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,7 +37,8 @@ static int loadTestContainer(lua_State* L);
 static int getTestContainerExtensions(lua_State* L);
 static int getTestList(lua_State* L);
 static void createTestCaseMetatable(lua_State* L);
-
+static bool isExist(const char* path);
+    
 static const char* testCaseMtName = "testCaseMetatable";
     
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,6 +128,13 @@ static int loadTestContainer(lua_State* L)
         return 2;
     }
     //
+    if (!isExist(path))
+    {
+        lua_pushboolean(L, 0);
+        lua_pushstring(L, "file doesn't exist");
+        return 2;
+    }
+    //
     // we must only load library to current process for initialization global objects and filling test register
     //
     // push error handling function
@@ -146,6 +162,12 @@ static int loadTestContainer(lua_State* L)
     lua_pop(L, 1);  // remove return value of 'package.loadlib' function
     lua_pushboolean(L, 1);
     return 1;
+}
+
+static bool isExist(const char* path)
+{
+    enum {existenceOnlyMode = 0, notAccessible = -1};
+    return notAccessible != ACCESS_FUNC(path, existenceOnlyMode);
 }
 
 static int getTestList(lua_State* L)

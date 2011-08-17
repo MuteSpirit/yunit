@@ -33,7 +33,7 @@ function TextTestProgressHandler:sciteErrorLine(errorObject)
     if string.find(errorObject.message, ':[%d]+:') or '[C]' == errorObject.source then
         return errorObject.message;
     else
-        return errorObject.source .. ":" .. tostring(errorObject.line) .. ": " .. errorObject.message;
+        return errorObject.source .. ":" .. tostring(errorObject.line) .. ": " .. errorObject.message .. "\n"
     end
 end
 
@@ -346,7 +346,7 @@ function XmlTestResultHandler:onTestsEnd()
     self:outputMessage(' done\r\n');
 end
 
-FixFailed = testRunner.TestResultHandler:new()
+FixFailed = testRunner.TestResultHandler:new{passed_ = false}
 
 ------------------------------------------------------
 function FixFailed:new()
