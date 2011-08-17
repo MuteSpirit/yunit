@@ -3,9 +3,12 @@ cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
 
 enable_testing()
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/_bin")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/_lib")
+#
+# Output binaries directories are situated one level up, then build directory.
+# Reason: we can access to built files, without information about name of build directory
+#
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/../_bin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/../_lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
 link_directories("${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
@@ -15,7 +18,7 @@ add_subdirectory(yunit)
 # Package info
 #
 set(YUNIT_NAME "yUnit")
-set(YUNIT_VERSION 0 3 10)
+set(YUNIT_VERSION 0 3 11)
 set(YUNIT_DESCRIPTION "yUnit (Yet another xUnit)")
 set(YUNIT_VENDOR "Ivan Efimov aka MuteSpirit")
 set(YUNIT_CONTACT "mutespirit@gmail.com")
