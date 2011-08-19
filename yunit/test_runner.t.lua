@@ -71,14 +71,13 @@
 --- \param[in] testObserver Object, whitch wlii be received messages from and about tests
 --- \return None
 
-
-
-
 local luaUnit = require("yunit.luaunit")
 local testResultHandlers = require("yunit.test_result_handlers");
 local testRunner = require("yunit.test_runner");
-local fs = require("filesystem");
+local fs = require("yunit.filesystem");
 local aux = require("yunit.aux_test_func");
+
+--[[ Test Fixtures ]]
 
 -- This fixture save (at setUp) and restore (at tearDown) currentSuite variable at luaunit module for possibility TEST_* macro testing
 substitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir = 
@@ -149,8 +148,8 @@ globalTestCaseListFixturePlusUseTmpDir =
         testRunner.GlobalTestCaseList = {};
 
         self.curDir = lfs.currentdir();
-        self.tmpDir = fs.tmpDirName();
-        lfs.mkdir(self.tmpDir);
+        self.tmpDir_ = fs.tmpDirName();
+        lfs.mkdir(self.tmpDir_);
     end
     ;
     tearDown = function(self)
@@ -162,107 +161,124 @@ globalTestCaseListFixturePlusUseTmpDir =
         testRunner.GlobalTestCaseList = luaUnit.copyTable(self.globalTestCaseList);
 
         -- delete tmpDir recursively
-        isNotNil(self.tmpDir);
+        isNotNil(self.tmpDir_);
         isTrue(lfs.chdir(self.curDir))
-        local status, msg = fs.rmdir(self.tmpDir)
+        local status, msg = fs.rmdir(self.tmpDir_)
         areEq(nil, msg)
         isTrue(status)
     end
     ;
 };
 
-    function testTestListenerCreation()
-        isNotNil(testRunner.TestResultHandler:new());
+useTmpDir = 
+{
+    setUp = function(self)
+        self.currentDir_ = lfs.currentdir()
+        self.tmpDir_ = fs.tmpDirName()
+        isTrue(lfs.mkdir(self.tmpDir_))
     end
-
-
-    function testObserverCreationTest()
-        isNotNil(testRunner.TestResultHandlerList:new());
-    end
-
-
-    function testObserverTestAddFailureFunctionTest()
-        local ttpl1 = testResultHandlers.TextTestProgressHandler:new();
-        local ttpl2 = testResultHandlers.TextTestProgressHandler:new();
-        local tr = testRunner.TestResultHandlerList:new();
-        local fakeTestCaseName = _M._NAME;
-        local fakeTestName = "testTestListenerList";
-        local fakeFailureMessage = "This is test message. It hasn't usefull information";
-        
-        isNotNil(fakeTestCaseName)
-        
-        function ttpl1:onTestFailure(testCaseName, failureMessage)
-            areEq(fakeTestCaseName, testCaseName);
-            areEq(fakeFailureMessage, failureMessage);
-        end
-        
-        function ttpl2:onTestFailure(testCaseName, failureMessage)
-            areEq(fakeTestCaseName, testCaseName);
-            areEq(fakeFailureMessage, failureMessage);
-        end
-        
-        tr:addHandler(ttpl1);
-        tr:addHandler(ttpl2);
-        areEq(2, #tr.testResultHandlers);
-        
-        tr:onTestFailure(fakeTestCaseName, fakeFailureMessage);
-    end
-
-
-    function testObserverStartTestsFunctionTest()
-        local ttpl1 = testResultHandlers.TextTestProgressHandler:new();
-        local ttpl2 = testResultHandlers.SciteTextTestProgressHandler:new();
-        local tr = testRunner.TestResultHandlerList:new();
-        
-        function ttpl1:onTestsBegin()
-            self.onTestsBeginCall = true;
-        end
-        
-        function ttpl2:onTestsBegin()
-            self.onTestsBeginCall = true;
-        end
-        
-        tr:addHandler(ttpl1);
-        tr:addHandler(ttpl2);
-        
-        tr:onTestsBegin();
-         
-        isTrue(ttpl1.onTestsBeginCall);
-        isTrue(ttpl2.onTestsBeginCall);
-    end
-
-    function substitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir.loadLuaContainerTest()
-        local luaTestContainerText = 
-            [[fixture =
-                {
-                    setUp = function()
-                    end,
-
-                    tearDown = function()
-                    end
-                }
-                function testCase() end 
-                function fixture.fixtureTestCase() end 
-                local function notTestCase() end
-                function _ignoredTest() end
-                ]]
-        local luaTestContainerFilename = tmpDir .. fs.osSlash() .. 'load_lua_container.t.lua'
-        isTrue(aux.createTextFileWithContent(luaTestContainerFilename, luaTestContainerText))
-        
-        areEq(0, #testRegistry.testsuites)
-        
-        local status, msg = luaUnit.loadTestContainer(luaTestContainerFilename)
+    ;
+    tearDown = function(self)
+        isTrue(lfs.chdir(self.currentDir_))
+        local status, msg = fs.rmdir(self.tmpDir_)
         areEq(nil, msg)
         isTrue(status)
-        
-        areEq(1, #testRegistry.testsuites)
-        areEq(3, #testRegistry.testsuites[1].testcases)
-
-        areEq(luaTestContainerFilename, testRegistry.testsuites[1].name_)
     end
+    ;
+}
+
+--[[ Tests ]]
+
+function testTestListenerCreation()
+    isNotNil(testRunner.TestResultHandler:new());
+end
+
+function testObserverCreationTest()
+    isNotNil(testRunner.TestResultHandlerList:new());
+end
+
+function testObserverTestAddFailureFunctionTest()
+    local ttpl1 = testResultHandlers.TextTestProgressHandler:new();
+    local ttpl2 = testResultHandlers.TextTestProgressHandler:new();
+    local tr = testRunner.TestResultHandlerList:new();
+    local fakeTestCaseName = _M._NAME;
+    local fakeTestName = "testTestListenerList";
+    local fakeFailureMessage = "This is test message. It hasn't usefull information";
+    
+    isNotNil(fakeTestCaseName)
+    
+    function ttpl1:onTestFailure(testCaseName, failureMessage)
+        areEq(fakeTestCaseName, testCaseName);
+        areEq(fakeFailureMessage, failureMessage);
+    end
+    
+    function ttpl2:onTestFailure(testCaseName, failureMessage)
+        areEq(fakeTestCaseName, testCaseName);
+        areEq(fakeFailureMessage, failureMessage);
+    end
+    
+    tr:addHandler(ttpl1);
+    tr:addHandler(ttpl2);
+    areEq(2, #tr.testResultHandlers);
+    
+    tr:onTestFailure(fakeTestCaseName, fakeFailureMessage);
+end
+
+
+function testObserverStartTestsFunctionTest()
+    local ttpl1 = testResultHandlers.TextTestProgressHandler:new();
+    local ttpl2 = testResultHandlers.SciteTextTestProgressHandler:new();
+    local tr = testRunner.TestResultHandlerList:new();
+    
+    function ttpl1:onTestsBegin()
+        self.onTestsBeginCall = true;
+    end
+    
+    function ttpl2:onTestsBegin()
+        self.onTestsBeginCall = true;
+    end
+    
+    tr:addHandler(ttpl1);
+    tr:addHandler(ttpl2);
+    
+    tr:onTestsBegin();
+     
+    isTrue(ttpl1.onTestsBeginCall);
+    isTrue(ttpl2.onTestsBeginCall);
+end
+
+function substitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir.loadLuaContainerTest()
+    local luaTestContainerText = 
+        [[fixture =
+            {
+                setUp = function()
+                end,
+
+                tearDown = function()
+                end
+            }
+            function testCase() end 
+            function fixture.fixtureTestCase() end 
+            local function notTestCase() end
+            function _ignoredTest() end
+            ]]
+    local luaTestContainerFilename = tmpDir .. fs.osSlash() .. 'load_lua_container.t.lua'
+    isTrue(aux.createTextFileWithContent(luaTestContainerFilename, luaTestContainerText))
+    
+    areEq(0, #testRegistry.testsuites)
+    
+    local status, msg = luaUnit.loadTestContainer(luaTestContainerFilename)
+    areEq(nil, msg)
+    isTrue(status)
+    
+    areEq(1, #testRegistry.testsuites)
+    areEq(3, #testRegistry.testsuites[1].testcases)
+
+    areEq(luaTestContainerFilename, testRegistry.testsuites[1].name_)
+end
 
 function globalTestCaseListFixturePlusUseTmpDir.runSomeTestContainer(self)
-    local testContainerPath = self.tmpDir .. fs.osSlash() .. 'lua_test_container.t.lua'
+    local testContainerPath = self.tmpDir_ .. fs.osSlash() .. 'lua_test_container.t.lua'
     local testContainerText = [[function someTestCase() end]]
     isTrue(aux.createTextFileWithContent(testContainerPath, testContainerText))
    
@@ -316,3 +332,24 @@ function sortTestCasesAccordingFileAndLine()
 	areEq('test_b.t.lua', tests[3]:fileName())
 	areEq(9, tests[3]:lineNumber())
 end
+
+function globalTestCaseListFixturePlusUseTmpDir:find_all_test_containers_from_current_folder()
+    local testContainer1path = self.tmpDir_ .. fs.osSlash() .. 'test_container.t.lua'
+    local testContainer1content = 
+[[function test1()
+    isTrue(true)
+end]]
+    aux.createTextFileWithContent(testContainer1path, testContainer1content)
+
+    local runner = testRunner.TestRunner:new()
+    local fixFailed = testResultHandlers.FixFailed:new()
+    runner:addResultHandler(fixFailed)
+    runner:loadLtue('yunit.luaunit')
+    isNotNil(next(runner.ltues_))
+    isNotNil(next(runner.fileExts_))
+    runner:lookTestsAt(self.tmpDir_)
+    areNotEq(0, #runner.dirs_)
+    runner:runAll()
+    isTrue(fixFailed:passed())
+end
+
