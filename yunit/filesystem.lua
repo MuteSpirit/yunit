@@ -313,8 +313,23 @@ function fileFilter(path, state)
     return isFile(path)
 end
 
+function multiFilter(path, state)
+    for _, filter in pairs(state.filters) do
+        if not filter(path, state) then
+            return false
+        end
+    end
+    return true
+end
+
 function dirFilter(path, state)
     return isDir(path)
+end
+
+function multiHandler(path, state)
+    for _, handler in pairs(state.handlers) do
+        handler(path, state)
+    end
 end
 
 --------------------------------------------------------------------------------------------------------------

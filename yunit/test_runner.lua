@@ -1,4 +1,5 @@
 local _G = _G
+local fs = require('yunit.filesystem')
 
 --------------------------------------------------------------------------------------------------------------
 module(...)
@@ -38,7 +39,7 @@ function TestResultHandlerList:new(o)
 end
 
 function TestResultHandlerList:addHandler(handler)
-    self.testResultHandlers[#self.testResultHandlers + 1] = handler;
+    table.insert(self.testResultHandlers, handler)
 end
 
 function TestResultHandlerList:callHandlersMethod(functionName, ...)
@@ -81,6 +82,49 @@ end
 
 local function isFunction(variable)
     return "function" == type(variable);
+end
+
+
+------------------------------------------------------
+function normalizeTestCaseInterface(test)
+------------------------------------------------------
+    if not isFunction(test.name) then
+        test.name = 
+            function(self)
+                return self.name_ or 'unknown'
+            end
+    else
+
+    end
+
+    if not isFunction(test.isIgnored) then
+        test.isIgnored = 
+            function(self)
+                return self.isIgnored_ or false
+            end
+    end
+
+    if not isFunction(test.fileName) then
+        test.fileName = 
+            function(self)
+                return self.fileName_ or 'unknown'
+            end
+    end
+
+    if not isFunction(test.lineNumber) then
+        test.lineNumber = 
+            function(self)
+                return self.lineNumber_ or 0
+            end
+    end
+end
+
+------------------------------------------------------
+function operatorLess(test1, test2)
+------------------------------------------------------
+    local filename1, filename2 = test1:fileName(), test2:fileName()
+
+	return filename1 < filename2 or (filename1 == filename2 and test1:lineNumber() < test2:lineNumber())
 end
 
 ------------------------------------------------------
@@ -149,6 +193,112 @@ function runTestCase(testcase, testResultHandler)
 end
 
 ------------------------------------------------------
+TestRunner = 
+{
+    resultHandlers_ = TestResultHandlerList:new(),
+    ltues_ = {},
+    fileExts_ = {},
+    dirs_ = {},
+    testcases_ = {},
+
+    new = function(self, o)
+        o = o or {
+            resultHandlers_ = TestResultHandlerList:new(),
+            ltues_ = {},
+            fileExts_ = {},
+            dirs_ = {},
+            testcases_ = {},
+        }
+        setmetatable(o, self)
+        self.__index = self
+        return o
+    end;
+    
+    addResultHandler = function(self, handler)
+        self.resultHandlers_:addHandler(handler)
+    end;
+    
+    loadLtue = function(self, ltueName)
+        if self.ltues_[ltueName] then
+            print('Test Unit Engine "' .. ltueName .. '" has been already loaded')
+        else
+            local ltue, errMsg = require(ltueName)
+            
+            if ltue and 'table' == type(ltue) then
+                self.ltues_[ltueName] = ltue
+                
+                local exts = ltue.getTestContainerExtensions()
+                
+                for _, ext in ipairs(exts) do
+                    self.fileExts_[ext] = ltue
+                end
+            else
+                error('Could not load Language Test Unit Engine "' .. ltueName .. '": ' .. errMsg)
+            end
+        end
+    end;
+    
+    lookTestsAt = function(self, dirPath)
+        table.insert(self.dirs_, dirPath)
+    end;
+    
+    runAll = function(self)
+        local function filterTestContainer(path, state)
+        -- filter only test container files
+            for ext, ltue in pairs(self.fileExts_) do
+                if string.find(string.lower(path), string.lower(ext), -string.len(ext), true) then
+                    state.ltue_ = ltue
+                    return true
+                end
+            end
+            return false
+        end
+        
+        local function loadTestContainer(path, state)
+            --- @todo Print number of tests, loaded from concrete test container (maybe use new API function numberOfTests of cppunit and luaunit
+            -- ask LTUE to load found test container file
+            local res, errMsg = state.ltue_.loadTestContainer(path);
+
+            if not res then
+                if errMsg then 
+                    error('Could not load test container "' .. path .. '": \n\t"' .. errMsg .. '"')
+                else
+                    error('Could not load test container "' .. path .. '": There are not Test Unit Engine, support such test container')
+                end
+            else
+                print('Test container "' .. path .. '" has been loaded');
+            end
+        end
+        -- looking for and load test containers into self.dirs_
+        for _, dirPath in ipairs(self.dirs_) do
+            fs.applyOnFiles(dirPath, {
+                filter = fs.multiFilter,
+                handler = loadTestContainer,
+                recursive = true,
+                state = {filters = {fs.fileFilter, filterTestContainer},},
+            })
+        end
+        -- get loaded unit tests
+        for name, ltue in pairs(self.ltues_) do
+            --- @todo rename 'getTestList' to 'getTests'
+            local tests = ltue.getTestList()
+            for _, test in pairs(tests) do
+                normalizeTestCaseInterface(test)
+                table.insert(self.testcases_, test)
+            end
+        end
+        -- sort and run all tests
+        table.sort(self.testcases_, operatorLess)
+        
+        self.resultHandlers_:onTestsBegin()
+        for _, test in ipairs(self.testcases_) do
+            runTestCase(test, self.resultHandlers_)
+        end
+        self.resultHandlers_:onTestsEnd()
+    end;
+}
+
+------------------------------------------------------
 GlobalTestCaseList = {};
 --------------------------------------------------------------------
 GlobalTestUnitEngineList = {}
@@ -186,9 +336,9 @@ function loadTestContainers(filePathList)
             end
         end
         if not res and errMsg then
-            io.stderr:write('Cannot load test container "' .. filePath .. '". Error: \n\t"' .. errMsg .. '"\n')
+            io.stderr:write('Could not load test container "' .. filePath .. '". Error: \n\t"' .. errMsg .. '"\n')
         elseif not res then
-            io.stderr:write('Cannot load test container "' .. filePath .. '". Error: \n\t"There are not Test Unit Engine, support such test container"\n');
+            io.stderr:write('Could not load test container "' .. filePath .. '". Error: \n\t"There are not Test Unit Engine, support such test container"\n');
         else
             io.stdout:write('Test container "' .. filePath .. '" has been loaded\n');
         end
@@ -204,50 +354,13 @@ function loadTestContainers(filePathList)
     end
 end
 
-function operatorLess(test1, test2)
-    local filename1, filename2 = test1:fileName(), test2:fileName()
-
-	return filename1 < filename2 or (filename1 == filename2 and test1:lineNumber() < test2:lineNumber())
-end
-
-function normalizeTestCaseInterface(testcases)
-    for _, test in ipairs(testcases) do
-        if not isFunction(test.name) then
-            test.name = 
-                function(self)
-                    return self.name_ or 'unknown'
-                end
-        else
-
-        end
-
-        if not isFunction(test.isIgnored) then
-            test.isIgnored = 
-                function(self)
-                    return self.isIgnored_ or false
-                end
-        end
-
-        if not isFunction(test.fileName) then
-            test.fileName = 
-                function(self)
-                    return self.fileName_ or 'unknown'
-                end
-        end
-
-        if not isFunction(test.lineNumber) then
-            test.lineNumber = 
-                function(self)
-                    return self.lineNumber_ or 0
-                end
-        end
-    end
-end
-
 function runAllTestCases(testResultHandler)
     testResultHandler = testResultHandler or TestResultHandlerList;
 
-    normalizeTestCaseInterface(GlobalTestCaseList)
+    for _, test in ipairs(GlobalTestCaseList) do
+        normalizeTestCaseInterface(test)
+    end
+    
 	table.sort(GlobalTestCaseList, operatorLess)
     
     testResultHandler:onTestsBegin();

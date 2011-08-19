@@ -255,8 +255,7 @@ end
 
 function areNotEq(expected, actual)
 	if  actual == expected  then
-		local errorMsg = "\nexpected: "..wrapValue(expected).."\n"..
-                         "actual  : "..wrapValue(actual).."\n";
+		local errorMsg = "expected that actual will not equal "..wrapValue(actual)
 		error(errorMsg, 0);
 	end
 end
