@@ -277,31 +277,8 @@ function substitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir.loadLuaContain
     areEq(luaTestContainerFilename, testRegistry.testsuites[1].name_)
 end
 
-function globalTestCaseListFixturePlusUseTmpDir.runSomeTestContainer(self)
-    local testContainerPath = self.tmpDir_ .. fs.osSlash() .. 'lua_test_container.t.lua'
-    local testContainerText = [[function someTestCase() end]]
-    isTrue(aux.createTextFileWithContent(testContainerPath, testContainerText))
-   
-    areEq(0, #self.testRegistry.testsuites)
-
-    require('lua_test_run')
-    run(testContainerPath)
-    
-    areEq(1, #self.testRegistry.testsuites)
-    areEq(1, #self.testRegistry.testsuites[1].testcases)
-    areEq("someTestCase", self.testRegistry.testsuites[1].testcases[1].name_)
-end
-
 function testSetGoodWorkingDir()
-    isTrue(fs.isExist('test_runner.t.lua'));
-end
-
-function loadTestUnitEnginesTest()
---~     testRunner.loadTestUnitEngines{'cppunit'};
---~     isTable(testRunner.GlobalTestUnitEngineList['.t.dll']);
-    
-    testRunner.loadTestUnitEngines{'yunit.luaunit'};
-    isTable(testRunner.GlobalTestUnitEngineList['.t.lua']);
+    isTrue(fs.isExist('test_runner.t.lua'))
 end
 
 function sortTestCasesAccordingFileAndLine()
