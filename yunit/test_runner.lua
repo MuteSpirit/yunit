@@ -239,6 +239,9 @@ TestRunner =
     end;
     
     lookTestsAt = function(self, dirPath)
+        if not dirPath then
+            error('invalid argument, directory path expected, but was ' .. type(dirPath))
+        end
         table.insert(self.dirs_, dirPath)
     end;
     

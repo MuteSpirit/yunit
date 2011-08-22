@@ -11,7 +11,7 @@ function cppunit_test_unit_interface()
     isFunction(cppUnit.loadTestContainer)
     
     local exts = cppUnit.getTestContainerExtensions()
-    areNotEq(0, #exts);
+    areNotEq(0, #exts)
     
     local tests = cppUnit.getTestList()
     areEq(0, #tests)
