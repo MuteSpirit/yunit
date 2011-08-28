@@ -1,7 +1,12 @@
 #!/bin/sh
 CUR_DIR=$PWD
-mkdir ../yunit_build
-cd ../yunit_build
-cmake $CUR_DIR && make cppunit cppunit.t && make test ARGS=--output-on-failure && make package package_source
+BUILD_DIR=../yunit_build
+
+if [ ! -d $BUILD_DIR ]; then
+    mkdir $BUILD_DIR;
+fi
+
+cd $BUILD_DIR
+cmake $CUR_DIR && make cppunit cppunit.t && make test ARGS=--output-on-failure
 cd $CUR_DIR
 
