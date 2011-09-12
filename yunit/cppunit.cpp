@@ -31,12 +31,12 @@ extern "C" {
 
 #define YUNIT_DLL_EXPORTS
 #include "cppunit.h"
+#include "class_wrapper.h"
 
 namespace YUNIT_NS {
 static int loadTestContainer(lua_State* L);
 static int getTestContainerExtensions(lua_State* L);
 static int getTestList(lua_State* L);
-static void createTestCaseMetatable(lua_State* L);
 static bool isExist(const char* path);
     
 static const char* testCaseMtName = "testCaseMetatable";
@@ -83,7 +83,7 @@ int YUNIT_API luaopen_yunit_cppunit(lua_State* L)
 	    {NULL, NULL},
     };
 
-    YUNIT_NS::createTestCaseMetatable(L);
+    ClassWrapper<YUNIT_NS::TestCase>::wrapper().makeMetatable(L, MT_NAME(TestCase));
 	luaL_register(L, "yunit.cppunit", cppunit);
 	return 1;
 }
@@ -188,7 +188,7 @@ static int getTestList(lua_State* L)
             TestCase** tc = reinterpret_cast<TestCase**>(lua_newuserdata(L, sizeof(TestCase*)));
 	        *tc = *itTc;
 
-            luaL_getmetatable(L, testCaseMtName);
+            luaL_getmetatable(L, MT_NAME(TestCase));
 	        lua_setmetatable(L, -2);
 
 			lua_settable(L, -3); // t[i] = testcase
@@ -198,105 +198,52 @@ static int getTestList(lua_State* L)
 	return 1;
 }
 
-
-
-static int luaTestCaseSetUp(lua_State* L);
-static int luaTestCaseTest(lua_State* L);
-static int luaTestCaseTearDown(lua_State* L);
-static int luaTestCaseIsIgnored(lua_State* L);
-static int luaTestCaseName(lua_State* L);
-static int luaTestCaseLineNumber(lua_State* L);
-static int luaTestCaseFileName(lua_State* L);
-
-static void createTestCaseMetatable(lua_State* L)
-{
-    static const struct luaL_Reg testCaseMetods[] = 
-    {
-        {"setUp", luaTestCaseSetUp},
-        {"test", luaTestCaseTest},
-        {"tearDown", luaTestCaseTearDown},
-        {"isIgnored", luaTestCaseIsIgnored},
-        {"name", luaTestCaseName},
-        {"lineNumber", luaTestCaseLineNumber},
-        {"fileName", luaTestCaseFileName},
-        {NULL, NULL}
-    };
-    
-    luaL_newmetatable(L, testCaseMtName);
-    luaL_register(L, NULL, testCaseMetods);
-
-    lua_pushvalue(L, -1);
-    lua_setfield(L, -2, "__index"); // metatable.__index = metatable
-    
-    lua_pop(L, 1); // remove new metatable from stack
-}
-
-static TestCase* getTestCaseFromSelf(lua_State* L);
 static int callTestCaseThunk(lua_State* L, TestCase* testCase, Thunk thunk);
 static bool wereCatchedCppExceptions(lua_State* L, TestCase* testCase, Thunk thunk, int& countReturnValues);
 static int luaPushErrorObject(lua_State* L, const char* fileName, lua_Integer lineNumber, const char* message);
 
-static int luaTestCaseSetUp(lua_State* L)
+LUA_METHOD(TestCase, setUp)
 {
-    TestCase* tc = getTestCaseFromSelf(L);
+    TestCase* tc = to<TestCase>(L, 1);
     return callTestCaseThunk(L, tc, tc->setUpThunk());
 }
 
-static int luaTestCaseTest(lua_State* L)
+LUA_METHOD(TestCase, test)
 {
-    TestCase* tc = getTestCaseFromSelf(L);
+    TestCase* tc = to<TestCase>(L, 1);
     return callTestCaseThunk(L, tc, tc->testThunk());
 }
 
-static int luaTestCaseTearDown(lua_State* L)
+LUA_METHOD(TestCase, tearDown)
 {
-    TestCase* tc = getTestCaseFromSelf(L);
+    TestCase* tc = to<TestCase>(L, 1);
     return callTestCaseThunk(L, tc, tc->tearDownThunk());
 }
 
-static int luaTestCaseIsIgnored(lua_State* L)
+LUA_METHOD(TestCase, isIgnored)
 {
-    TestCase* tc = getTestCaseFromSelf(L);
-    lua_pushboolean(L, tc->isIgnored());
+    lua_pushboolean(L, to<TestCase>(L, 1)->isIgnored());
     return 1;
 }
 
-static int luaTestCaseLineNumber(lua_State* L)
+LUA_METHOD(TestCase, lineNumber)
 {
-    TestCase* tc = getTestCaseFromSelf(L);
-    lua_pushinteger(L, tc->source().lineNumber());
+    lua_pushinteger(L, to<TestCase>(L, 1)->source().lineNumber());
     return 1;
 }
 
-static int luaTestCaseFileName(lua_State* L)
+LUA_METHOD(TestCase, fileName)
 {
-    TestCase* tc = getTestCaseFromSelf(L);
-    lua_pushstring(L, tc->source().fileName());
+    lua_pushstring(L, to<TestCase>(L, 1)->source().fileName());
     return 1;
 }
 
-static int luaTestCaseName(lua_State* L)
+LUA_METHOD(TestCase, name)
 {
-    TestCase* tc = getTestCaseFromSelf(L);
+    TestCase* tc = to<TestCase>(L, 1);
 
     lua_pushfstring(L, "%s::%s", tc->source().fileName(), tc->name());
     return 1;
-}
-
-static TestCase* getTestCaseFromSelf(lua_State* L)
-{
-    if (!lua_isuserdata(L, 1))
-        luaL_error(L, "cannot use 'self' object, because userdata expected, but was %s", lua_typename(L, lua_type(L, 1)));
-    
-    TestCase** tcPp = reinterpret_cast<TestCase**>(lua_touserdata(L, 1));
-    if (NULL == tcPp)
-        luaL_error(L, "cannot use 'self' object, it equals NULL");
-    
-    TestCase* tc = *tcPp;
-    if (NULL == tcPp)
-        luaL_error(L, "cannot use 'self' object, it points to NULL value");
-
-    return tc;
 }
 
 static int callTestCaseThunk(lua_State* L, TestCase* testCase, Thunk thunk)
