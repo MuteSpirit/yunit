@@ -21,7 +21,7 @@ function run(path)
     io.stdout:setvbuf("no")
     io.stderr:setvbuf("no")
     
-    testRunner.loadTestUnitEngines{'cppunit', 'yunit.luaunit'}
+    testRunner.loadTestUnitEngines{'yunit.cppunit', 'yunit.luaunit'}
     testRunner.loadTestContainers{fs.canonizePath(path)}
     testRunner.runAllTestCases(testObserver)
 

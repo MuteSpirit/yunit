@@ -11,7 +11,7 @@ if(WIN32)
     find_path(CPPUNIT_INCLUDE_DIR yunit/test.h
                    PATHS $ENV{PROGRAMFILES}/lua/5.1/include)
     include_directories(${CPPUNIT_INCLUDE_DIR})
-    find_library(CPPUNIT_LIBRARY cppunit.lib
+    find_library(CPPUNIT_LIBRARY yunit.lib
                       PATHS $ENV{PROGRAMFILES}/lua/5.1/lib)
 	find_program(LUA51_EXE
 					NAMES lua5.1.exe lua.exe
@@ -20,7 +20,7 @@ else(WIN32)
     find_path(CPPUNIT_INCLUDE_DIR yunit/test.h
                         PATH_SUFFIXES lua5.1/)
     include_directories(${CPPUNIT_INCLUDE_DIR})
-    find_library(CPPUNIT_LIBRARY NAMES cppunit.so PATH_SUFFIXES lua/5.1/)
+    find_library(CPPUNIT_LIBRARY NAMES yunit.so PATH_SUFFIXES lua/5.1/)
     find_program(LUA51_EXE 
 					NAMES lua5.1 lua)
 endif(WIN32)

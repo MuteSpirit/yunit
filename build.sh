@@ -7,6 +7,6 @@ if [ ! -d $BUILD_DIR ]; then
 fi
 
 cd $BUILD_DIR
-cmake $CUR_DIR && make cppunit cppunit.t && make test ARGS=--output-on-failure
+cmake $CUR_DIR && make yunit yunit.t && make test ARGS=--output-on-failure
 cd $CUR_DIR
 
