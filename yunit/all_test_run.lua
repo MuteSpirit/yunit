@@ -16,7 +16,7 @@ function runFrom(dirPath)
     end
 
     runner:loadLtue('yunit.luaunit')
-    runner:loadLtue('cppunit')
+    runner:loadLtue('yunit.cppunit')
     runner:lookTestsAt(dirPath)
     runner:runAll()
     

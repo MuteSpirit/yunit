@@ -313,7 +313,7 @@ function loadTestUnitEngines(tueList)
             local tue, errMsg = require(tueName);
             
             if 'boolean' == type(tue) then
-                io.stderr:write(tue .. '\t' .. errMsg);
+                error('Cannot load "' .. tueName .. '" test container')
             elseif tue and 'table' == type(tue) then
                 local tcExtList = tue.getTestContainerExtensions();
                 

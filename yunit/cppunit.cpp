@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// test.cpp
+// cppunit.cpp
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifdef _MSC_VER
 #  define _CRT_SECURE_NO_WARNINGS 1
@@ -30,7 +30,7 @@ extern "C" {
 #endif
 
 #define YUNIT_DLL_EXPORTS
-#include "test.h"
+#include "cppunit.h"
 
 namespace YUNIT_NS {
 static int loadTestContainer(lua_State* L);
@@ -73,7 +73,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 extern "C"
-int YUNIT_API luaopen_cppunit(lua_State* L)
+int YUNIT_API luaopen_yunit_cppunit(lua_State* L)
 {
     static const struct luaL_Reg cppunit[] =
     {
@@ -84,8 +84,8 @@ int YUNIT_API luaopen_cppunit(lua_State* L)
     };
 
     YUNIT_NS::createTestCaseMetatable(L);
-	luaL_register(L, "cppunit", cppunit);
-	return 0;
+	luaL_register(L, "yunit.cppunit", cppunit);
+	return 1;
 }
 
 
@@ -909,6 +909,7 @@ void TestEqualPointersException::message(char* buffer, const unsigned int buffer
 	TS_SNPRINTF(buffer, bufferSize - 1, mustBeEqual_ ? "\"0x%X\" != \"0x%X\"" : "\"0x%X\" == \"0x%X\"",
         reinterpret_cast<unsigned int>(expected_), reinterpret_cast<unsigned int>(actual_));
 }
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T>

@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// test.t.cpp
+// cppunit.t.cpp
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -128,7 +128,7 @@
 #include <sstream>
 #include <fstream>
 
-#include "test.h"
+#include "cppunit.h"
 
 #ifdef WIN32
 #  include <process.h>
@@ -222,6 +222,7 @@ _test1(Test5, fixtureA)
 
 // ignored test case (may have uncompiled code in body)
 _test2(Test6, fixtureA, fixtureB)
+
 {
     int uncompiledCode[0] = {1};
 }

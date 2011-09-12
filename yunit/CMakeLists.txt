@@ -25,11 +25,11 @@ else(MSVC)
     add_definitions(-fexceptions -std=c++0x)
 endif(MSVC)
 #
-# cppunit
+# yunit
 #
-add_library(cppunit SHARED test.cpp test.h)
-target_link_libraries(cppunit ${LUA51_LIBRARY})
-set_target_properties(cppunit PROPERTIES 
+add_library(yunit SHARED cppunit.cpp cppunit.h)
+target_link_libraries(yunit ${LUA51_LIBRARY})
+set_target_properties(yunit PROPERTIES 
                                     PREFIX "")
 #
 # trace
@@ -46,15 +46,15 @@ if(WIN32)
     target_link_libraries(minidump dbghelp ${LUA51_LIBRARY})
 endif(WIN32)
 #
-# cppunit.t
+# yunit.t
 #
-add_library(cppunit.t SHARED test.t.cpp)
-target_link_libraries(cppunit.t cppunit)
-set_target_properties(cppunit.t PROPERTIES PREFIX "")
+add_library(yunit.t SHARED cppunit.t.cpp)
+target_link_libraries(yunit.t yunit)
+set_target_properties(yunit.t PROPERTIES PREFIX "")
 if(WIN32)
-    add_dependencies(cppunit.t cppunit trace)
+    add_dependencies(yunit.t yunit trace)
 else(WIN32)
-    add_dependencies(cppunit.t cppunit)
+    add_dependencies(yunit.t yunit)
 endif(WIN32)
 #
 # Tests
@@ -74,12 +74,12 @@ else(WIN32)
 endif(WIN32)
 
 if(WIN32)
-    add_custom_command(TARGET cppunit.t
+    add_custom_command(TARGET yunit.t
                        POST_BUILD
-                       COMMAND ${LUA51_EXE} -e \"package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path\" -e \"package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath\" -l ${WORK_IN} -l yunit.default_test_run -e \"run([[${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/cppunit.t.${SHARED_LIB_EXT}]])\"
+                       COMMAND ${LUA51_EXE} -e \"package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path\" -e \"package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath\" -l ${WORK_IN} -l yunit.default_test_run -e \"run([[${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/yunit.t.${SHARED_LIB_EXT}]])\"
                        )
 else(WIN32)
-    add_test(cppunit.t ${LUA51_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.default_test_run -e "run([[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cppunit.t.${SHARED_LIB_EXT}]])")
+    add_test(yunit.t ${LUA51_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.default_test_run -e "run([[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/yunit.t.${SHARED_LIB_EXT}]])")
 endif(WIN32)
 
 
@@ -100,12 +100,12 @@ add_test(test_runner.t.lua ${LUA51_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURC
 # Installation rules
 #
 if(WIN32)
-    set(YUNIT_TARGETS cppunit trace minidump)
+    set(YUNIT_TARGETS yunit trace minidump)
     set(YUNIT_RUNTIME_DIR 5.1)
     set(YUNIT_LIBRARY_DIR 5.1/lib)
     set(YUNIT_ARCHIVE_DIR 5.1/lib)
     install(FILES 
-                "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/cppunit.pdb"
+                "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/yunit.pdb"
                 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/trace.pdb"
                 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/minidump.pdb"
                 CONFIGURATIONS RelWithDebInfo
@@ -113,7 +113,7 @@ if(WIN32)
     set(YUNIT_HEADERS_DIR 5.1/include/yunit)
     set(YUNIT_LUA_MODULES_DIR 5.1/lua/yunit)
 else(WIN32)
-    set(YUNIT_TARGETS cppunit)
+    set(YUNIT_TARGETS yunit)
     set(YUNIT_RUNTIME_DIR local/lib/lua/5.1)
     set(YUNIT_LIBRARY_DIR local/lib/lua/5.1)
     set(YUNIT_ARCHIVE_DIR local/lib/lua/5.1)

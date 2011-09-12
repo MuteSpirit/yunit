@@ -1,7 +1,7 @@
 local luaUnit = require('yunit.luaunit');
 local fs = require('yunit.filesystem');
 
-local cppUnit = require('cppunit')
+local cppUnit = require('yunit.cppunit')
 
 function cppunit_test_unit_interface()
     isNotNil(cppUnit)
