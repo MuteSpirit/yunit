@@ -579,9 +579,9 @@ test(CompareConstAndNonConstWcharPointer)
 test(TestSetGoodWorkingDir)
 {
 #ifdef WIN32
-    std::wifstream f(L".\\cppunit.t.dll", std::ios::in | std::ios::binary);
+    std::wifstream f(L".\\yunit.t.dll", std::ios::in | std::ios::binary);
 #else
-    std::ifstream f(".\\cppunit.t.dll", std::ifstream::in | std::ifstream::binary);
+    std::ifstream f(".\\yunit.t.so", std::ifstream::in | std::ifstream::binary);
 #endif
     bool exist = f.good();
     if (exist)

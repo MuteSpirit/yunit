@@ -7,22 +7,32 @@
 
 #include <vector>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "lauxlib.h"
+
+#ifdef __cplusplus
+}
+#endif
 
 #define LUA_METHOD(CppType, method)\
-static int CppType##method(lua_State* L);\
-static AddMethodToClassWrapper<CppType> add##method##to##CppType##Wrapper({#method, &CppType##method});\
-static int CppType##method(lua_State* L)
+    static int method##CppType(lua_State* L);\
+    static AddMethodToClassWrapper<CppType> add##method##to##CppType##Wrapper(#method, &method##CppType);\
+    static int method##CppType(lua_State* L)
 
 #define MT_NAME(CppType) #CppType "Metatable"
+
 
 template<typename CppType>
 class ClassWrapper
 {
 public:
     static ClassWrapper& wrapper();
-    void makeMetatable(lua_State* L, const char* mtName);
 
-    void addMethod(luaL_Reg method);
+    void makeMetatable(lua_State* L, const char* mtName);
+    void addMethod(const char *name, lua_CFunction func);
     
 private:
     ClassWrapper();
@@ -34,9 +44,9 @@ template<typename CppType>
 class AddMethodToClassWrapper
 {
 public:
-    AddMethodToClassWrapper(luaL_Reg method)
+    AddMethodToClassWrapper(const char *name, lua_CFunction func)
     {
-        ClassWrapper<CppType>::wrapper().addMethod(method);
+        ClassWrapper<CppType>::wrapper().addMethod(name, func);
     }
 };
 
@@ -54,22 +64,23 @@ ClassWrapper<CppType>& ClassWrapper<CppType>::wrapper()
 }
 
 template<typename CppType>
-inline void ClassWrapper<CppType>::addMethod(luaL_Reg method)
+inline void ClassWrapper<CppType>::addMethod(const char *name, lua_CFunction func)
 {
-    methods_.push_back(method);
+    methods_.resize(methods_.size() + 1);
+    methods_.back().name = name;
+    methods_.back().func = func;
 }
 
 template<typename CppType>
 inline void ClassWrapper<CppType>::makeMetatable(lua_State* L, const char* mtName)
 {
+    static const luaL_Reg endMethodsSign = {NULL, NULL};
+
     luaL_newmetatable(L, mtName);
     
-    std::vector<luaL_Reg>::size_type size = methods_.size();
-    methods_.resize(size + 1);
-    methods_.back().name = NULL;
-    methods_.back().func = NULL;
-    luaL_register(L, NULL, &methods_[0]);
-    methods_.resize(size);
+    methods_.push_back(endMethodsSign);
+    luaL_register(L, NULL, methods_.data());
+    methods_.resize(methods_.size() - 1);
 
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index"); // metatable.__index = metatable
@@ -107,6 +118,17 @@ int dtor(lua_State* L)
         delete *pp;
         *pp = NULL; // to avoid deleting object twice, if __gc metametod will be called more then once
     }
+}
+
+template<typename CppType>
+int push(lua_State *L, CppType* cppObj, const char* mtName)
+{
+    CppType** res = (CppType**)lua_newuserdata(L, sizeof(CppType*));
+    luaL_getmetatable(L, mtName);
+	lua_setmetatable(L, -2);
+    *res = cppObj;
+
+    return 1;
 }
 
 #endif // _YUNIT_LUA_CLASS_WRAPPER_HEADER_

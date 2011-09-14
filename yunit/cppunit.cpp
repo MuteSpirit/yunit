@@ -84,6 +84,7 @@ int YUNIT_API luaopen_yunit_cppunit(lua_State* L)
     };
 
     ClassWrapper<YUNIT_NS::TestCase>::wrapper().makeMetatable(L, MT_NAME(TestCase));
+
 	luaL_register(L, "yunit.cppunit", cppunit);
 	return 1;
 }
@@ -174,24 +175,15 @@ static int getTestList(lua_State* L)
 {
 	lua_newtable(L); // all test cases list
 
-    lua_Number i = 1;
-	TestRegistry::TestSuiteConstIter it = TestRegistry::initialize()->begin();
-	TestRegistry::TestSuiteConstIter endIt = TestRegistry::initialize()->end();
-	for(; it != endIt; ++it)
+    TestRegistry* testRegistry = TestRegistry::initialize();
+	TestRegistry::TestSuiteConstIter it = testRegistry->begin(), endIt = TestRegistry::initialize()->end();
+	for(int i = 1; it != endIt; ++it)
 	{
-		TestSuite::TestCaseConstIter itTc = (*it)->begin();
-		TestSuite::TestCaseConstIter endItTc = (*it)->end();
+		TestSuite::TestCaseConstIter itTc = (*it)->begin(), endItTc = (*it)->end();
 		for(; itTc != endItTc; ++itTc)
 		{
-			lua_pushnumber(L, i++);	// order number of TestCase
-
-            TestCase** tc = reinterpret_cast<TestCase**>(lua_newuserdata(L, sizeof(TestCase*)));
-	        *tc = *itTc;
-
-            luaL_getmetatable(L, MT_NAME(TestCase));
-	        lua_setmetatable(L, -2);
-
-			lua_settable(L, -3); // t[i] = testcase
+            push<TestCase>(L, *itTc, MT_NAME(TestCase));
+            lua_rawseti(L, -2, i++);
 		}
 	}
 
@@ -200,7 +192,7 @@ static int getTestList(lua_State* L)
 
 static int callTestCaseThunk(lua_State* L, TestCase* testCase, Thunk thunk);
 static bool wereCatchedCppExceptions(lua_State* L, TestCase* testCase, Thunk thunk, int& countReturnValues);
-static int luaPushErrorObject(lua_State* L, const char* fileName, lua_Integer lineNumber, const char* message);
+static int luaPushErrorObject(lua_State* L, const SourceLine& source, const char* message);
 
 LUA_METHOD(TestCase, setUp)
 {
@@ -259,11 +251,7 @@ static int callTestCaseThunk(lua_State* L, TestCase* testCase, Thunk thunk)
     {
 		lua_pushboolean(L, false); // status code
         countReturnValues = 1;
-
-        countReturnValues += luaPushErrorObject(
-            L,
-            testCase->source().fileName(), testCase->source().lineNumber(),
-            "Unexpected SEH exception was caught");
+        countReturnValues += luaPushErrorObject(L, testCase->source(), "Unexpected SEH exception was caught");
     }
 #else // not defined _MSC_VER
     thereAreCppExceptions = wereCatchedCppExceptions(L, testCase, thunk, countReturnValues);
@@ -273,11 +261,7 @@ static int callTestCaseThunk(lua_State* L, TestCase* testCase, Thunk thunk)
         // status code
 	    lua_pushboolean(L, true);
         ++countReturnValues;
-
-        countReturnValues += luaPushErrorObject(
-            L,
-            testCase->source().fileName(), testCase->source().lineNumber(),
-            "");
+        countReturnValues += luaPushErrorObject(L, testCase->source(), "");
     }
 
     return countReturnValues;
@@ -300,11 +284,7 @@ static bool wereCatchedCppExceptions(lua_State* L, TestCase* testCase, Thunk thu
 		char errorMessage[bufferSize] = {'\0'};
 		ex.message(errorMessage, bufferSize);
 
-        countReturnValues += luaPushErrorObject(
-            L,
-            ex.sourceLine().fileName(), ex.sourceLine().lineNumber(),
-            errorMessage);
-
+        countReturnValues += luaPushErrorObject(L, ex.sourceLine(), errorMessage);
 		return true;
     }
     catch(std::exception& ex)
@@ -318,7 +298,7 @@ static bool wereCatchedCppExceptions(lua_State* L, TestCase* testCase, Thunk thu
 
         countReturnValues += luaPushErrorObject(
             L,
-            testCase->source().fileName(), testCase->source().lineNumber(),
+            testCase->source(),
             errorMessage);
 
 		return true;
@@ -330,7 +310,7 @@ static bool wereCatchedCppExceptions(lua_State* L, TestCase* testCase, Thunk thu
 
         countReturnValues += luaPushErrorObject(
             L,
-            testCase->source().fileName(), testCase->source().lineNumber(),
+            testCase->source(),
             "Unexpected unknown C++ exception was caught");
 
 		return true;
@@ -340,16 +320,15 @@ static bool wereCatchedCppExceptions(lua_State* L, TestCase* testCase, Thunk thu
 }
 
 static int luaPushErrorObject(lua_State* L,
-                              const char* fileName,
-                              lua_Integer lineNumber,
+                              const SourceLine& source,
                               const char* message)
 {
     lua_newtable(L); // new Error Object 
     
-    lua_pushstring(L, fileName);       // source file with error
+    lua_pushstring(L, source.fileName());       // source file with error
     lua_setfield(L, -2, "source");
     
-    lua_pushinteger(L, lineNumber);     // number of line with error
+    lua_pushinteger(L, source.lineNumber());     // number of line with error
     lua_setfield(L, -2, "line");
     
     lua_pushstring(L, message);         // error message
