@@ -31,7 +31,7 @@ extern "C" {
 
 #define YUNIT_DLL_EXPORTS
 #include "cppunit.h"
-#include "class_wrapper.h"
+#include "lua_wrapper.h"
 
 namespace YUNIT_NS {
 
@@ -75,6 +75,7 @@ extern "C"
 int YUNIT_API luaopen_yunit_cppunit(lua_State* L)
 {
     using namespace YUNIT_NS;
+    LuaState lua(L);
 
     luaWrapper<TestCase>().makeMetatable(L, MT_NAME(TestCase));
     luaWrapper<Cppunit>().regLib(L, "yunit.cppunit");
@@ -85,14 +86,16 @@ LUA_METHOD(Cppunit, getTestContainerExtensions)
 {
     const char** ext = YUNIT_NS::getTestContainerExtensions();
 
-    lua_newtable(L);
+    LuaState lua(L);
+    
+    lua.newtable();
 
     int i = 1;
     while (ext && *ext)
     {
-        lua_pushnumber(L, i++); 
-        lua_pushstring(L, *ext++);
-        lua_settable(L, -3);
+        lua.push(i++); 
+        lua.push(*ext++);
+        lua.settable(-3);
     }
 
     return 1;
@@ -100,55 +103,57 @@ LUA_METHOD(Cppunit, getTestContainerExtensions)
 
 LUA_METHOD(Cppunit, loadTestContainer)
 {
-    if (!lua_isstring(L, 1))
+    LuaState lua(L);
+
+    if (!lua.isstring(1))
     {
-        lua_pushboolean(L, 0);
+        lua.push(false);
         lua_pushfstring(L, "expected string as argument type, but was %s", lua_typename(L, lua_type(L, 1)));
         return 2;
     }
     
     size_t len;
-    const char* path = lua_tolstring(L, 1, &len);
+    const char* path = lua.to(1, &len);
     if (0 == len)
     {
-        lua_pushboolean(L, 0);
-        lua_pushstring(L, "empty argument");
+        lua.push(false);
+        lua.push("empty argument");
         return 2;
     }
     //
     if (!isExist(path))
     {
-        lua_pushboolean(L, 0);
-        lua_pushstring(L, "file doesn't exist");
+        lua.push(false);
+        lua.push("file doesn't exist");
         return 2;
     }
     //
     // we must only load library to current process for initialization global objects and filling test register
     //
     // push error handling function
-    lua_getglobal(L, "debug");
-    lua_getfield(L, -1, "traceback");
-    lua_remove(L, -2);
+    lua.getglobal("debug");
+    lua.getfield(-1, "traceback");
+    lua.remove(-2);
     //
     // push function
-    lua_getglobal(L, "package");
-    lua_getfield(L, -1, "loadlib");
-    lua_remove(L, -2);
+    lua.getglobal("package");
+    lua.getfield(-1, "loadlib");
+    lua.remove(-2);
     //
-    lua_pushstring(L, path); // 1st argument
-    lua_pushstring(L, "");     // 2nd argument ("" means not load specified function)
+    lua.push(path); // 1st argument
+    lua.push("");     // 2nd argument ("" means not load specified function)
     //
     int rc = lua_pcall(L, 2, 1, -4);
     if (0 != rc)
     {
-        lua_pushboolean(L, 0);
-        lua_pushvalue(L, -2);   // push copy of error message
-        lua_remove(L, -3);       // remove original error message from stack
+        lua.push(false);
+        lua.pushvalue(-2);   // push copy of error message
+        lua.remove(-3);       // remove original error message from stack
         return 2;
     }
     
-    lua_pop(L, 1);  // remove return value of 'package.loadlib' function
-    lua_pushboolean(L, 1);
+    lua.pop(1);  // remove return value of 'package.loadlib' function
+    lua.push(true);
     return 1;
 }
 
@@ -156,7 +161,9 @@ LUA_METHOD(Cppunit, getTestList)
 {
     using namespace YUNIT_NS;
 
-	lua_newtable(L); // all test cases list
+    LuaState lua(L);
+
+	lua.newtable(); // all test cases list
 
     TestRegistry* testRegistry = TestRegistry::initialize();
 	TestRegistry::TestSuiteConstIter it = testRegistry->begin(), endIt = TestRegistry::initialize()->end();
@@ -165,8 +172,8 @@ LUA_METHOD(Cppunit, getTestList)
 		TestSuite::TestCaseConstIter itTc = (*it)->begin(), endItTc = (*it)->end();
 		for (; itTc != endItTc; ++itTc)
 		{
-            push<TestCase>(L, *itTc, MT_NAME(TestCase));
-            lua_rawseti(L, -2, i++);
+            lua.push<TestCase>(*itTc, MT_NAME(TestCase));
+            lua.rawseti(-2, i++);
 		}
 	}
 
@@ -187,50 +194,67 @@ static int luaPushErrorObject(lua_State* L, const SourceLine& source, const char
 
 LUA_METHOD(TestCase, setUp)
 {
-    TestCase* tc = to<TestCase>(L, 1);
+    LuaState lua(L);
+
+    TestCase* tc; lua.to<TestCase>(1, &tc);
     return callTestCaseThunk(L, tc, tc->setUpThunk());
 }
 
 LUA_METHOD(TestCase, test)
 {
-    TestCase* tc = to<TestCase>(L, 1);
+    LuaState lua(L);
+
+    TestCase* tc; lua.to<TestCase>(1, &tc);
     return callTestCaseThunk(L, tc, tc->testThunk());
 }
 
 LUA_METHOD(TestCase, tearDown)
 {
-    TestCase* tc = to<TestCase>(L, 1);
+    LuaState lua(L);
+
+    TestCase* tc; lua.to<TestCase>(1, &tc);
     return callTestCaseThunk(L, tc, tc->tearDownThunk());
 }
 
 LUA_METHOD(TestCase, isIgnored)
 {
-    lua_pushboolean(L, to<TestCase>(L, 1)->isIgnored());
+    LuaState lua(L);
+    
+    TestCase* tc; lua.to<TestCase>(1, &tc);
+    lua.push(tc->isIgnored());
     return 1;
 }
 
 LUA_METHOD(TestCase, lineNumber)
 {
-    lua_pushinteger(L, to<TestCase>(L, 1)->source().lineNumber());
+    LuaState lua(L);
+
+    TestCase* tc; lua.to<TestCase>(1, &tc);
+    lua.push(tc->source().lineNumber());
     return 1;
 }
 
 LUA_METHOD(TestCase, fileName)
 {
-    lua_pushstring(L, to<TestCase>(L, 1)->source().fileName());
+    LuaState lua(L);
+
+    TestCase* tc; lua.to<TestCase>(1, &tc);
+    lua.push(tc->source().fileName());
     return 1;
 }
 
 LUA_METHOD(TestCase, name)
 {
-    TestCase* tc = to<TestCase>(L, 1);
+    LuaState lua(L);
 
+    TestCase* tc; lua.to<TestCase>(1, &tc);
     lua_pushfstring(L, "%s::%s", tc->source().fileName(), tc->name());
     return 1;
 }
 
 static int callTestCaseThunk(lua_State* L, TestCase* testCase, Thunk thunk)
 {
+    LuaState lua(L);
     bool thereAreCppExceptions = false;
     int countReturnValues = 0;
 #ifdef _MSC_VER
@@ -240,7 +264,7 @@ static int callTestCaseThunk(lua_State* L, TestCase* testCase, Thunk thunk)
     }
     __except(EXCEPTION_EXECUTE_HANDLER)
     {
-		lua_pushboolean(L, false); // status code
+		lua.push(false); // status code
         countReturnValues = 1;
         countReturnValues += luaPushErrorObject(L, testCase->source(), "Unexpected SEH exception was caught");
     }
@@ -250,7 +274,7 @@ static int callTestCaseThunk(lua_State* L, TestCase* testCase, Thunk thunk)
     if (!thereAreCppExceptions)
     {
         // status code
-	    lua_pushboolean(L, true);
+	    lua.push(true);
         ++countReturnValues;
         countReturnValues += luaPushErrorObject(L, testCase->source(), "");
     }
@@ -260,6 +284,7 @@ static int callTestCaseThunk(lua_State* L, TestCase* testCase, Thunk thunk)
 
 static bool wereCatchedCppExceptions(lua_State* L, TestCase* testCase, Thunk thunk, int& countReturnValues)
 {
+    LuaState lua(L);
     countReturnValues = 0;
     try
     {
@@ -268,7 +293,7 @@ static bool wereCatchedCppExceptions(lua_State* L, TestCase* testCase, Thunk thu
 	catch (TestException& ex)
     {
         // status code
-		lua_pushboolean(L, false);
+		lua.push(false);
         ++countReturnValues;
 
 		enum {bufferSize = 1024 * 5};
@@ -280,7 +305,7 @@ static bool wereCatchedCppExceptions(lua_State* L, TestCase* testCase, Thunk thu
     }
     catch(std::exception& ex)
     {
-        lua_pushboolean(L, false);
+        lua.push(false);
         ++countReturnValues;
 
         enum {bufferSize = 1024 * 5};
@@ -296,7 +321,7 @@ static bool wereCatchedCppExceptions(lua_State* L, TestCase* testCase, Thunk thu
     }
     catch(...)
     {
-        lua_pushboolean(L, false);
+        lua.push(false);
         ++countReturnValues;
 
         countReturnValues += luaPushErrorObject(
@@ -314,16 +339,18 @@ static int luaPushErrorObject(lua_State* L,
                               const SourceLine& source,
                               const char* message)
 {
-    lua_newtable(L); // new Error Object 
+    LuaState lua(L);
+
+    lua.newtable(); // new Error Object 
     
-    lua_pushstring(L, source.fileName());       // source file with error
-    lua_setfield(L, -2, "source");
+    lua.push(source.fileName());       // source file with error
+    lua.setfield(-2, "source");
     
-    lua_pushinteger(L, source.lineNumber());     // number of line with error
-    lua_setfield(L, -2, "line");
+    lua.push(source.lineNumber());     // number of line with error
+    lua.setfield(-2, "line");
     
-    lua_pushstring(L, message);         // error message
-    lua_setfield(L, -2, "message");
+    lua.push(message);         // error message
+    lua.setfield(-2, "message");
 
     return 1;
 }

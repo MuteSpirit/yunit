@@ -27,7 +27,7 @@ endif(MSVC)
 #
 # yunit
 #
-add_library(yunit SHARED cppunit.cpp cppunit.h class_wrapper.h)
+add_library(yunit SHARED cppunit.cpp cppunit.h lua_wrapper.h)
 target_link_libraries(yunit ${LUA51_LIBRARY})
 set_target_properties(yunit PROPERTIES 
                                     PREFIX "")

@@ -26,6 +26,55 @@ extern "C" {
 #define MT_NAME(CppType) #CppType "Metatable"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class LuaState
+{
+public:
+    LuaState(lua_State* L);
+    
+    operator lua_State*();
+    
+    void newtable();
+    void settable(int idx);
+    void setfield(int idx, const char* key);
+    
+    void push(lua_Number value);
+    void push(lua_Integer value);
+    void push(bool value);
+    void push(const char* s);
+    void push(const char* s, size_t len);
+    void pushvalue(int idx);
+    void pushnil();
+
+    template<typename CppType>
+    void push(CppType* cppObj, const char* mtName);
+    
+    void pop(int n);
+    
+    void rawseti(int idx, int n);
+    
+    bool isstring(int idx);
+    bool istable(int idx);
+    bool isuserdata(int idx);
+    bool isinteger(int idx);
+    bool isnumber(int idx);
+    bool isnil(int idx);
+    
+    void getglobal(const char* name);
+    void getfield(int idx, const char* key);
+    
+    const char* to(int idx, size_t* len);
+
+    template<typename CppType>
+    void to(int idx, CppType** cppObj);
+    
+    void remove(int idx);
+    
+private:
+    lua_State* l_;    
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename CppType>
 class LuaWrapper
 {
@@ -117,13 +166,141 @@ AddMethod<CppType>::AddMethod(const char *name, lua_CFunction func)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename CppType>
-CppType* to(lua_State* L, int index)
+LuaState::LuaState(lua_State* L)
+: l_(L)
 {
-    if (!lua_isuserdata(L, index))
-        luaL_error(L, "cannot use 'self' object, userdata expected, but was %s", lua_typename(L, lua_type(L, index)));
+}
+
+LuaState::operator lua_State*()
+{
+    return l_;
+}
+
+void LuaState::newtable()
+{
+    lua_newtable(l_);
+}
+
+void LuaState::settable(int idx)
+{
+    lua_settable(l_, idx);
+}
+
+void LuaState::setfield(int idx, const char* key)
+{
+    lua_setfield(l_, idx, key);
+}
+
+void LuaState::push(lua_Number value)
+{
+    lua_pushnumber(l_, value);
+}
+
+void LuaState::push(lua_Integer value)
+{
+    lua_pushinteger(l_, value);
+}
+
+void LuaState::push(bool value)
+{
+    lua_pushboolean(l_, value ? 1 : 0);
+}
+
+void LuaState::push(const char* s)
+{
+    lua_pushstring(l_, s);
+}
+
+void LuaState::push(const char* s, size_t len)
+{
+    lua_pushlstring(l_, s, len);
+}
+
+void LuaState::pushvalue(int idx)
+{
+    lua_pushvalue(l_, idx);
+}
+
+void LuaState::pushnil()
+{
+    lua_pushnil(l_);
+}
+
+template<typename CppType>
+void LuaState::push(CppType* cppObj, const char* mtName)
+{
+    lua_State* L = l_;
     
-    CppType** pp = reinterpret_cast<CppType**>(lua_touserdata(L, index));
+    CppType** res = (CppType**)lua_newuserdata(L, sizeof(CppType*));
+    luaL_getmetatable(L, mtName);
+	lua_setmetatable(L, -2);
+    *res = cppObj;
+}
+
+void LuaState::pop(int n)
+{
+    lua_pop(l_, n);
+}
+
+void LuaState::rawseti(int idx, int n)
+{
+    lua_rawseti(l_, idx, n);
+}
+
+bool LuaState::isstring(int idx)
+{
+    return 1 == lua_isstring(l_, idx);
+}
+
+bool LuaState::istable(int idx)
+{
+    return 1 == lua_istable(l_, idx);
+}
+
+bool LuaState::isuserdata(int idx)
+{
+    return 1 == lua_isuserdata(l_, idx);
+}
+
+bool LuaState::isinteger(int idx)
+{
+    return 1 == lua_isnumber(l_, idx);
+}
+
+bool LuaState::isnumber(int idx)
+{
+    return 1 == lua_isnumber(l_, idx);
+}
+
+bool LuaState::isnil(int idx)
+{
+    return 1 == lua_isnil(l_, idx);
+}
+
+void LuaState::getglobal(const char* name)
+{
+    lua_getglobal(l_, name);
+}
+
+void LuaState::getfield(int idx, const char* key)
+{
+    lua_getfield(l_, idx, key);
+}
+
+const char* LuaState::to(int idx, size_t* len)
+{
+    return lua_tolstring(l_, idx, len);
+}
+
+template<typename CppType>
+void LuaState::to(int idx, CppType** cppObj)
+{
+    lua_State* L = l_;
+    
+    if (!lua_isuserdata(L, idx))
+        luaL_error(L, "cannot use 'self' object, userdata expected, but was %s", lua_typename(L, lua_type(L, idx)));
+    
+    CppType** pp = reinterpret_cast<CppType**>(lua_touserdata(L, idx));
     if (NULL == pp)
         luaL_error(L, "cannot use 'self' object, it equals to NULL");
     
@@ -131,7 +308,12 @@ CppType* to(lua_State* L, int index)
     if (NULL == pp)
         luaL_error(L, "cannot use 'self' object, it points to NULL value");
 
-    return p;
+    *cppObj = p;
+}
+
+void LuaState::remove(int idx)
+{
+    lua_remove(l_, idx);
 }
 
 template<typename CppType>
@@ -146,17 +328,6 @@ int dtor(lua_State* L)
         delete *pp;
         *pp = NULL; // to avoid deleting object twice, if __gc metametod will be called more then once
     }
-}
-
-template<typename CppType>
-int push(lua_State *L, CppType* cppObj, const char* mtName)
-{
-    CppType** res = (CppType**)lua_newuserdata(L, sizeof(CppType*));
-    luaL_getmetatable(L, mtName);
-	lua_setmetatable(L, -2);
-    *res = cppObj;
-
-    return 1;
 }
 
 #endif // _YUNIT_LUA_CLASS_WRAPPER_HEADER_
