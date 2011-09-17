@@ -11,6 +11,7 @@
 extern "C" {
 #endif
 
+#include "lua.h"
 #include "lauxlib.h"
 
 #ifdef __cplusplus
@@ -19,52 +20,61 @@ extern "C" {
 
 #define LUA_METHOD(CppType, method)\
     static int method##CppType(lua_State* L);\
-    static AddMethodToClassWrapper<CppType> add##method##to##CppType##Wrapper(#method, &method##CppType);\
+    static AddMethod<CppType> add##method##to##CppType##Wrapper(#method, &method##CppType);\
     static int method##CppType(lua_State* L)
 
 #define MT_NAME(CppType) #CppType "Metatable"
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename CppType>
-class ClassWrapper
+class LuaWrapper
 {
 public:
-    static ClassWrapper& wrapper();
+    static LuaWrapper& instance();
+
+    void addMethod(const char *name, lua_CFunction func);
 
     void makeMetatable(lua_State* L, const char* mtName);
-    void addMethod(const char *name, lua_CFunction func);
+    void regLib(lua_State* L, const char* name);
     
 private:
-    ClassWrapper();
+    LuaWrapper();
     
+    static const luaL_Reg endMethodsSign_;
     std::vector<luaL_Reg> methods_;
 };
 
 template<typename CppType>
-class AddMethodToClassWrapper
-{
-public:
-    AddMethodToClassWrapper(const char *name, lua_CFunction func)
-    {
-        ClassWrapper<CppType>::wrapper().addMethod(name, func);
-    }
-};
+LuaWrapper<CppType>& luaWrapper();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename CppType>
-ClassWrapper<CppType>::ClassWrapper()
+struct AddMethod
+{
+    AddMethod(const char *name, lua_CFunction func);
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Implementation
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename CppType>
+const luaL_Reg LuaWrapper<CppType>::endMethodsSign_ = {NULL, NULL};
+
+template<typename CppType>
+LuaWrapper<CppType>::LuaWrapper()
 {
 }
 
 template<typename CppType>
-ClassWrapper<CppType>& ClassWrapper<CppType>::wrapper()
+LuaWrapper<CppType>& LuaWrapper<CppType>::instance()
 {
-    static ClassWrapper<CppType> wrapper;
+    static LuaWrapper<CppType> wrapper;
     return wrapper;
 }
 
 template<typename CppType>
-inline void ClassWrapper<CppType>::addMethod(const char *name, lua_CFunction func)
+inline void LuaWrapper<CppType>::addMethod(const char *name, lua_CFunction func)
 {
     methods_.resize(methods_.size() + 1);
     methods_.back().name = name;
@@ -72,13 +82,11 @@ inline void ClassWrapper<CppType>::addMethod(const char *name, lua_CFunction fun
 }
 
 template<typename CppType>
-inline void ClassWrapper<CppType>::makeMetatable(lua_State* L, const char* mtName)
+inline void LuaWrapper<CppType>::makeMetatable(lua_State* L, const char* mtName)
 {
-    static const luaL_Reg endMethodsSign = {NULL, NULL};
-
     luaL_newmetatable(L, mtName);
     
-    methods_.push_back(endMethodsSign);
+    methods_.push_back(endMethodsSign_);
     luaL_register(L, NULL, methods_.data());
     methods_.resize(methods_.size() - 1);
 
@@ -86,6 +94,26 @@ inline void ClassWrapper<CppType>::makeMetatable(lua_State* L, const char* mtNam
     lua_setfield(L, -2, "__index"); // metatable.__index = metatable
     
     lua_pop(L, 1); // remove new metatable from stack
+}
+
+template<typename CppType>
+inline void LuaWrapper<CppType>::regLib(lua_State* L, const char* name)
+{
+    methods_.push_back(endMethodsSign_);
+    luaL_register(L, name, methods_.data());
+    methods_.resize(methods_.size() - 1);
+}
+
+template<typename CppType>
+LuaWrapper<CppType>& luaWrapper()
+{
+    return LuaWrapper<CppType>::instance();
+}
+
+template<typename CppType>
+AddMethod<CppType>::AddMethod(const char *name, lua_CFunction func)
+{
+    LuaWrapper<CppType>::instance().addMethod(name, func);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

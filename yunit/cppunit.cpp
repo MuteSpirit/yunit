@@ -34,13 +34,7 @@ extern "C" {
 #include "class_wrapper.h"
 
 namespace YUNIT_NS {
-static int loadTestContainer(lua_State* L);
-static int getTestContainerExtensions(lua_State* L);
-static int getTestList(lua_State* L);
-static bool isExist(const char* path);
-    
-static const char* testCaseMtName = "testCaseMetatable";
-    
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class TestSuite
 {
@@ -67,41 +61,34 @@ private:
     const char* name_;
     TestCaseList testCases_;
 };
+
+const char** getTestContainerExtensions();
     
 } // namespace YUNIT_NS
 
+static bool isExist(const char* path);
+
+struct Cppunit {};
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 extern "C"
 int YUNIT_API luaopen_yunit_cppunit(lua_State* L)
 {
-    static const struct luaL_Reg cppunit[] =
-    {
-	    {"getTestContainerExtensions", YUNIT_NS::getTestContainerExtensions},
-	    {"loadTestContainer", YUNIT_NS::loadTestContainer},
-	    {"getTestList", YUNIT_NS::getTestList},
-	    {NULL, NULL},
-    };
+    using namespace YUNIT_NS;
 
-    ClassWrapper<YUNIT_NS::TestCase>::wrapper().makeMetatable(L, MT_NAME(TestCase));
-
-	luaL_register(L, "yunit.cppunit", cppunit);
+    luaWrapper<TestCase>().makeMetatable(L, MT_NAME(TestCase));
+    luaWrapper<Cppunit>().regLib(L, "yunit.cppunit");
 	return 1;
 }
 
-
-namespace YUNIT_NS {
-
-const char** getTestContainerExtensions();
-    
-static int getTestContainerExtensions(lua_State* L)
+LUA_METHOD(Cppunit, getTestContainerExtensions)
 {
-    const char** ext = getTestContainerExtensions();
+    const char** ext = YUNIT_NS::getTestContainerExtensions();
 
     lua_newtable(L);
 
     int i = 1;
-    while(ext && *ext)
+    while (ext && *ext)
     {
         lua_pushnumber(L, i++); 
         lua_pushstring(L, *ext++);
@@ -111,7 +98,7 @@ static int getTestContainerExtensions(lua_State* L)
     return 1;
 }
 
-static int loadTestContainer(lua_State* L)
+LUA_METHOD(Cppunit, loadTestContainer)
 {
     if (!lua_isstring(L, 1))
     {
@@ -165,22 +152,18 @@ static int loadTestContainer(lua_State* L)
     return 1;
 }
 
-static bool isExist(const char* path)
+LUA_METHOD(Cppunit, getTestList)
 {
-    enum {existenceOnlyMode = 0, notAccessible = -1};
-    return notAccessible != ACCESS_FUNC(path, existenceOnlyMode);
-}
+    using namespace YUNIT_NS;
 
-static int getTestList(lua_State* L)
-{
 	lua_newtable(L); // all test cases list
 
     TestRegistry* testRegistry = TestRegistry::initialize();
 	TestRegistry::TestSuiteConstIter it = testRegistry->begin(), endIt = TestRegistry::initialize()->end();
-	for(int i = 1; it != endIt; ++it)
+	for (int i = 1; it != endIt; ++it)
 	{
 		TestSuite::TestCaseConstIter itTc = (*it)->begin(), endItTc = (*it)->end();
-		for(; itTc != endItTc; ++itTc)
+		for (; itTc != endItTc; ++itTc)
 		{
             push<TestCase>(L, *itTc, MT_NAME(TestCase));
             lua_rawseti(L, -2, i++);
@@ -189,6 +172,14 @@ static int getTestList(lua_State* L)
 
 	return 1;
 }
+
+static bool isExist(const char* path)
+{
+    enum {existenceOnlyMode = 0, notAccessible = -1};
+    return notAccessible != ACCESS_FUNC(path, existenceOnlyMode);
+}
+
+namespace YUNIT_NS {
 
 static int callTestCaseThunk(lua_State* L, TestCase* testCase, Thunk thunk);
 static bool wereCatchedCppExceptions(lua_State* L, TestCase* testCase, Thunk thunk, int& countReturnValues);
