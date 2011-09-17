@@ -25,6 +25,10 @@ extern "C" {
 
 #define MT_NAME(CppType) #CppType "Metatable"
 
+#define LUA_CHECK_ARG(luaType, idx)\
+    if (!lua.is##luaType(idx))\
+        lua.error("invalid argument №%d, " #luaType " expected, but was %s\r\n", (idx), lua.typeName(1));
+        
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class LuaState
 {
@@ -52,6 +56,7 @@ public:
     
     void rawseti(int idx, int n);
     
+    const char* typeName(int idx);
     bool isstring(int idx);
     bool istable(int idx);
     bool isuserdata(int idx);
@@ -247,6 +252,11 @@ void LuaState::rawseti(int idx, int n)
     lua_rawseti(l_, idx, n);
 }
 
+const char* LuaState::typeName(int idx)
+{
+    return lua_typename(l_, lua_type(l_, idx));
+}
+    
 bool LuaState::isstring(int idx)
 {
     return 1 == lua_isstring(l_, idx);
