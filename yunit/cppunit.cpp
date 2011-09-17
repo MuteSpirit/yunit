@@ -77,8 +77,8 @@ int YUNIT_API luaopen_yunit_cppunit(lua_State* L)
     using namespace YUNIT_NS;
     LuaState lua(L);
 
-    luaWrapper<TestCase>().makeMetatable(L, MT_NAME(TestCase));
-    luaWrapper<Cppunit>().regLib(L, "yunit.cppunit");
+    luaWrapper<TestCase>().makeMetatable(lua, MT_NAME(TestCase));
+    luaWrapper<Cppunit>().regLib(lua, "yunit.cppunit");
 	return 1;
 }
 
@@ -104,11 +104,12 @@ LUA_METHOD(Cppunit, getTestContainerExtensions)
 LUA_METHOD(Cppunit, loadTestContainer)
 {
     LuaState lua(L);
+    enum {argIdx = 1};
 
-    if (!lua.isstring(1))
+    if (!lua.isstring(argIdx))
     {
         lua.push(false);
-        lua_pushfstring(L, "expected string as argument type, but was %s", lua_typename(L, lua_type(L, 1)));
+        lua_pushfstring(lua, "expected string as argument type, but was %s", lua.typeName(argIdx));
         return 2;
     }
     
@@ -143,7 +144,7 @@ LUA_METHOD(Cppunit, loadTestContainer)
     lua.push(path); // 1st argument
     lua.push("");     // 2nd argument ("" means not load specified function)
     //
-    int rc = lua_pcall(L, 2, 1, -4);
+    int rc = lua_pcall(lua, 2, 1, -4);
     if (0 != rc)
     {
         lua.push(false);
@@ -197,7 +198,7 @@ LUA_METHOD(TestCase, setUp)
     LuaState lua(L);
 
     TestCase* tc; lua.to<TestCase>(1, &tc);
-    return callTestCaseThunk(L, tc, tc->setUpThunk());
+    return callTestCaseThunk(lua, tc, tc->setUpThunk());
 }
 
 LUA_METHOD(TestCase, test)
@@ -205,7 +206,7 @@ LUA_METHOD(TestCase, test)
     LuaState lua(L);
 
     TestCase* tc; lua.to<TestCase>(1, &tc);
-    return callTestCaseThunk(L, tc, tc->testThunk());
+    return callTestCaseThunk(lua, tc, tc->testThunk());
 }
 
 LUA_METHOD(TestCase, tearDown)
@@ -213,7 +214,7 @@ LUA_METHOD(TestCase, tearDown)
     LuaState lua(L);
 
     TestCase* tc; lua.to<TestCase>(1, &tc);
-    return callTestCaseThunk(L, tc, tc->tearDownThunk());
+    return callTestCaseThunk(lua, tc, tc->tearDownThunk());
 }
 
 LUA_METHOD(TestCase, isIgnored)
@@ -248,7 +249,7 @@ LUA_METHOD(TestCase, name)
     LuaState lua(L);
 
     TestCase* tc; lua.to<TestCase>(1, &tc);
-    lua_pushfstring(L, "%s::%s", tc->source().fileName(), tc->name());
+    lua_pushfstring(lua, "%s::%s", tc->source().fileName(), tc->name());
     return 1;
 }
 
@@ -260,28 +261,29 @@ static int callTestCaseThunk(lua_State* L, TestCase* testCase, Thunk thunk)
 #ifdef _MSC_VER
     __try
     {
-        thereAreCppExceptions = wereCatchedCppExceptions(L, testCase, thunk, countReturnValues);
+        thereAreCppExceptions = wereCatchedCppExceptions(lua, testCase, thunk, countReturnValues);
     }
     __except(EXCEPTION_EXECUTE_HANDLER)
     {
 		lua.push(false); // status code
         countReturnValues = 1;
-        countReturnValues += luaPushErrorObject(L, testCase->source(), "Unexpected SEH exception was caught");
+        countReturnValues += luaPushErrorObject(lua, testCase->source(), "Unexpected SEH exception was caught");
     }
 #else // not defined _MSC_VER
-    thereAreCppExceptions = wereCatchedCppExceptions(L, testCase, thunk, countReturnValues);
+    thereAreCppExceptions = wereCatchedCppExceptions(lua, testCase, thunk, countReturnValues);
 #endif
     if (!thereAreCppExceptions)
     {
         // status code
 	    lua.push(true);
         ++countReturnValues;
-        countReturnValues += luaPushErrorObject(L, testCase->source(), "");
+        countReturnValues += luaPushErrorObject(lua, testCase->source(), "");
     }
 
     return countReturnValues;
 }
 
+/// \todo Return (un)success result status and ErrorObject
 static bool wereCatchedCppExceptions(lua_State* L, TestCase* testCase, Thunk thunk, int& countReturnValues)
 {
     LuaState lua(L);
@@ -292,43 +294,29 @@ static bool wereCatchedCppExceptions(lua_State* L, TestCase* testCase, Thunk thu
     }
 	catch (TestException& ex)
     {
-        // status code
-		lua.push(false);
-        ++countReturnValues;
-
 		enum {bufferSize = 1024 * 5};
 		char errorMessage[bufferSize] = {'\0'};
 		ex.message(errorMessage, bufferSize);
 
-        countReturnValues += luaPushErrorObject(L, ex.sourceLine(), errorMessage);
+		lua.push(false);
+        countReturnValues += 1 + luaPushErrorObject(lua, ex.sourceLine(), errorMessage);
 		return true;
     }
     catch(std::exception& ex)
     {
-        lua.push(false);
-        ++countReturnValues;
-
         enum {bufferSize = 1024 * 5};
         char errorMessage[bufferSize] = {'\0'};
         TS_SNPRINTF(errorMessage, bufferSize - 1, "Unexpected std::exception was caught: %s", ex.what());
 
-        countReturnValues += luaPushErrorObject(
-            L,
-            testCase->source(),
-            errorMessage);
-
+        lua.push(false);
+        countReturnValues += 1 + luaPushErrorObject(lua, testCase->source(), errorMessage);
 		return true;
     }
     catch(...)
     {
         lua.push(false);
-        ++countReturnValues;
-
-        countReturnValues += luaPushErrorObject(
-            L,
-            testCase->source(),
-            "Unexpected unknown C++ exception was caught");
-
+        countReturnValues += 1 + luaPushErrorObject(lua,
+            testCase->source(), "Unexpected unknown C++ exception was caught");
 		return true;
 	}
 
