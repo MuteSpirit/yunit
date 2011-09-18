@@ -346,13 +346,17 @@ function XmlTestResultHandler:onTestsEnd()
     self:outputMessage(' done\r\n');
 end
 
-FixFailed = testRunner.TestResultHandler:new{passed_ = false}
+FixFailed = testRunner.TestResultHandler:new{
+    thereIsFailureTest_ = false,
+    thereIsAlmostOneTest_ = false,
+}
 
 ------------------------------------------------------
 function FixFailed:new()
     local o =
     {
-        passed_ = false,
+        thereIsFailureTest_ = false,
+        thereIsAlmostOneTest_ = false,
     };
     setmetatable(o, self);
     self.__index = self;
@@ -360,17 +364,19 @@ function FixFailed:new()
 end
 
 function FixFailed:passed()
-    return self.passed_
+    return self.thereIsAlmostOneTest_ and not self.thereIsFailureTest_
 end
 
 function FixFailed:onTestSuccessfull(testCaseName)
-    self.passed_ = true
+    self.thereIsAlmostOneTest_ = true
 end
 
 function FixFailed:onTestFailure(testCaseName, errorObject)
-    self.passed_ = false
+    self.thereIsAlmostOneTest_ = true
+    self.thereIsFailureTest_ = true
 end
 
 function FixFailed:onTestError(testCaseName, errorObject)
-    self.passed_ = false
+    self.thereIsAlmostOneTest_ = true
+    self.thereIsFailureTest_ = true
 end
