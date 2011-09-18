@@ -237,3 +237,10 @@ function errorObjectFixture.fixed_failed_test_result_handler_return_not_ok_on_te
     testResHandler:onTestFailure(fakeTestCaseName, fakeErrorObject)
 	isFalse(testResHandler:passed())
 end
+
+function errorObjectFixture.fixed_failed_test_result_handler_return_not_ok_on_last_successfull_test()
+	local fixFailedTestRes = testResultHandlers.FixFailed:new()
+    fixFailedTestRes:onTestFailure(fakeTestCaseName, fakeErrorObject)
+    fixFailedTestRes:onTestSuccessfull(fakeTestCaseName)
+	isFalse(fixFailedTestRes:passed())
+end
