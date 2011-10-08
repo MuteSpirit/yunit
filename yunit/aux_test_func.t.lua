@@ -9,10 +9,10 @@
 --- \return true, если все прошло без ошибок, иначе - false
 
 
-local lfs = require ('lfs')
-local fs = require("yunit.filesystem")
-local luaExt = require('yunit.lua_ext')
-local atf = require('yunit.aux_test_func')
+local lfs = require "yunit.lfs"
+local fs = require "yunit.filesystem"
+local luaExt = require "yunit.lua_ext"
+local atf = require "yunit.aux_test_func"
 
 local luaUnit = require('yunit.luaunit');
 

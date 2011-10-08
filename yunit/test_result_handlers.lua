@@ -3,7 +3,7 @@ local _Mmt = {__index = _G}
 setmetatable(_M, _Mmt)
 local _G = _M
 
-local testRunner = require("yunit.test_runner");
+local testRunner = require "yunit.test_runner"
 
 ------------------------------------------------------
 TextTestProgressHandler = testRunner.TestResultHandler:new{

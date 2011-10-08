@@ -1,5 +1,5 @@
-local fs = require('yunit.filesystem')
-local testRunner = require('yunit.test_runner')
+local fs = require "yunit.filesystem"
+local testRunner = require "yunit.test_runner"
 
 -- test observer alone, because 'run' function may be called multiple times in one test run
 local testObserver = testRunner.TestResultHandlerList:new()

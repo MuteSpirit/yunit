@@ -3,7 +3,7 @@ local _Mmt = {__index = _G}
 setmetatable(_M, _Mmt)
 local _G = _M
 
-local fs = require('yunit.filesystem')
+local fs = require "yunit.filesystem"
 
 TestResultHandler = {
     onTestSuccessfull = function(testCaseName) end;

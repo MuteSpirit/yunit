@@ -102,7 +102,7 @@
 --- \param[in] path Full or relative local file or folder path
 --- \return true if 'path' is path of file or folder on local disk location
 
-local lfs = require "lfs"
+local lfs = require "yunit.lfs"
 local fs = require "yunit.filesystem"
 local luaExt = require "yunit.lua_ext"
 local atf = require "yunit.aux_test_func"

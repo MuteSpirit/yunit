@@ -4,10 +4,10 @@ setmetatable(_M, _Mmt)
 local _G = _M
 
 local luaExt = require "yunit.lua_ext"
-local lfs = require "lfs"
+local lfs = require "yunit.lfs"
 
---- \brief Define on what operating system script is run
---- \return 'win' or 'unix'
+--- @brief Define on what operating system script is run
+--- @return 'win' or 'unix'
 --------------------------------------------------------------------------------------------------------------
 function whatOs()
     return os.getenv('ProgramFiles') and 'win' or 'unix'

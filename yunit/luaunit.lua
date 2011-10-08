@@ -27,14 +27,14 @@ function copyTable(object)
 end
 
 -------------------------------------------------------
-TestFixture = {};
+TestFixture = {}
 -------------------------------------------------------
 
 function TestFixture:new(o)
-    local obj =  o or {};
-    setmetatable(obj, self);
-    self.__index = self;
-    return obj;
+    local obj =  o or {}
+    setmetatable(obj, self)
+    self.__index = self
+    return obj
 end
 
 function TestFixture:setUp()
@@ -44,7 +44,7 @@ function TestFixture:tearDown()
 end
 
 -------------------------------------------------------
-TestCase = TestFixture:new{};
+TestCase = TestFixture:new{}
 -------------------------------------------------------
 
 function TestCase:new(name)
@@ -52,14 +52,14 @@ function TestCase:new(name)
     {
         name_ = name,
         isIgnored_ = false,
-    };
-    setmetatable(o, self);
-    self.__index = self;
-    return o;
+    }
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
 function TestCase:name()
-    return self.name_;
+    return self.name_
 end
 
 function TestCase:test()
@@ -311,26 +311,21 @@ _M.isNotBool = _M.isNotBoolean
 -------------------------------------------------------
 function getTestContainerExtensions()
 -------------------------------------------------------
-    return {'.t.lua'};
+    return {'.t.lua'}
 end
 
-
-local testCaseMt = 
-{
-    __index = function(t, k)
-        return _M[k]
-    end,
-}
+-- use common metatable to decrease memory usage
+local testCaseMt = {__index = _M}
 
 -------------------------------------------------------
 function getTestEnv(moduleName)
 -------------------------------------------------------
-    local ns = {}
-    
-    ns._NAME = moduleName
+    local ns =
+    {
+        ['_NAME'] = moduleName,
+        ['_PACKAGE'] = string.gsub(moduleName, '[^%.]*$', ''),
+    }
     ns._M = ns
-    ns._PACKAGE = string.gsub(moduleName, '[^%.]*$', '')
-    
     setmetatable(ns, testCaseMt)
     
     return ns
@@ -395,7 +390,7 @@ function loadTestCases(testContainerSourceCode, testContainerName)
     local status
     status, msg = pcall(testChunk)
     if not status then
-        return false, msg
+        return nil, msg
     end
 	
 	local testcases = collectPureTestCaseList(env)
@@ -416,26 +411,25 @@ end
 -------------------------------------------------------
 function loadTestContainer(filePath)
 -------------------------------------------------------
-    local sourceCode;
-    
-    local hFile, errMsg = io.open(filePath, 'r');
-    if not hFile then
-        return hFile, errMsg;
+    local f, errMsg = io.open(filePath, 'r')
+    if not f then
+        return f, errMsg
     end
-    sourceCode = hFile:read('*a');
-    hFile:close();
 
-    local testcases, msg = loadTestCases(sourceCode, filePath);
+    local sourceCode = f:read('*a')
+    f:close()
+
+    local testcases, msg = loadTestCases(sourceCode, filePath)
     if false == testcases then
-        return false, msg;
+        return nil, msg
     end
     
 	local testSuite = TestSuite:new(filePath)
     curTestRegistry:addTestSuite(testSuite)
 
-	testSuite.testcases = testcases;
+	testSuite.testcases = testcases
 	
-    return true;
+    return true
 end
 
 return _M
