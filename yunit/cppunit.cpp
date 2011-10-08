@@ -79,7 +79,7 @@ int YUNIT_API luaopen_yunit_cppunit(lua_State* L)
 
     luaWrapper<TestCase>().makeMetatable(lua, MT_NAME(TestCase));
     luaWrapper<Cppunit>().regLib(lua, "yunit.cppunit");
-	return 1;
+    return 1;
 }
 
 LUA_METHOD(Cppunit, getTestContainerExtensions)

@@ -1,6 +1,5 @@
 local fs = require('yunit.filesystem')
 local testRunner = require('yunit.test_runner')
---~ local minidump = require('minidump')
 
 -- test observer alone, because 'run' function may be called multiple times in one test run
 local testObserver = testRunner.TestResultHandlerList:new()
@@ -11,8 +10,6 @@ end
 
 local fixFailedResHandler = require('yunit.test_result_handlers').FixFailed:new()
 testObserver:addHandler(fixFailedResHandler)
-
---~ minidump.setCrashHandler()
 
 function run(path)
     local workingDir = fs.dirname(path)

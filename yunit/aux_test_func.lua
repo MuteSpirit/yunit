@@ -1,13 +1,7 @@
--- -*- coding: utf-8 -*-
-local _G = _G
-
---------------------------------------------------------------------------------------------------------------
-module(...)
-_G.setmetatable(_M, {__index = _G})
---------------------------------------------------------------------------------------------------------------
-
-local luaExt = require('yunit.lua_ext');
-local lfs = require("lfs")
+local _M = {}
+local _Mmt = {__index = _G}
+setmetatable(_M, _Mmt)
+local _G = _M
 
 --------------------------------------------------------------------------------------------------------------
 function createTextFileWithContent(path, content)
@@ -45,3 +39,8 @@ function fileContentAsLines(path)
     return lines;
 end
 
+function pr(msg)
+    print('Call from aux:' .. msg .. '\r\n')
+end
+
+return _M

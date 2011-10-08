@@ -1,9 +1,7 @@
-local _G = _G
-
---------------------------------------------------------------------------------------------------------------
-module(...)
-_G.setmetatable(_M, {__index = _G})
---------------------------------------------------------------------------------------------------------------
+local _M = {}
+local _Mmt = {__index = _G}
+setmetatable(_M, _Mmt)
+local _G = _M
 
 local testRunner = require("yunit.test_runner");
 
@@ -380,3 +378,5 @@ function FixFailed:onTestError(testCaseName, errorObject)
     self.thereIsAlmostOneTest_ = true
     self.thereIsFailureTest_ = true
 end
+
+return _M

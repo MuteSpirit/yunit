@@ -102,12 +102,12 @@
 --- \param[in] path Full or relative local file or folder path
 --- \return true if 'path' is path of file or folder on local disk location
 
-local lfs = require ('lfs')
-local fs = require("yunit.filesystem")
-local luaExt = require('yunit.lua_ext')
-local atf = require('yunit.aux_test_func')
+local lfs = require "lfs"
+local fs = require "yunit.filesystem"
+local luaExt = require "yunit.lua_ext"
+local atf = require "yunit.aux_test_func"
 
-local luaUnit = require('yunit.luaunit');
+local luaUnit = require 'yunit.luaunit'
 
 
 
@@ -135,38 +135,27 @@ useTestTmpDirFixture =
     ;
 };
 
-local function winBackslash()
-    return '\\';
-end
-
-local function unixSlash()
-    return '/';
-end
-
 useWinPathDelimiterFixture = 
 {
     setUp = function(self)
-        osSlash = fs.osSlash
-        fs.osSlash = winBackslash
-    end
-    ;
+        self.osSlash = fs.osSlash
+        fs.osSlash = function() return '\\'; end
+    end;
 
     tearDown = function(self)
-        fs.osSlash = osSlash
-    end
-    ;
+        fs.osSlash = self.osSlash
+    end;
 }
 
 useUnixPathDelimiterFixture = 
 {
     setUp = function(self)
-        osSlash = fs.osSlash
-        fs.osSlash = unixSlash
+        self.osSlash = fs.osSlash
+        fs.osSlash = function() return '/'; end
     end
     ;
-
     tearDown = function(self)
-        fs.osSlash = osSlash
+        fs.osSlash = self.osSlash
     end
     ;
 }
@@ -182,15 +171,17 @@ function useUnixPathDelimiterFixture.unixCanonizePath()
     areEq('/', fs.canonizePath('/'));
 end
 
-function useWinPathDelimiterFixture.winCanonizePath()
-    areEq('c:\\path\\to\\dir', fs.canonizePath('c:/path/to/dir/'))
-    areEq('c:\\path\\to\\dir', fs.canonizePath('c:\\path\\to\\dir\\'))
-    areEq('c:\\path\\to\\dir\\subdir', fs.canonizePath('c:\\path/to//dir\\\\subdir'))
-    areEq('\\\\host1\\path\\to\\dir\\subdir', fs.canonizePath('\\\\host1\\path/to//dir\\\\subdir'))
-    areEq('//host2\\path\\to\\dir\\subdir', fs.canonizePath('//host2\\path/to//dir\\\\subdir'))
-    areEq('c:\\', fs.canonizePath('c:'));
-    areEq('c:\\', fs.canonizePath('c:\\'));
-    areEq('\\', fs.canonizePath('\\'));
+if fs.whatOs() == 'win' then
+    function useWinPathDelimiterFixture.winCanonizePath(self)
+        areEq('c:\\path\\to\\dir', fs.canonizePath('c:/path/to/dir/'))
+        areEq('c:\\path\\to\\dir', fs.canonizePath('c:\\path\\to\\dir\\'))
+        areEq('c:\\path\\to\\dir\\subdir', fs.canonizePath('c:\\path/to//dir\\\\subdir'))
+        areEq('\\\\host1\\path\\to\\dir\\subdir', fs.canonizePath('\\\\host1\\path/to//dir\\\\subdir'))
+        areEq('//host2\\path\\to\\dir\\subdir', fs.canonizePath('//host2\\path/to//dir\\\\subdir'))
+        areEq('c:\\', fs.canonizePath('c:'));
+        areEq('c:\\', fs.canonizePath('c:\\'));
+        areEq('\\', fs.canonizePath('\\'));
+    end
 end
 
 function useUnixPathDelimiterFixture.splitFullPathTest()
