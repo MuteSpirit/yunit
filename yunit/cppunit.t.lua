@@ -1,5 +1,5 @@
-local luaUnit = require('yunit.luaunit');
-local fs = require('yunit.filesystem');
+local luaUnit = require "yunit.luaunit"
+local fs = require "yunit.filesystem"
 
 local cppUnit = require('yunit.cppunit')
 
