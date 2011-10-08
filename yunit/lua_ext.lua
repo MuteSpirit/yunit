@@ -1,10 +1,7 @@
--- -*- coding: utf-8 -*-
-local _G = _G
-
---------------------------------------------------------------------------------------------------------------
-module(...)
-_G.setmetatable(_M, {__index = _G})
---------------------------------------------------------------------------------------------------------------
+local _M = {}
+local _Mmt = {__index = _G}
+setmetatable(_M, _Mmt)
+local _G = _M
 
 --------------------------------------------------------------------------------------------------------------
 function table.toLuaCode(inTable, indent, resultHandler)
@@ -21,7 +18,7 @@ function table.toLuaCode(inTable, indent, resultHandler)
         if 'table' == type(key) then
             keyStr = indent .. '[' .. table.toLuaCode(key, nil, nil) .. '] = '
         elseif 'string' == type(key) then
-            keyStr = indent .. '[' .. '\'' .. key .. '\'' .. '] = ';
+            keyStr = indent .. '[' .. "'" .. key .. "'" .. '] = ';
         else
             keyStr = indent .. '[' .. key .. '] = ';
         end
@@ -160,3 +157,4 @@ function table.isEqual(lhs, rhs)
     return true;
 end
 
+return _M

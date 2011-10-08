@@ -1,11 +1,9 @@
-local _G = _G;
+--[[ Lua Test Unit Engine --]]
 
-------------------------------------------------------
--- Lua Test Unit Engine
---------------------------------------------------------------------------------------------------------------
-module(...)
-_G.setmetatable(_M, {__index = _G})
---------------------------------------------------------------------------------------------------------------
+local _M = {}
+local _Mmt = {__index = _G}
+setmetatable(_M, _Mmt)
+local _G = _M
 
 -------------------------------------------------------
 function copyTable(object)
@@ -294,6 +292,8 @@ for _, typename in ipairs(typenames) do
         end
     end
 end
+_M.isBool = _M.isBoolean
+
 
 -- isNotTypename functions
 for _, typename in ipairs(typenames) do
@@ -305,34 +305,8 @@ for _, typename in ipairs(typenames) do
         end
     end
 end
+_M.isNotBool = _M.isNotBoolean
 
-function setAssertShortNames(ns)
-    ns.isTrue = isTrue
-    ns.isFalse = isFalse
-    ns.areEq = areEq
-    ns.areNotEq = areNotEq
-    ns.noThrow = noThrow
-    ns.willThrow = willThrow
-
-    ns.isFunction = isFunction
-    ns.isTable = isTable
-    ns.isNumber = isNumber
-    ns.isString = isString
-    ns.isBool = isBoolean
-    ns.isBoolean = isBoolean
-    ns.isNil = isNil
-
-    ns.isNotFunction = isNotFunction
-    ns.isNotTable = isNotTable
-    ns.isNotNumber = isNotNumber
-    ns.isNotString = isNotString
-    ns.isNotBool = isNotBoolean
-    ns.isNotBoolean = isNotBoolean
-    ns.isNotNil = isNotNil
-end
-
-local assertRefs = {}
-setAssertShortNames(assertRefs)
 
 -------------------------------------------------------
 function getTestContainerExtensions()
@@ -344,7 +318,7 @@ end
 local testCaseMt = 
 {
     __index = function(t, k)
-        return nil ~= assertRefs[k] and assertRefs[k] or _G[k]
+        return _M[k]
     end,
 }
 
@@ -402,16 +376,24 @@ end
 -------------------------------------------------------
 function loadTestCases(testContainerSourceCode, testContainerName)
 -------------------------------------------------------
-	local env = getTestEnv(testContainerName)
-    
-	local testChunk, msg = loadstring(testContainerSourceCode, '=' .. testContainerName)
-    if not testChunk then
-        return false, msg
+   	local env = getTestEnv(testContainerName)
+    local testChunk, msg
+
+    if 'Lua 5.2' == _VERSION then
+        testChunk, msg = load(testContainerSourceCode, '=' .. testContainerName, 't', env)
+        if not testChunk then
+            return false, msg
+        end
+    else
+        testChunk, msg = loadstring(testContainerSourceCode, '=' .. testContainerName)
+        if not testChunk then
+            return false, msg
+        end
+        setfenv(testChunk, env)
     end
-	
-    setfenv(testChunk, env)
-    
-    local status, msg = pcall(testChunk)
+
+    local status
+    status, msg = pcall(testChunk)
     if not status then
         return false, msg
     end
@@ -456,3 +438,4 @@ function loadTestContainer(filePath)
     return true;
 end
 
+return _M

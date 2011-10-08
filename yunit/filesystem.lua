@@ -1,13 +1,10 @@
--- -*- coding: utf-8 -*-
-local _G = _G
+local _M = {}
+local _Mmt = {__index = _G}
+setmetatable(_M, _Mmt)
+local _G = _M
 
---------------------------------------------------------------------------------------------------------------
-module(...)
-_G.setmetatable(_M, {__index = _G})
---------------------------------------------------------------------------------------------------------------
-
-local luaExt = require('yunit.lua_ext');
-local lfs = require("lfs")
+local luaExt = require "yunit.lua_ext"
+local lfs = require "lfs"
 
 --- \brief Define on what operating system script is run
 --- \return 'win' or 'unix'
@@ -491,3 +488,5 @@ function localPathAsNetworkPath(localPath)
 --------------------------------------------------------------------------------------------------------------
     return string.gsub(localPath, '^([%a%d]):', '\\\\localhost/%1$');
 end
+
+return _M
