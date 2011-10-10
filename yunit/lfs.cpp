@@ -836,9 +836,15 @@ extern "C"
 int YUNIT_API luaopen_yunit_lfs (lua_State *L) {
     dir_create_meta (L);
     lock_create_meta (L);
-    luaL_newlib (L, fslib);
-    set_info (L);
+
+    lua_newtable (L);
+    const luaL_Reg *l = fslib;
+    for (; l->name != NULL; l++) {
+        lua_pushcfunction (L, l->func);
+        lua_setfield (L, -2, l->name);
+    }
     lua_pushvalue (L, -1);
     lua_setglobal (L, "lfs");
+    set_info (L);
     return 1;
 }
