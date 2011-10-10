@@ -71,11 +71,11 @@
 --- \param[in] testObserver Object, whitch wlii be received messages from and about tests
 --- \return None
 
-local luaUnit = require("yunit.luaunit")
-local testResultHandlers = require("yunit.test_result_handlers");
-local testRunner = require("yunit.test_runner");
-local fs = require("yunit.filesystem");
-local aux = require("yunit.aux_test_func");
+local luaUnit = require "yunit.luaunit"
+local testResultHandlers = require "yunit.test_result_handlers"
+local testRunner = require "yunit.test_runner"
+local fs = require "yunit.filesystem"
+local aux = require "yunit.aux_test_func"
 
 --[[ Test Fixtures ]]
 
@@ -201,7 +201,7 @@ function testObserverTestAddFailureFunctionTest()
     local ttpl1 = testResultHandlers.TextTestProgressHandler:new();
     local ttpl2 = testResultHandlers.TextTestProgressHandler:new();
     local tr = testRunner.TestResultHandlerList:new();
-    local fakeTestCaseName = _M._NAME;
+    local fakeTestCaseName = _NAME;
     local fakeTestName = "testTestListenerList";
     local fakeFailureMessage = "This is test message. It hasn't usefull information";
     
