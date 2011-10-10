@@ -163,8 +163,6 @@ inline void LuaWrapper<CppType>::regLib(lua_State* L, const char* name)
         lua_pushcfunction(L, it->func);
         lua_setfield(L, -2, it->name);
     }
-    lua_pushvalue(L, -1);
-    lua_setglobal(L, name);
 }
 
 template<typename CppType>
