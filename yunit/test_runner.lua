@@ -1,10 +1,9 @@
-local _G = _G
-local fs = require('yunit.filesystem')
+local _M = {}
+local _Mmt = {__index = _G}
+setmetatable(_M, _Mmt)
+local _G = _M
 
---------------------------------------------------------------------------------------------------------------
-module(...)
-_G.setmetatable(_M, {__index = _G})
---------------------------------------------------------------------------------------------------------------
+local fs = require "yunit.filesystem"
 
 TestResultHandler = {
     onTestSuccessfull = function(testCaseName) end;
@@ -372,3 +371,5 @@ function runAllTestCases(testResultHandler)
     end
     testResultHandler:onTestsEnd();
 end
+
+return _M

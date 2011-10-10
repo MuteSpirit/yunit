@@ -1,7 +1,7 @@
 --- \class TextTestProgressHandler
 --- \brief Derived from TestResultHandler. Output messages to standat output.
-local luaUnit = require('yunit.luaunit');
-local testResultHandlers = require('yunit.test_result_handlers');
+local luaUnit = require "yunit.luaunit"
+local testResultHandlers = require "yunit.test_result_handlers"
 
 local testModuleName = 'TestListenerTest';
 

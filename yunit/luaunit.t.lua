@@ -30,11 +30,11 @@
 
 
 
-local testRunner = require("yunit.test_runner");
-local luaExt = require("yunit.lua_ext")
-local fs = require("yunit.filesystem")
-local luaUnit = require('yunit.luaunit');
-local testResultHandlers = require('yunit.test_result_handlers');
+local testRunner = require "yunit.test_runner"
+local luaExt = require "yunit.lua_ext"
+local fs = require "yunit.filesystem"
+local luaUnit = require "yunit.luaunit"
+local testResultHandlers = require "yunit.test_result_handlers"
 
 assertsAtSetUpFixture = 
 {
@@ -251,8 +251,8 @@ function getTestEnvTest()
     isNotNil(testChunk.isTable)
     isNotNil(testChunk.isNumber)
     isNotNil(testChunk.isString)
-    isNotNil(testChunk.isBool)
     isNotNil(testChunk.isBoolean)
+    isNotNil(testChunk.isBool)
     isNotNil(testChunk.isNil)
 
     isNotNil(testChunk.isNotFunction)

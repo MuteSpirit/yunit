@@ -94,8 +94,8 @@ public:
 private:
     LuaWrapper();
     
-    static const luaL_Reg endMethodsSign_;
-    std::vector<luaL_Reg> methods_;
+    typedef std::vector<luaL_Reg> Methods;
+    Methods methods_;
 };
 
 template<typename CppType>
@@ -111,9 +111,6 @@ struct AddMethod
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Implementation
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-template<typename CppType>
-const luaL_Reg LuaWrapper<CppType>::endMethodsSign_ = {NULL, NULL};
 
 template<typename CppType>
 LuaWrapper<CppType>::LuaWrapper()
@@ -140,9 +137,12 @@ inline void LuaWrapper<CppType>::makeMetatable(lua_State* L, const char* mtName)
 {
     luaL_newmetatable(L, mtName);
     
-    methods_.push_back(endMethodsSign_);
-    luaL_register(L, NULL, methods_.data());
-    methods_.resize(methods_.size() - 1);
+    Methods::const_iterator it = methods_.begin(), endIt = methods_.end();
+    for (; it != endIt; ++it)
+    {
+        lua_pushcfunction(L, it->func);
+        lua_setfield(L, -2, it->name);
+    }
 
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index"); // metatable.__index = metatable
@@ -153,9 +153,16 @@ inline void LuaWrapper<CppType>::makeMetatable(lua_State* L, const char* mtName)
 template<typename CppType>
 inline void LuaWrapper<CppType>::regLib(lua_State* L, const char* name)
 {
-    methods_.push_back(endMethodsSign_);
-    luaL_register(L, name, methods_.data());
-    methods_.resize(methods_.size() - 1);
+    // we have to avoid usage luaL_register and luaL_setfuncs, because we want
+    // to support Lua 5.1 and Lua 5.2
+    lua_newtable(L);
+    
+    Methods::const_iterator it = methods_.begin(), endIt = methods_.end();
+    for (; it != endIt; ++it)
+    {
+        lua_pushcfunction(L, it->func);
+        lua_setfield(L, -2, it->name);
+    }
 }
 
 template<typename CppType>

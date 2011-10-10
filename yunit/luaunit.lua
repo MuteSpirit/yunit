@@ -1,11 +1,9 @@
-local _G = _G;
+--[[ Lua Test Unit Engine --]]
 
-------------------------------------------------------
--- Lua Test Unit Engine
---------------------------------------------------------------------------------------------------------------
-module(...)
-_G.setmetatable(_M, {__index = _G})
---------------------------------------------------------------------------------------------------------------
+local _M = {}
+local _Mmt = {__index = _G}
+setmetatable(_M, _Mmt)
+local _G = _M
 
 -------------------------------------------------------
 function copyTable(object)
@@ -29,14 +27,14 @@ function copyTable(object)
 end
 
 -------------------------------------------------------
-TestFixture = {};
+TestFixture = {}
 -------------------------------------------------------
 
 function TestFixture:new(o)
-    local obj =  o or {};
-    setmetatable(obj, self);
-    self.__index = self;
-    return obj;
+    local obj =  o or {}
+    setmetatable(obj, self)
+    self.__index = self
+    return obj
 end
 
 function TestFixture:setUp()
@@ -46,7 +44,7 @@ function TestFixture:tearDown()
 end
 
 -------------------------------------------------------
-TestCase = TestFixture:new{};
+TestCase = TestFixture:new{}
 -------------------------------------------------------
 
 function TestCase:new(name)
@@ -54,14 +52,14 @@ function TestCase:new(name)
     {
         name_ = name,
         isIgnored_ = false,
-    };
-    setmetatable(o, self);
-    self.__index = self;
-    return o;
+    }
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
 function TestCase:name()
-    return self.name_;
+    return self.name_
 end
 
 function TestCase:test()
@@ -294,6 +292,8 @@ for _, typename in ipairs(typenames) do
         end
     end
 end
+_M.isBool = _M.isBoolean
+
 
 -- isNotTypename functions
 for _, typename in ipairs(typenames) do
@@ -305,58 +305,27 @@ for _, typename in ipairs(typenames) do
         end
     end
 end
+_M.isNotBool = _M.isNotBoolean
 
-function setAssertShortNames(ns)
-    ns.isTrue = isTrue
-    ns.isFalse = isFalse
-    ns.areEq = areEq
-    ns.areNotEq = areNotEq
-    ns.noThrow = noThrow
-    ns.willThrow = willThrow
-
-    ns.isFunction = isFunction
-    ns.isTable = isTable
-    ns.isNumber = isNumber
-    ns.isString = isString
-    ns.isBool = isBoolean
-    ns.isBoolean = isBoolean
-    ns.isNil = isNil
-
-    ns.isNotFunction = isNotFunction
-    ns.isNotTable = isNotTable
-    ns.isNotNumber = isNotNumber
-    ns.isNotString = isNotString
-    ns.isNotBool = isNotBoolean
-    ns.isNotBoolean = isNotBoolean
-    ns.isNotNil = isNotNil
-end
-
-local assertRefs = {}
-setAssertShortNames(assertRefs)
 
 -------------------------------------------------------
 function getTestContainerExtensions()
 -------------------------------------------------------
-    return {'.t.lua'};
+    return {'.t.lua'}
 end
 
-
-local testCaseMt = 
-{
-    __index = function(t, k)
-        return nil ~= assertRefs[k] and assertRefs[k] or _G[k]
-    end,
-}
+-- use common metatable to decrease memory usage
+local testCaseMt = {__index = _M}
 
 -------------------------------------------------------
 function getTestEnv(moduleName)
 -------------------------------------------------------
-    local ns = {}
-    
-    ns._NAME = moduleName
+    local ns =
+    {
+        ['_NAME'] = moduleName,
+        ['_PACKAGE'] = string.gsub(moduleName, '[^%.]*$', ''),
+    }
     ns._M = ns
-    ns._PACKAGE = string.gsub(moduleName, '[^%.]*$', '')
-    
     setmetatable(ns, testCaseMt)
     
     return ns
@@ -402,18 +371,26 @@ end
 -------------------------------------------------------
 function loadTestCases(testContainerSourceCode, testContainerName)
 -------------------------------------------------------
-	local env = getTestEnv(testContainerName)
-    
-	local testChunk, msg = loadstring(testContainerSourceCode, '=' .. testContainerName)
-    if not testChunk then
-        return false, msg
+   	local env = getTestEnv(testContainerName)
+    local testChunk, msg
+
+    if 'Lua 5.2' == _VERSION then
+        testChunk, msg = load(testContainerSourceCode, '=' .. testContainerName, 't', env)
+        if not testChunk then
+            return false, msg
+        end
+    else
+        testChunk, msg = loadstring(testContainerSourceCode, '=' .. testContainerName)
+        if not testChunk then
+            return false, msg
+        end
+        setfenv(testChunk, env)
     end
-	
-    setfenv(testChunk, env)
-    
-    local status, msg = pcall(testChunk)
+
+    local status
+    status, msg = pcall(testChunk)
     if not status then
-        return false, msg
+        return nil, msg
     end
 	
 	local testcases = collectPureTestCaseList(env)
@@ -434,25 +411,25 @@ end
 -------------------------------------------------------
 function loadTestContainer(filePath)
 -------------------------------------------------------
-    local sourceCode;
-    
-    local hFile, errMsg = io.open(filePath, 'r');
-    if not hFile then
-        return hFile, errMsg;
+    local f, errMsg = io.open(filePath, 'r')
+    if not f then
+        return f, errMsg
     end
-    sourceCode = hFile:read('*a');
-    hFile:close();
 
-    local testcases, msg = loadTestCases(sourceCode, filePath);
+    local sourceCode = f:read('*a')
+    f:close()
+
+    local testcases, msg = loadTestCases(sourceCode, filePath)
     if false == testcases then
-        return false, msg;
+        return nil, msg
     end
     
 	local testSuite = TestSuite:new(filePath)
     curTestRegistry:addTestSuite(testSuite)
 
-	testSuite.testcases = testcases;
+	testSuite.testcases = testcases
 	
-    return true;
+    return true
 end
 
+return _M

@@ -1,11 +1,9 @@
-local _G = _G
+local _M = {}
+local _Mmt = {__index = _G}
+setmetatable(_M, _Mmt)
+local _G = _M
 
---------------------------------------------------------------------------------------------------------------
-module(...)
-_G.setmetatable(_M, {__index = _G})
---------------------------------------------------------------------------------------------------------------
-
-local testRunner = require("yunit.test_runner");
+local testRunner = require "yunit.test_runner"
 
 ------------------------------------------------------
 TextTestProgressHandler = testRunner.TestResultHandler:new{
@@ -380,3 +378,5 @@ function FixFailed:onTestError(testCaseName, errorObject)
     self.thereIsAlmostOneTest_ = true
     self.thereIsFailureTest_ = true
 end
+
+return _M

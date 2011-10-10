@@ -1,6 +1,6 @@
-local lfs = require('lfs')
-local testRunner = require('yunit.test_runner')
-local testResultHandlers = require('yunit.test_result_handlers')
+local lfs = require "yunit.lfs"
+local testRunner = require "yunit.test_runner"
+local testResultHandlers = require "yunit.test_result_handlers"
 
 function runFrom(dirPath)
     local curDir = lfs.currentdir()

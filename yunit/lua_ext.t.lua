@@ -38,7 +38,7 @@
 
 
 
-local luaExt = require('yunit.lua_ext')
+local luaExt = require "yunit.lua_ext"
 
 
 
@@ -53,16 +53,16 @@ function toLuaCode()
     local t = 
     {
         [1] = 1,
-        ['a'] = [=[a]=],
+        ['a'] = [[a]],
         [{}] = {},
     }
     local spaceAsTab = string.rep(' ', 4);
     local str = table.toLuaCode(t, spaceAsTab .. spaceAsTab);
     local designedStr = 
     [[{
+        ['a'] = [=[a]=],
         [1] = 1,
         [{}] = {},
-        ['a'] = [=[a]=],
 }]]    
     areEq(designedStr, str)
 end
