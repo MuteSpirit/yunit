@@ -921,11 +921,6 @@ void YUNIT_API throwException(const SourceLine& sourceLine, const char* message,
     throw TestMessageException<char>(sourceLine, message);
 }
 
-void YUNIT_API throwException(const SourceLine& sourceLine, const wchar_t* message, bool)
-{
-    throw TestMessageException<wchar_t>(sourceLine, message);
-}
-
 void YUNIT_API throwException(const SourceLine& sourceLine, const long long expected, const long long actual, bool mustBeEqual)
 {
     throw TestEqualException<long long, long long>(sourceLine, expected, actual, mustBeEqual);
