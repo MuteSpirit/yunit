@@ -101,7 +101,7 @@
     registerTest(name, YUNIT_SOURCELINE())\
     testBodyDef(name)\
     {\
-        throwException(YUNIT_SOURCELINE(), L"You want to make this test as soon as possible", true);\
+        throwException(YUNIT_SOURCELINE(), "You want to make this test as soon as possible", true);\
     }\
     void futureTest##name()
 
@@ -111,11 +111,11 @@
 
 #define isNull(actual)\
     if(!YUNIT_NS::cppunitAssert(0 == (actual)))\
-        YUNIT_NS::throwException(YUNIT_SOURCELINE(), L ## #actual L" is not NULL", false)
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), #actual " is not NULL", false)
 
 #define isNotNull(actual)\
     if(!YUNIT_NS::cppunitAssert((actual) != NULL))\
-        YUNIT_NS::throwException(YUNIT_SOURCELINE(), L ## #actual L" is NULL", false)
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), #actual " is NULL", false)
 
 #define isTrue(condition)\
     if(!YUNIT_NS::cppunitAssert(condition))\
@@ -503,7 +503,6 @@ inline bool YUNIT_API cppunitAssert(const std::string& expected, const std::stri
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void YUNIT_API throwException(const SourceLine& sourceLine, const char* condition);
 void YUNIT_API throwException(const SourceLine& sourceLine, const char* message, bool);
-void YUNIT_API throwException(const SourceLine& sourceLine, const wchar_t* message, bool);
 
 void YUNIT_API throwException(const SourceLine& sourceLine, const void* expected, const void* actual,
                             bool mustBeEqual);
