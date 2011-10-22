@@ -39,27 +39,25 @@ namespace YUNIT_NS {
 class TestSuite
 {
 public:
-    typedef std::list<TestCase*> TestCaseList;
-    typedef TestCaseList::const_iterator TestCaseConstIter;
-private:
-    typedef TestCaseList::iterator TestCaseIter;
+    typedef Chain<TestCase*> TestCases;
+    typedef TestCases::ReverseIterator TestCaseIter;
 
 public:
-    YUNIT_API TestSuite(const char* name = 0);
+    TestSuite(const char* name = 0);
     TestSuite(const TestSuite& rhs);
     TestSuite& operator=(const TestSuite& rhs);
     virtual ~TestSuite();
 
     const char* name() const;
 
-    TestCaseConstIter begin();
-    TestCaseConstIter end();
+    TestCaseIter rbegin();
+    TestCaseIter rend();
 
     void addTestCase(TestCase* testCase);
 
 private:
     const char* name_;
-    TestCaseList testCases_;
+    TestCases testCases_;
 };
 
 const char** getTestContainerExtensions();
@@ -167,10 +165,10 @@ LUA_METHOD(Cppunit, getTestList)
 	lua.newtable(); // all test cases list
 
     TestRegistry* testRegistry = TestRegistry::initialize();
-	TestRegistry::TestSuiteConstIter it = testRegistry->begin(), endIt = TestRegistry::initialize()->end();
+	TestRegistry::TestSuiteIter it = testRegistry->rbegin(), endIt = TestRegistry::initialize()->rend();
 	for (int i = 1; it != endIt; ++it)
 	{
-		TestSuite::TestCaseConstIter itTc = (*it)->begin(), endItTc = (*it)->end();
+		TestSuite::TestCaseIter itTc = (*it)->rbegin(), endItTc = (*it)->rend();
 		for (; itTc != endItTc; ++itTc)
 		{
             lua.push<TestCase>(*itTc, MT_NAME(TestCase));
@@ -578,32 +576,32 @@ const char* TestSuite::name() const
 
 void TestSuite::addTestCase(TestCase* testCase)
 {
-    testCases_.push_back(testCase);
+    testCases_ << testCase;
 }
 
-TestSuite::TestCaseConstIter TestSuite::begin()
+TestSuite::TestCaseIter TestSuite::rbegin()
 {
-    return testCases_.begin();
+    return testCases_.rbegin();
 }
 
-TestSuite::TestCaseConstIter TestSuite::end()
+TestSuite::TestCaseIter TestSuite::rend()
 {
-    return testCases_.end();
+    return testCases_.rend();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TestRegistry* TestRegistry::thisPtr_ = 0;
 
 TestRegistry::TestRegistry()
-: testSuiteList_()
+: testSuites_()
 {
 }
 
 TestRegistry::~TestRegistry()
 {
-	for (TestSuiteIter it = testSuiteList_.begin(), itEnd = testSuiteList_.end(); it != itEnd; ++it)
+	for (TestSuiteIter it = testSuites_.rbegin(), itEnd = testSuites_.rend(); it != itEnd; ++it)
 		delete *it;
-    testSuiteList_.clear();
+    testSuites_.clear();
 }
 
 TestRegistry* TestRegistry::initialize()
@@ -620,30 +618,28 @@ void TestRegistry::addTestCase(TestCase* testCase)
     testSuite->addTestCase(testCase);
 }
 
-TestRegistry::TestSuiteConstIter TestRegistry::begin()
+TestRegistry::TestSuiteIter TestRegistry::rbegin()
 {
-    return testSuiteList_.begin();
+    return testSuites_.rbegin();
 }
 
-TestRegistry::TestSuiteConstIter TestRegistry::end()
+TestRegistry::TestSuiteIter TestRegistry::rend()
 {
-    return testSuiteList_.end();
+    return testSuites_.rend();
 }
 
 TestSuite* TestRegistry::getTestSuite(const SourceLine& source)
 {
-    TestSuiteIter it = testSuiteList_.begin();
-    TestSuiteIter itEnd = testSuiteList_.end();
+    TestSuiteIter it = testSuites_.rbegin();
+    TestSuiteIter itEnd = testSuites_.rend();
     for (; it != itEnd; ++it)
-    {
         if (0 == strcmp((*it)->name(), source.fileName()))
             break;
-    }
 
     if (it == itEnd)
     {
-        testSuiteList_.push_back(new TestSuite(source.fileName()));
-        it = --itEnd;
+        testSuites_ << new TestSuite(source.fileName());
+        it = testSuites_.rbegin();
     }
 
     return *it;

@@ -17,7 +17,6 @@
 
 #define YUNIT_NS yUnit
 
-#include <list>
 #include <string>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -325,6 +324,7 @@ public:
         ReverseIterator(Node* node);
         ReverseIterator operator++();
         bool operator==(const ReverseIterator& it);
+        bool operator!=(const ReverseIterator& it);
         T operator*();
     private:
         Node* node_;
@@ -332,8 +332,10 @@ public:
 
 public:
     Chain();
+    ~Chain();
     Chain& operator<<(const T& value);
     unsigned int size() const;
+    void clear();
 
     ReverseIterator rbegin();
     ReverseIterator rend();
@@ -407,18 +409,16 @@ class TestSuite;
 class TestRegistry
 {
 public:
-    typedef std::list<TestSuite*> TestSuiteList;
-    typedef TestSuiteList::const_iterator TestSuiteConstIter;
-private:
-    typedef TestSuiteList::iterator TestSuiteIter;
+    typedef Chain<TestSuite*> TestSuites;
+    typedef TestSuites::ReverseIterator TestSuiteIter;
 
 public:
     YUNIT_API static TestRegistry* initialize();
 
     YUNIT_API void addTestCase(TestCase* testCase);
 
-    TestSuiteConstIter begin();
-    TestSuiteConstIter end();
+    TestSuiteIter rbegin();
+    TestSuiteIter rend();
 
 protected:
     TestRegistry();
@@ -429,7 +429,7 @@ protected:
 private:
     static TestRegistry* thisPtr_;
 
-    TestSuiteList testSuiteList_;
+    TestSuites testSuites_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -562,70 +562,94 @@ RegisterIgnoredTestCase<TestCaseClass>::RegisterIgnoredTestCase(const char* name
     TestRegistry::initialize()->addTestCase(&testcase);
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    template<typename T>
-    Chain<T>::Chain()
-    : size_(0)
-    , tail_(0)
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<typename T>
+Chain<T>::Chain()
+: size_(0)
+, tail_(0)
+{
+}
+
+template<typename T>
+Chain<T>::~Chain()
+{
+    clear();
+}
+
+template<typename T>
+void Chain<T>::clear()
+{
+    Node* tmp;
+    while (tail_)
     {
+        tmp = tail_->next_;
+        delete tail_;
+        tail_ = tmp;
     }
+}
 
-    template<typename T>
-    Chain<T>& Chain<T>::operator<<(const T& value)
-    {
-        Node* node = new Node;
-        node->value_ = value;
-        node->next_ = tail_;
-        tail_ = node;
-        ++size_;
+template<typename T>
+Chain<T>& Chain<T>::operator<<(const T& value)
+{
+    Node* node = new Node;
+    node->value_ = value;
+    node->next_ = tail_;
+    tail_ = node;
+    ++size_;
 
-        return *this;
-    }
+    return *this;
+}
 
-    template<typename T>
-    unsigned int Chain<T>::size() const
-    {
-        return size_;
-    }
+template<typename T>
+unsigned int Chain<T>::size() const
+{
+    return size_;
+}
 
-    template<typename T>
-    typename Chain<T>::ReverseIterator Chain<T>::rbegin()
-    {
-        return ReverseIterator(tail_);
-    }
+template<typename T>
+typename Chain<T>::ReverseIterator Chain<T>::rbegin()
+{
+    return ReverseIterator(tail_);
+}
 
 
-    template<typename T>
-    typename Chain<T>::ReverseIterator Chain<T>::rend()
-    {
-        return ReverseIterator(NULL);
-    }
+template<typename T>
+typename Chain<T>::ReverseIterator Chain<T>::rend()
+{
+    return ReverseIterator(NULL);
+}
 
-    template<typename T>
-    Chain<T>::ReverseIterator::ReverseIterator(Node* node)
-    : node_(node)
-    {
-    }
+template<typename T>
+Chain<T>::ReverseIterator::ReverseIterator(Node* node)
+: node_(node)
+{
+}
 
-    template<typename T>
-    typename Chain<T>::ReverseIterator Chain<T>::ReverseIterator::operator++()
-    {
-        if (node_)
-            node_ = node_->next_;
-        return *this;
-    }
+template<typename T>
+typename Chain<T>::ReverseIterator Chain<T>::ReverseIterator::operator++()
+{
+    if (node_)
+        node_ = node_->next_;
+    return *this;
+}
 
-    template<typename T>
-    bool Chain<T>::ReverseIterator::operator==(const ReverseIterator& it)
-    {
-        return node_ == it.node_;
-    }
+template<typename T>
+bool Chain<T>::ReverseIterator::operator==(const ReverseIterator& it)
+{
+    return node_ == it.node_;
+}
 
-    template<typename T>
-    T Chain<T>::ReverseIterator::operator*()
-    {
-        return node_ ? node_->value_ : 0;
-    }
+template<typename T>
+bool Chain<T>::ReverseIterator::operator!=(const ReverseIterator& it)
+{
+    return node_ != it.node_;
+}
+
+template<typename T>
+T Chain<T>::ReverseIterator::operator*()
+{
+    return node_ ? node_->value_ : 0;
+}
 
 } // namespace YUNIT_NS
 

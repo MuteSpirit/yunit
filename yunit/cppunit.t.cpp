@@ -696,4 +696,6 @@ test(simple_list_use_case)
     areEq(2, *it);
     areEq(1, *(++it));
     isTrue(++it == endIt);
+
+    chain.clear();
 }
