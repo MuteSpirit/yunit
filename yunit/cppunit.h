@@ -309,6 +309,41 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<typename T>
+class Chain
+{
+public:
+    struct Node
+    {
+        T value_;
+        Node* next_;
+    };
+
+    class ReverseIterator
+    {
+    public:
+        ReverseIterator(Node* node);
+        ReverseIterator operator++();
+        bool operator==(const ReverseIterator& it);
+        T operator*();
+    private:
+        Node* node_;
+    };
+
+public:
+    Chain();
+    Chain& operator<<(const T& value);
+    unsigned int size() const;
+
+    ReverseIterator rbegin();
+    ReverseIterator rend();
+
+private:
+    Node* tail_;
+    unsigned int size_;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class YUNIT_API Test
 {
 public:
@@ -430,6 +465,67 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool YUNIT_API cppunitAssert(const bool condition);
+
+bool YUNIT_API cppunitAssert(const long long int expected, const long long int actual);
+
+
+/// \param[in] delta must be at [0.000000000000001, +INFINITE) for long double comparison
+bool YUNIT_API cppunitAssert(const long double expected, const long double actual, const long double delta);
+
+/// \param[in] delta must be at [0.000000000000001, +INFINITE) for double comparison
+bool YUNIT_API cppunitAssert(const double expected, const double actual, const long double delta);
+
+/// \param[in] delta must be at [0.00000001f, +INFINITE) for float comparison
+bool YUNIT_API cppunitAssert(const float expected, const float actual, const long double delta);
+
+bool YUNIT_API cppunitAssert(const void *expected, const void *actual);
+
+bool YUNIT_API cppunitAssert(const char *expected, const char *actual);
+bool YUNIT_API cppunitAssert(const wchar_t *expected, const wchar_t *actual);
+
+inline bool YUNIT_API cppunitAssert(const std::wstring& expected, const std::wstring& actual) {
+    return cppunitAssert(expected.c_str(), actual.c_str());
+}
+
+inline bool YUNIT_API cppunitAssert(const std::string& expected, const std::string& actual) {
+    return cppunitAssert(expected.c_str(), actual.c_str());
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void YUNIT_API throwException(const SourceLine& sourceLine, const char* condition);
+void YUNIT_API throwException(const SourceLine& sourceLine, const char* message, bool);
+
+void YUNIT_API throwException(const SourceLine& sourceLine, const void* expected, const void* actual,
+        bool mustBeEqual);
+
+void YUNIT_API throwException(const SourceLine& sourceLine, const long long expected, const long long actual,
+        bool mustBeEqual);
+void YUNIT_API throwException(const SourceLine& sourceLine, const char* expected, const char* actual,
+        bool mustBeEqual);
+
+inline void YUNIT_API throwException(const SourceLine& sourceLine,
+        const std::string& expected,
+        const std::string& actual,
+        bool mustBeEqual) {
+    throwException(sourceLine, expected.c_str(), actual.c_str(), mustBeEqual);
+}
+
+void YUNIT_API throwException(const SourceLine& sourceLine, const wchar_t* expected, const wchar_t* actual,
+        bool mustBeEqual);
+
+inline void YUNIT_API throwException(const SourceLine& sourceLine,
+        const std::wstring& expected,
+        const std::wstring& actual,
+        bool mustBeEqual) {
+    throwException(sourceLine, expected.c_str(), actual.c_str(), mustBeEqual);
+}
+
+void YUNIT_API throwException(const SourceLine& sourceLine, const double expected, const double actual,
+        const double delta, bool mustBeEqual);
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Templates implementation
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -467,72 +563,69 @@ RegisterIgnoredTestCase<TestCaseClass>::RegisterIgnoredTestCase(const char* name
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Macro
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    template<typename T>
+    Chain<T>::Chain()
+    : size_(0)
+    , tail_(0)
+    {
+    }
 
-bool YUNIT_API cppunitAssert(const bool condition);
+    template<typename T>
+    Chain<T>& Chain<T>::operator<<(const T& value)
+    {
+        Node* node = new Node;
+        node->value_ = value;
+        node->next_ = tail_;
+        tail_ = node;
+        ++size_;
 
-bool YUNIT_API cppunitAssert(const long long int expected, const long long int actual);
+        return *this;
+    }
+
+    template<typename T>
+    unsigned int Chain<T>::size() const
+    {
+        return size_;
+    }
+
+    template<typename T>
+    typename Chain<T>::ReverseIterator Chain<T>::rbegin()
+    {
+        return ReverseIterator(tail_);
+    }
 
 
-/// \param[in] delta must be at [0.000000000000001, +INFINITE) for long double comparison
-bool YUNIT_API cppunitAssert(const long double expected, const long double actual, const long double delta);
+    template<typename T>
+    typename Chain<T>::ReverseIterator Chain<T>::rend()
+    {
+        return ReverseIterator(NULL);
+    }
 
-/// \param[in] delta must be at [0.000000000000001, +INFINITE) for double comparison
-bool YUNIT_API cppunitAssert(const double expected, const double actual, const long double delta);
+    template<typename T>
+    Chain<T>::ReverseIterator::ReverseIterator(Node* node)
+    : node_(node)
+    {
+    }
 
-/// \param[in] delta must be at [0.00000001f, +INFINITE) for float comparison
-bool YUNIT_API cppunitAssert(const float expected, const float actual, const long double delta);
+    template<typename T>
+    typename Chain<T>::ReverseIterator Chain<T>::ReverseIterator::operator++()
+    {
+        if (node_)
+            node_ = node_->next_;
+        return *this;
+    }
 
-bool YUNIT_API cppunitAssert(const void *expected, const void *actual);
+    template<typename T>
+    bool Chain<T>::ReverseIterator::operator==(const ReverseIterator& it)
+    {
+        return node_ == it.node_;
+    }
 
-bool YUNIT_API cppunitAssert(const char *expected, const char *actual);
-bool YUNIT_API cppunitAssert(const wchar_t *expected, const wchar_t *actual);
-
-
-inline bool YUNIT_API cppunitAssert(const std::wstring& expected, const std::wstring& actual)
-{
-    return cppunitAssert(expected.c_str(), actual.c_str());
-}
-
-inline bool YUNIT_API cppunitAssert(const std::string& expected, const std::string& actual)
-{
-    return cppunitAssert(expected.c_str(), actual.c_str());
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void YUNIT_API throwException(const SourceLine& sourceLine, const char* condition);
-void YUNIT_API throwException(const SourceLine& sourceLine, const char* message, bool);
-
-void YUNIT_API throwException(const SourceLine& sourceLine, const void* expected, const void* actual,
-                            bool mustBeEqual);
-
-void YUNIT_API throwException(const SourceLine& sourceLine, const long long expected, const long long actual,
-                            bool mustBeEqual);
-void YUNIT_API throwException(const SourceLine& sourceLine, const char* expected, const char* actual,
-                            bool mustBeEqual);
-
-inline void YUNIT_API throwException(const SourceLine& sourceLine,
-                    const std::string& expected,
-                    const std::string& actual,
-                    bool mustBeEqual)
-{
-    throwException(sourceLine, expected.c_str(), actual.c_str(), mustBeEqual);
-}
-
-void YUNIT_API throwException(const SourceLine& sourceLine, const wchar_t* expected, const wchar_t* actual,
-                            bool mustBeEqual);
-
-inline void YUNIT_API throwException(const SourceLine& sourceLine,
-                                 const std::wstring& expected,
-                                 const std::wstring& actual,
-                                 bool mustBeEqual)
-{
-    throwException(sourceLine, expected.c_str(), actual.c_str(), mustBeEqual);
-}
-
-void YUNIT_API throwException(const SourceLine& sourceLine, const double expected, const double actual,
-                            const double delta, bool mustBeEqual);
+    template<typename T>
+    T Chain<T>::ReverseIterator::operator*()
+    {
+        return node_ ? node_->value_ : 0;
+    }
 
 } // namespace YUNIT_NS
 

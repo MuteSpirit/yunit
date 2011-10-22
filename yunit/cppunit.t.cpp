@@ -682,3 +682,18 @@ todo(ForFutureCreation)
 {
 }
 */
+
+test(simple_list_use_case)
+{
+    using namespace YUNIT_NS;
+    
+    Chain<int> chain;
+    chain << 1 << 2;
+
+    areEq(2, chain.size());
+
+    Chain<int>::ReverseIterator it = chain.rbegin(), endIt = chain.rend();
+    areEq(2, *it);
+    areEq(1, *(++it));
+    isTrue(++it == endIt);
+}
