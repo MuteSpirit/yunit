@@ -101,6 +101,8 @@ LUA_METHOD(Cppunit, getTestContainerExtensions)
 
 LUA_METHOD(Cppunit, loadTestContainer)
 {
+    using namespace YUNIT_NS;
+    
     LuaState lua(L);
     enum {argIdx = 1};
 
@@ -112,22 +114,26 @@ LUA_METHOD(Cppunit, loadTestContainer)
     }
     
     size_t len;
-    const char* path = lua.to(1, &len);
+    const char* testContainerPath = lua.to(1, &len);
     if (0 == len)
     {
         lua.push(false);
         lua.push("empty argument");
         return 2;
     }
-    //
-    if (!isExist(path))
+    
+    if (!isExist(testContainerPath))
     {
         lua.push(false);
         lua.push("file doesn't exist");
         return 2;
     }
     //
-    // we must only load library to current process for initialization global objects and filling test register
+    // we load library for initialize global objects, registed test cases during their creation
+    //
+    // one test container is equal to one TestSuite, so after loading, we must harvest and return
+    // test cases from new TestSuite
+    //
     //
     // push error handling function
     lua.getglobal("debug");
@@ -139,44 +145,43 @@ LUA_METHOD(Cppunit, loadTestContainer)
     lua.getfield(-1, "loadlib");
     lua.remove(-2);
     //
-    lua.push(path); // 1st argument
-    lua.push("");     // 2nd argument ("" means not load specified function)
-    //
+    // push arguments
+    lua.push(testContainerPath); // 1st
+    
+    const char* notLoadSpesificFunction = "";
+    lua.push(notLoadSpesificFunction); // 2nd
+    
     int rc = lua_pcall(lua, 2, 1, -4);
     if (0 != rc)
     {
         lua.push(false);
-        lua.pushvalue(-2);   // push copy of error message
-        lua.remove(-3);       // remove original error message from stack
+        lua.pushvalue(-2); // push copy of error message
+        lua.remove(-3);    // remove original error message from stack
         return 2;
     }
     
     lua.pop(1);  // remove return value of 'package.loadlib' function
-    lua.push(true);
-    return 1;
-}
-
-LUA_METHOD(Cppunit, getTestList)
-{
-    using namespace YUNIT_NS;
-
-    LuaState lua(L);
-
-	lua.newtable(); // all test cases list
 
     TestRegistry* testRegistry = TestRegistry::initialize();
-	TestRegistry::TestSuiteIter it = testRegistry->rbegin(), endIt = TestRegistry::initialize()->rend();
+    TestSuite* loadedTestSuite = testRegistry->lastLoadedTestSuite();
+
+    if (!loadedTestSuite || (testRegistry->rbegin() == testRegistry->rend()))
+    {
+        lua.push(false);
+        lua_pushfstring(lua, "no one test case has been loaded from \"%s\"", testContainerPath);
+        return 2;
+    }
+    
+	lua.newtable(); // return value
+	
+	TestSuite::TestCaseIter it = loadedTestSuite->rbegin(), endIt = loadedTestSuite->rend();
 	for (int i = 1; it != endIt; ++it)
 	{
-		TestSuite::TestCaseIter itTc = (*it)->rbegin(), endItTc = (*it)->rend();
-		for (; itTc != endItTc; ++itTc)
-		{
-            lua.push<TestCase>(*itTc, MT_NAME(TestCase));
-            lua.rawseti(-2, i++);
-		}
+        lua.push<TestCase>(*it, MT_NAME(TestCase));
+        lua.rawseti(-2, i++);
 	}
-
-	return 1;
+    
+    return 1;
 }
 
 static bool isExist(const char* path)
@@ -594,6 +599,7 @@ TestRegistry* TestRegistry::thisPtr_ = 0;
 
 TestRegistry::TestRegistry()
 : testSuites_()
+, lastLoadedTestSuite_(0)
 {
 }
 
@@ -616,6 +622,8 @@ void TestRegistry::addTestCase(TestCase* testCase)
 {
     TestSuite* testSuite = getTestSuite(testCase->source());
     testSuite->addTestCase(testCase);
+    
+    lastLoadedTestSuite_ = testSuite;
 }
 
 TestRegistry::TestSuiteIter TestRegistry::rbegin()
@@ -644,6 +652,12 @@ TestSuite* TestRegistry::getTestSuite(const SourceLine& source)
 
     return *it;
 }
+
+TestSuite* TestRegistry::lastLoadedTestSuite()
+{
+    return lastLoadedTestSuite_;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SourceLine::SourceLine()

@@ -139,7 +139,7 @@ function luaUnitSelfTestFixture.addingTestCasesToTestRegistryTest()
     areEq(0, #testRegistry.testsuites);
 end
 
-function luaUnitSelfTestFixture.getTestListTest()
+function luaUnitSelfTestFixture._getTestListTest()
     local testList = luaUnit.getTestList();
     isNotNil(testList);
     areEq(0, #testList);
@@ -192,7 +192,7 @@ function luaUnitSelfTestFixture.protectTestCaseMethodCallTest()
 	isString(errorObject.message);
 end
 
-function luaUnitSelfTestFixture.testFrame()
+function luaUnitSelfTestFixture._testFrame()
     ---------------------------------------------------
     -- initialize message system
     local testObserver = testRunner.TestResultHandlerList:new();

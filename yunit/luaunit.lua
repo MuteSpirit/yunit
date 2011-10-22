@@ -1,4 +1,4 @@
---[[ Lua Test Unit Engine --]]
+--[[ Lua Test Unit Engine ]]
 
 local _M = {}
 local _Mmt = {__index = _G}
@@ -154,7 +154,7 @@ function callTestCaseMethod(testcase, testFunc)
 end
 
 -------------------------------------------------------
-function getTestList()
+function makeTestCasesReadyForPublicUsage(testSuite)
 -------------------------------------------------------
     local function callTestCaseSetUp(testcase)
         return callTestCaseMethod(testcase, testcase.originalSetUp)
@@ -168,32 +168,31 @@ function getTestList()
         return callTestCaseMethod(testcase, testcase.originalTearDown)
     end
     
-    local testList = {};
-    for _, testsuite in ipairs(curTestRegistry.testsuites) do
-        local testsuiteName = testsuite.name_;
-        for _, testcase in ipairs(testsuite.testcases) do
-            local testcaseName = testcase["name_"];
-            local test = copyTable(testcase);
-            
-            test.originalSetUp = test.setUp;
-            test.setUp = callTestCaseSetUp;
+    local testList = {}
+    
+    for _, testcase in ipairs(testSuite.testcases) do
+        local testcaseName = testcase.name_
+        local test = copyTable(testcase)
+        
+        test.originalSetUp = test.setUp
+        test.setUp = callTestCaseSetUp
 
-            test.originalTest = test.test;
-            test.test = callTestCaseTest;
+        test.originalTest = test.test
+        test.test = callTestCaseTest
 
-            test.originalTearDown = test.tearDown;
-            test.tearDown = callTestCaseTearDown;
-            
-            test.name_ = testsuiteName.."::"..testcaseName;
-            test.name = function(self) return self.name_ end
-            
-            test.isIgnored = function(self) return self.isIgnored_ end
-            test.fileName = function(self) return self.fileName_ end
-            test.lineNumber = function(self) return self.lineNumber_ end
-            
-            table.insert(testList, test);
-        end
+        test.originalTearDown = test.tearDown
+        test.tearDown = callTestCaseTearDown
+        
+        test.name_ = testSuite.name_ .. "::" .. testcaseName
+        test.name = function(self) return self.name_ end
+        
+        test.isIgnored = function(self) return self.isIgnored_ end
+        test.fileName = function(self) return self.fileName_ end
+        test.lineNumber = function(self) return self.lineNumber_ end
+        
+        table.insert(testList, test)
     end
+    
     return testList;
 end
 
@@ -285,10 +284,10 @@ local typenames = { "nil", "boolean", "number", "string", "table", "function", "
 -- isTypename functions
 for _, typename in ipairs(typenames) do
     local assertTypename = "is" .. string.upper(string.sub(typename, 1 , 1)) .. string.sub (typename, 2);
-    _M[assertTypename] = function(actual)
+    _M[assertTypename] = function(actual, explanatoryMessage)
         local actualType = type(actual);
         if actualType ~= typename then
-            error(typename.." expected but was a " .. actualType, 0)
+            error(typename.." expected but was a " .. actualType .. ': ' .. explanatoryMessage .. '"', 0)
         end
     end
 end
@@ -298,10 +297,10 @@ _M.isBool = _M.isBoolean
 -- isNotTypename functions
 for _, typename in ipairs(typenames) do
     local assertTypename = "isNot" .. string.upper(string.sub(typename, 1 , 1)) .. string.sub (typename, 2);
-    _M[assertTypename] = function(actual)
+    _M[assertTypename] = function(actual, explanatoryMessage)
         local actualType = type(actual);
         if actualType == typename then
-            error(typename .. " not expected but was one", 0);
+            error(typename .. " not expected but was one" .. ': "' .. explanatoryMessage .. '"', 0);
         end
     end
 end
@@ -421,7 +420,7 @@ function loadTestContainer(filePath)
 
     local testcases, msg = loadTestCases(sourceCode, filePath)
     if false == testcases then
-        return nil, msg
+        return false, msg
     end
     
 	local testSuite = TestSuite:new(filePath)
@@ -429,7 +428,7 @@ function loadTestContainer(filePath)
 
 	testSuite.testcases = testcases
 	
-    return true
+    return makeTestCasesReadyForPublicUsage(testSuite)
 end
 
 return _M
