@@ -414,9 +414,9 @@ public:
 
 public:
     YUNIT_API static TestRegistry* initialize();
-
     YUNIT_API void addTestCase(TestCase* testCase);
 
+    TestSuite* lastLoadedTestSuite();
     TestSuiteIter rbegin();
     TestSuiteIter rend();
 
@@ -430,6 +430,7 @@ private:
     static TestRegistry* thisPtr_;
 
     TestSuites testSuites_;
+    TestSuite* lastLoadedTestSuite_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

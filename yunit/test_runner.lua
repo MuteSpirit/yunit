@@ -245,8 +245,7 @@ TestRunner =
     end;
     
     runAll = function(self)
-        local function filterTestContainer(path, state)
-        -- filter only test container files
+        local function findOutTestContainer(path, state)
             for ext, ltue in pairs(self.fileExts_) do
                 if string.find(string.lower(path), string.lower(ext), -string.len(ext), true) then
                     state.ltue_ = ltue
@@ -256,46 +255,47 @@ TestRunner =
             return false
         end
         
-        local function loadTestContainer(path, state)
-            --- @todo Print number of tests, loaded from concrete test container (maybe use new API function numberOfTests of cppunit and luaunit
-            -- ask LTUE to load found test container file
-            local res, errMsg = state.ltue_.loadTestContainer(path);
+        local function loadAndRunTests(testContainerPath, state)
+            local tests, errMsg = state.ltue_.loadTestContainer(testContainerPath);
 
-            if not res then
-                if errMsg then 
-                    error('Could not load test container "' .. path .. '": \n\t"' .. errMsg .. '"')
+            if 'boolean' == type(tests) then
+                if errMsg then
+                    error('Could not load test container "' .. testContainerPath .. '": \n\t"' .. errMsg .. '"')
                 else
-                    error('Could not load test container "' .. path .. '": There are not Test Unit Engine, support such test container')
+                    error('Could not load test container "' .. testContainerPath .. '": There are not Test Unit Engine, support such test container')
                 end
             else
-                print('Test container "' .. path .. '" has been loaded');
+                print('Test container "' .. testContainerPath .. '" has been loaded');
+                
+                for _, test in ipairs(tests) do
+                    normalizeTestCaseInterface(test)
+                end
+                table.sort(tests, operatorLess)
+                
+                lfs.chdir(fs.dirname(testContainerPath))
+                
+                for _, test in ipairs(tests) do
+                    runTestCase(test, self.resultHandlers_)
+                end
             end
         end
+        
+        self.resultHandlers_:onTestsBegin()
+        
+        local workingDir = lfs.currentdir()
+        
         -- looking for and load test containers into self.dirs_
         for _, dirPath in ipairs(self.dirs_) do
             fs.applyOnFiles(dirPath, {
                 filter = fs.multiFilter,
-                handler = loadTestContainer,
+                handler = loadAndRunTests,
                 recursive = true,
-                state = {filters = {fs.fileFilter, filterTestContainer},},
+                state = {filters = {fs.fileFilter, findOutTestContainer},},
             })
         end
-        -- get loaded unit tests
-        for name, ltue in pairs(self.ltues_) do
-            --- @todo rename 'getTestList' to 'getTests'
-            local tests = ltue.getTestList()
-            for _, test in pairs(tests) do
-                normalizeTestCaseInterface(test)
-                table.insert(self.testcases_, test)
-            end
-        end
-        -- sort and run all tests
-        table.sort(self.testcases_, operatorLess)
         
-        self.resultHandlers_:onTestsBegin()
-        for _, test in ipairs(self.testcases_) do
-            runTestCase(test, self.resultHandlers_)
-        end
+        lfs.chdir(workingDir);
+        
         self.resultHandlers_:onTestsEnd()
     end;
 }

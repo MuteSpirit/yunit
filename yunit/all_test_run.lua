@@ -2,10 +2,7 @@ local lfs = require "yunit.lfs"
 local testRunner = require "yunit.test_runner"
 local testResultHandlers = require "yunit.test_result_handlers"
 
-function runFrom(dirPath)
-    local curDir = lfs.currentdir()
-    lfs.chdir(dirPath)
-
+function runFrom(dirPaths)
     local runner = testRunner.TestRunner:new()
 
     local fixFailed = testResultHandlers.FixFailed:new()
@@ -17,10 +14,12 @@ function runFrom(dirPath)
 
     runner:loadLtue('yunit.luaunit')
     runner:loadLtue('yunit.cppunit')
-    runner:lookTestsAt(dirPath)
-    runner:runAll()
     
-    lfs.chdir(curDir)
+    for _, dirPath in pairs(dirPaths) do
+        runner:lookTestsAt(dirPath)
+    end
+    
+    runner:runAll()
 
     if not fixFailed:passed() then
         error("Test run executed with fail(es) and/or error(s)")
