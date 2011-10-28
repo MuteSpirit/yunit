@@ -120,6 +120,8 @@ typedef struct dir_data {
 #define LSTAT_FUNC lstat
 #endif
 
+#define YUNIT_DLL_EXPORTS
+
 #ifndef YUNIT_API
 #if defined _WIN32 || defined __CYGWIN__
 #define YUNIT_HELPER_DLL_IMPORT __declspec(dllimport)
@@ -279,7 +281,7 @@ static int lfs_lock_dir(lua_State *L) {
   return 1;
 }
 static int lfs_unlock_dir(lua_State *L) {
-  lfs_Lock *lock = luaL_checkudata(L, 1, LOCK_METATABLE);
+  lfs_Lock *lock = (lfs_Lock*) luaL_checkudata(L, 1, LOCK_METATABLE);
   CloseHandle(lock->fd);
   return 0;
 }

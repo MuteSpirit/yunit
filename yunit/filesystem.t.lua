@@ -160,17 +160,6 @@ useUnixPathDelimiterFixture =
     ;
 }
 
-function useUnixPathDelimiterFixture.unixCanonizePath()
-    areEq('c:/path/to/dir', fs.canonizePath('c:/path/to/dir/'))
-    areEq('c:/path/to/dir', fs.canonizePath('c:\\path\\to\\dir\\'))
-    areEq('c:/path/to/dir/subdir', fs.canonizePath('c:\\path/to//dir\\\\subdir'))
-    areEq('\\\\host1/path/to/dir/subdir', fs.canonizePath('\\\\host1\\path/to//dir\\\\subdir'))
-    areEq('//host2/path/to/dir/subdir', fs.canonizePath('//host2\\path/to//dir\\\\subdir'))
-    areEq('c:/', fs.canonizePath('c:'));
-    areEq('c:/', fs.canonizePath('c:/'));
-    areEq('/', fs.canonizePath('/'));
-end
-
 if fs.whatOs() == 'win' then
     function useWinPathDelimiterFixture.winCanonizePath(self)
         areEq('c:\\path\\to\\dir', fs.canonizePath('c:/path/to/dir/'))
@@ -184,174 +173,212 @@ if fs.whatOs() == 'win' then
     end
 end
 
-function useUnixPathDelimiterFixture.splitFullPathTest()
-    local head, tail;
-    head, tail = fs.split('c:/dir/file.ext')
-    areEq('c:/dir', head)
-    areEq('file.ext', tail)
+if fs.whatOs() == 'unix' then
+    function useUnixPathDelimiterFixture.unixCanonizePath()
+        areEq('c:/path/to/dir', fs.canonizePath('c:/path/to/dir/'))
+        areEq('c:/path/to/dir', fs.canonizePath('c:\\path\\to\\dir\\'))
+        areEq('c:/path/to/dir/subdir', fs.canonizePath('c:\\path/to//dir\\\\subdir'))
+        areEq('\\\\host1/path/to/dir/subdir', fs.canonizePath('\\\\host1\\path/to//dir\\\\subdir'))
+        areEq('//host2/path/to/dir/subdir', fs.canonizePath('//host2\\path/to//dir\\\\subdir'))
+        areEq('c:/', fs.canonizePath('c:'));
+        areEq('c:/', fs.canonizePath('c:/'));
+        areEq('/', fs.canonizePath('/'));
+    end
 
-    head, tail = fs.split('c:/dir/file')
-    areEq('c:/dir', head)
-    areEq('file', tail)
+    function useUnixPathDelimiterFixture.splitFullPathTest()
+        local head, tail;
+        head, tail = fs.split('c:/dir/file.ext')
+        areEq('c:/dir', head)
+        areEq('file.ext', tail)
+
+        head, tail = fs.split('c:/dir/file')
+        areEq('c:/dir', head)
+        areEq('file', tail)
     
-    head, tail = fs.split('c:/dir/')
-    areEq('c:/dir', head)
-    areEq('', tail)
+        head, tail = fs.split('c:/dir/')
+        areEq('c:/dir', head)
+        areEq('', tail)
     
-    head, tail = fs.split('c:/dir')
-    areEq('c:/', head)
-    areEq('dir', tail)
+        head, tail = fs.split('c:/dir')
+        areEq('c:/', head)
+        areEq('dir', tail)
+    end
+
+    function useUnixPathDelimiterFixture.splitRootPathsTest()
+        local head, tail;
+        head, tail = fs.split('c:/')
+        areEq('c:/', head)
+        areEq('', tail)
+
+        head, tail = fs.split('c:')
+        areEq('c:/', head)
+        areEq('', tail)
+
+        head, tail = fs.split('/')
+        areEq('/', head)
+        areEq('', tail)
+    end
+
+    function useUnixPathDelimiterFixture.splitRelativePathsTest()
+        local head, tail;
+    
+        head, tail = fs.split('file.ext')
+        areEq('', head)
+        areEq('file.ext', tail)
+
+        head, tail = fs.split('./')
+        areEq('.', head)
+        areEq('', tail)
+
+        head, tail = fs.split('./file.ext')
+        areEq('.', head)
+        areEq('file.ext', tail)
+    
+        head, tail = fs.split('../')
+        areEq('..', head)
+        areEq('', tail)
+    
+        head, tail = fs.split('../file.ext')
+        areEq('..', head)
+        areEq('file.ext', tail)
+    end
+
+    function useUnixPathDelimiterFixture.splitNetworkPathsTest()
+        local head, tail;
+        head, tail = fs.split('\\\\pc-1')
+        areEq('\\\\pc-1', head)
+        areEq('', tail)
+
+        head, tail = fs.split('\\\\pc-1/file.ext')
+        areEq('\\\\pc-1', head)
+        areEq('file.ext', tail)
+    end
+    
+    function useUnixPathDelimiterFixture.filenameTest()
+        local name, ext, dir;
+        name, ext = fs.filename('c:/readme.txt');
+        isNotNil(name);
+        isNotNil(ext);
+        areEq('txt', ext);
+        areEq('readme', name);
+
+        name, ext = fs.filename('/tmp/readme.txt');
+        isNotNil(name);
+        isNotNil(ext);
+        areEq('txt', ext);
+        areEq('readme', name);
+
+        name, ext = fs.filename('./readme.txt');
+        isNotNil(name);
+        isNotNil(ext);
+        areEq('txt', ext);
+        areEq('readme', name);
+
+        name, ext = fs.filename('c:/readme.txt.bak');
+        isNotNil(name);
+        isNotNil(ext);
+        areEq('bak', ext);
+        areEq('readme.txt', name);
+
+        name, ext = fs.filename('c:/README');
+        isNotNil(name);
+        isNotNil(ext);
+        areEq(ext, '');
+        areEq(name, 'README');
+
+        name, ext = fs.filename('c:/');
+        isNotNil(name);
+        isNotNil(ext);
+        areEq(ext, '');
+        areEq(name, '');
+
+        name, ext = fs.filename('c:/readme.txt ');
+        isNotNil(name);
+        isNotNil(ext);
+        areEq('txt', ext);
+        areEq('readme', name);
+
+        name, ext = fs.filename('c:/readme_again.tx_t');
+        isNotNil(name);
+        isNotNil(ext);
+        areEq('tx_t', ext);
+        areEq('readme_again', name);
+
+        name, ext = fs.filename('c:\\path\\to\\dir\\readme_again.tx_t');
+        isNotNil(name);
+        isNotNil(ext);
+        areEq('tx_t', ext);
+        areEq('readme_again', name);
+
+        name, ext = fs.filename('d:/svn_wv_rpo_trunk/.svn/dir-prop-base');
+        isNotNil(name);
+        isNotNil(ext);
+        areEq('', ext);
+        areEq('dir-prop-base', name);
+
+        name, ext = fs.filename('d:/svn_wv_rpo_trunk/.svn/dir-prop-base');
+        isNotNil(name);
+        isNotNil(ext);
+        areEq('', ext);
+        areEq('dir-prop-base', name);
+
+        name, ext= fs.filename('d:/svn_wv_rpo_trunk/dir-prop-base/.svn/dir-prop-base');
+        isNotNil(name);
+        isNotNil(ext);
+        areEq('', ext);
+        areEq('dir-prop-base', name);
+
+        name, ext = fs.filename('d:/svn_wv_rpo_trunk/.svn');
+        isNotNil(name);
+        isNotNil(ext);
+        areEq('svn', ext);
+        areEq('', name);
+
+        name, ext = fs.filename('d:/svn_wv_rpo_trunk/.svn/.svn');
+        isNotNil(name);
+        isNotNil(ext);
+        areEq('svn', ext);
+        areEq('', name);
+
+        name, ext = fs.filename('gepart_ac.ini');
+        isNotNil(name);
+        isNotNil(ext);
+        areEq('gepart_ac', name);
+        areEq('ini', ext);
+
+        name, ext = fs.filename('test spaces.ini');
+        isNotNil(name);
+        isNotNil(ext);
+        areEq('test spaces', name);
+        areEq('ini', ext);
+    end
+
+    function useUnixPathDelimiterFixture.dirnameTest()
+        areEq('c:/', fs.dirname('c:/'));
+        areEq('c:/path/to/dir', fs.dirname('c:/path/to/dir/file.ext'));
+        areEq('c:/', fs.dirname('c:/file'));
+        areEq('c:/', fs.dirname('c:/dir'));
+    end
+
+    function useUnixPathDelimiterFixture.absPathOnRelativePaths()
+        areEq('c:/dir1', fs.absPath('./dir1/', 'c:/'));
+        areEq(fs.canonizePath(lfs.currentdir()) .. fs.osSlash() .. 'dir1', fs.absPath('./dir1/'));
+        areEq('/dir/dir1', fs.absPath('/dir/./dir1/'))
+    end
+
+    function useTestTmpDirFixture.copyDirWithFileTest()
+        local total = 0
+        local path
+
+        for n = 0, 10 do
+            path = tmpDir .. fs.osSlash() .. n .. '.txt'
+            atf.createTextFileWithContent(path, string.rep(' ', n));
+            areEq(n, fs.du(path))
+            total = total + n
+        end
+        areEq(total, fs.du(tmpDir))
+    end
 end
-
-function useUnixPathDelimiterFixture.splitRootPathsTest()
-    local head, tail;
-    head, tail = fs.split('c:/')
-    areEq('c:/', head)
-    areEq('', tail)
-
-    head, tail = fs.split('c:')
-    areEq('c:/', head)
-    areEq('', tail)
-
-    head, tail = fs.split('/')
-    areEq('/', head)
-    areEq('', tail)
-end
-
-function useUnixPathDelimiterFixture.splitRelativePathsTest()
-    local head, tail;
-    
-    head, tail = fs.split('file.ext')
-    areEq('', head)
-    areEq('file.ext', tail)
-
-    head, tail = fs.split('./')
-    areEq('.', head)
-    areEq('', tail)
-
-    head, tail = fs.split('./file.ext')
-    areEq('.', head)
-    areEq('file.ext', tail)
-    
-    head, tail = fs.split('../')
-    areEq('..', head)
-    areEq('', tail)
-    
-    head, tail = fs.split('../file.ext')
-    areEq('..', head)
-    areEq('file.ext', tail)
-end
-
-function useUnixPathDelimiterFixture.splitNetworkPathsTest()
-    local head, tail;
-    head, tail = fs.split('\\\\pc-1')
-    areEq('\\\\pc-1', head)
-    areEq('', tail)
-
-    head, tail = fs.split('\\\\pc-1/file.ext')
-    areEq('\\\\pc-1', head)
-    areEq('file.ext', tail)
-end
-    
-function useUnixPathDelimiterFixture.filenameTest()
-    local name, ext, dir;
-    name, ext = fs.filename('c:/readme.txt');
-    isNotNil(name);
-    isNotNil(ext);
-    areEq('txt', ext);
-    areEq('readme', name);
-
-    name, ext = fs.filename('/tmp/readme.txt');
-    isNotNil(name);
-    isNotNil(ext);
-    areEq('txt', ext);
-    areEq('readme', name);
-
-    name, ext = fs.filename('./readme.txt');
-    isNotNil(name);
-    isNotNil(ext);
-    areEq('txt', ext);
-    areEq('readme', name);
-
-    name, ext = fs.filename('c:/readme.txt.bak');
-    isNotNil(name);
-    isNotNil(ext);
-    areEq('bak', ext);
-    areEq('readme.txt', name);
-
-    name, ext = fs.filename('c:/README');
-    isNotNil(name);
-    isNotNil(ext);
-    areEq(ext, '');
-    areEq(name, 'README');
-
-    name, ext = fs.filename('c:/');
-    isNotNil(name);
-    isNotNil(ext);
-    areEq(ext, '');
-    areEq(name, '');
-
-    name, ext = fs.filename('c:/readme.txt ');
-    isNotNil(name);
-    isNotNil(ext);
-    areEq('txt', ext);
-    areEq('readme', name);
-
-    name, ext = fs.filename('c:/readme_again.tx_t');
-    isNotNil(name);
-    isNotNil(ext);
-    areEq('tx_t', ext);
-    areEq('readme_again', name);
-
-    name, ext = fs.filename('c:\\path\\to\\dir\\readme_again.tx_t');
-    isNotNil(name);
-    isNotNil(ext);
-    areEq('tx_t', ext);
-    areEq('readme_again', name);
-
-    name, ext = fs.filename('d:/svn_wv_rpo_trunk/.svn/dir-prop-base');
-    isNotNil(name);
-    isNotNil(ext);
-    areEq('', ext);
-    areEq('dir-prop-base', name);
-
-    name, ext = fs.filename('d:/svn_wv_rpo_trunk/.svn/dir-prop-base');
-    isNotNil(name);
-    isNotNil(ext);
-    areEq('', ext);
-    areEq('dir-prop-base', name);
-
-    name, ext= fs.filename('d:/svn_wv_rpo_trunk/dir-prop-base/.svn/dir-prop-base');
-    isNotNil(name);
-    isNotNil(ext);
-    areEq('', ext);
-    areEq('dir-prop-base', name);
-
-    name, ext = fs.filename('d:/svn_wv_rpo_trunk/.svn');
-    isNotNil(name);
-    isNotNil(ext);
-    areEq('svn', ext);
-    areEq('', name);
-
-    name, ext = fs.filename('d:/svn_wv_rpo_trunk/.svn/.svn');
-    isNotNil(name);
-    isNotNil(ext);
-    areEq('svn', ext);
-    areEq('', name);
-
-    name, ext = fs.filename('gepart_ac.ini');
-    isNotNil(name);
-    isNotNil(ext);
-    areEq('gepart_ac', name);
-    areEq('ini', ext);
-
-    name, ext = fs.filename('test spaces.ini');
-    isNotNil(name);
-    isNotNil(ext);
-    areEq('test spaces', name);
-    areEq('ini', ext);
-end
-
 
 function isExistTest()
     isTrue(fs.isExist(lfs.currentdir()));
@@ -379,14 +406,6 @@ function isDirTest()
     path = '/';
     areEq('directory', lfs.attributes(path, 'mode'));
     isTrue(fs.isDir(path));
-end
-
-
-function useUnixPathDelimiterFixture.dirnameTest()
-    areEq('c:/', fs.dirname('c:/'));
-    areEq('c:/path/to/dir', fs.dirname('c:/path/to/dir/file.ext'));
-    areEq('c:/', fs.dirname('c:/file'));
-    areEq('c:/', fs.dirname('c:/dir'));
 end
 
 
@@ -707,29 +726,8 @@ function useTestTmpDirFixture.dirBypassTest()
 
 end
 
-
-function useUnixPathDelimiterFixture.absPathOnFullFilePaths()
-    if 'win' == fs.whatOs() then
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/./dir2/file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/./dir2/./file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/././dir2/file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/../file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/./dir3/../file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/.././file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/./../file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/./.././file.txt'));
-        areEq('d:/dir1/file.txt', fs.absPath('d:/dir1/dir2/../dir3/../file.txt'));
-
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\dir2\\file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\dir2\\.\\file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\.\\dir2\\file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\..\\file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\.\\dir3\\..\\file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\..\\.\\file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\.\\..\\file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\.\\..\\.\\file.txt'));
-        areEq('d:/dir1/file.txt', fs.absPath('d:\\dir1\\dir2\\..\\dir3\\..\\file.txt'));
-    else
+if 'unix' == fs.whatOs() then
+    function useUnixPathDelimiterFixture.absPathOnUnixFullFilePaths()
         areEq('/dir1/dir2/file.txt', fs.absPath('/dir1/./dir2/file.txt', '/'));
         areEq('/dir1/dir2/file.txt', fs.absPath('/dir1/./dir2/./file.txt'));
         areEq('/dir1/dir2/file.txt', fs.absPath('/dir1/././dir2/file.txt'));
@@ -742,26 +740,29 @@ function useUnixPathDelimiterFixture.absPathOnFullFilePaths()
     end
 end
 
+if 'win' == fs.whatOs() then
+    function useWinPathDelimiterFixture.absPathOnWinFullFilePaths()
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:/dir1/./dir2/file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:/dir1/./dir2/./file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:/dir1/././dir2/file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:/dir1/dir2/dir3/../file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:/dir1/dir2/./dir3/../file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:/dir1/dir2/dir3/.././file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:/dir1/dir2/dir3/./../file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:/dir1/dir2/dir3/./.././file.txt'));
+        areEq('d:\\dir1\\file.txt', fs.absPath('d:/dir1/dir2/../dir3/../file.txt'));
 
-function useUnixPathDelimiterFixture.absPathOnRelativePaths()
-    areEq('c:/dir1', fs.absPath('./dir1/', 'c:/'));
-    areEq(fs.canonizePath(lfs.currentdir()) .. fs.osSlash() .. 'dir1', fs.absPath('./dir1/'));
-    areEq('/dir/dir1', fs.absPath('/dir/./dir1/'))
-end
-
-function useTestTmpDirFixture.copyDirWithFileTest()
-    local total = 0
-    local path
-
-    for n = 0, 10 do
-        path = tmpDir .. fs.osSlash() .. n .. '.txt'
-        atf.createTextFileWithContent(path, string.rep(' ', n));
-        areEq(n, fs.du(path))
-        total = total + n
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:\\dir1\\.\\dir2\\file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:\\dir1\\.\\dir2\\.\\file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:\\dir1\\.\\.\\dir2\\file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\..\\file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:\\dir1\\dir2\\.\\dir3\\..\\file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\..\\.\\file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\.\\..\\file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\.\\..\\.\\file.txt'));
+        areEq('d:\\dir1\\file.txt', fs.absPath('d:\\dir1\\dir2\\..\\dir3\\..\\file.txt'));
     end
-    areEq(total, fs.du(tmpDir))
 end
-
 
 function useTestTmpDirFixture.copyFileToAnotherPlaceTest()
     local text = 'some\nsimple\ntext\n';
