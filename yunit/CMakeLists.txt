@@ -82,18 +82,27 @@ endif(MSVC)
 
 if(WIN32)
    set(SHARED_LIB_EXT "dll")
-   set(SHARED_LIB_OUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
+   # set(SHARED_LIB_OUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
+   set(SHARED_LIB_OUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 else(WIN32)
    set(SHARED_LIB_EXT "so")
    set(SHARED_LIB_OUT_DIR "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 endif(WIN32)
 
 if(WIN32)
+    add_custom_command(TARGET yunit
+                       POST_BUILD
+                       COMMAND copy $(TargetPath) $(TargetDir)\\..
+                       )
     add_custom_command(TARGET yunit.t
                        POST_BUILD
-                       COMMAND ${LUA_EXE} -e \"package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path\" -e \"package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath\" -l ${WORK_IN} -l yunit.default_test_run -e \"run([[${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/yunit.t.${SHARED_LIB_EXT}]])\"
+                       COMMAND copy $(TargetPath) $(TargetDir)\\..
                        )
-else(WIN32)
+    # add_custom_command(TARGET yunit.t
+                       # POST_BUILD
+                       # COMMAND ${LUA_EXE} -e \"package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path\" -e \"package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath\" -l ${WORK_IN} -l yunit.default_test_run -e \"run([[${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/yunit.t.${SHARED_LIB_EXT}]])\"
+                       # )
+# else(WIN32)
 #    add_test(yunit.t ${LUA_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.default_test_run -e "run([[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/yunit.t.${SHARED_LIB_EXT}]])")
 endif(WIN32)
 

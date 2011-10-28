@@ -8,34 +8,38 @@ function table.toLuaCode(inTable, indent, resultHandler)
 --------------------------------------------------------------------------------------------------------------
     indent = indent or ''
     endLine = '\n'
-    local out = '{'
-    if not table.isEmpty(inTable) then
-        out = out .. endLine
-    end
+    local out
+
+    if table.isEmpty(inTable) then
+        out = '{}'
+    else
+        out = '{' .. endLine
     
-    for key, value in pairs(inTable) do
-        local keyStr;
-        if 'table' == type(key) then
-            keyStr = indent .. '[' .. table.toLuaCode(key, nil, nil) .. '] = '
-        elseif 'string' == type(key) then
-            keyStr = indent .. '[' .. "'" .. key .. "'" .. '] = ';
-        else
-            keyStr = indent .. '[' .. key .. '] = ';
-        end
-        out = out .. keyStr
-       
-        if 'table' == type(value) then
-            out = out .. table.toLuaCode(value, nil, nil);
-        else
-            if 'string' == type(value) then 
-                out = out .. '[=['..value..']=]';
+        for key, value in pairs(inTable) do
+            local keyStr;
+            if 'table' == type(key) then
+                keyStr = indent .. '[' .. table.toLuaCode(key, nil, nil) .. '] = '
+            elseif 'string' == type(key) then
+                keyStr = indent .. '[' .. "'" .. key .. "'" .. '] = ';
             else
-                out = out .. tostring(value);
+                keyStr = indent .. '[' .. key .. '] = ';
             end
+            out = out .. keyStr
+       
+            if 'table' == type(value) then
+                out = out .. table.toLuaCode(value, indent .. indent, nil);
+            else
+                if 'string' == type(value) then 
+                    out = out .. '[=['..value..']=]';
+                else
+                    out = out .. tostring(value);
+                end
+            end
+            out = out .. ',' .. endLine 
         end
-        out = out .. ',' .. endLine 
+        out = out .. indent .. '}';
     end
-    out = out .. '}';
+
     if not resultHandler then
         return out;
     else
