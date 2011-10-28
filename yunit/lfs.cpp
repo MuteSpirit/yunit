@@ -17,7 +17,7 @@
 **   lfs.touch (filepath [, atime [, mtime]])
 **   lfs.unlock (fh)
 **
-** $Id: lfs.c,v 1.70 2011/10/09 00:37:00 MuteSpirit Exp $
+** $Id: lfs.c,v 1.70 2011-10-28 21:01:08  MuteSpirit Exp $
 */
 
 #ifndef _WIN32
@@ -65,6 +65,9 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+#define YUNIT_DLL_EXPORTS
+#include "yunit.h"
 
 /* Define 'chdir' for systems that do not implement it */
 #ifdef NO_CHDIR
@@ -118,33 +121,6 @@ typedef struct dir_data {
 #define STAT_STRUCT struct stat
 #define STAT_FUNC stat
 #define LSTAT_FUNC lstat
-#endif
-
-#define YUNIT_DLL_EXPORTS
-
-#ifndef YUNIT_API
-#if defined _WIN32 || defined __CYGWIN__
-#define YUNIT_HELPER_DLL_IMPORT __declspec(dllimport)
-#define YUNIT_HELPER_DLL_EXPORT __declspec(dllexport)
-#define YUNIT_HELPER_DLL_LOCAL
-#else
-#if __GNUC__ >= 4
-#define YUNIT_HELPER_DLL_IMPORT __attribute__ ((visibility ("default")))
-#define YUNIT_HELPER_DLL_EXPORT __attribute__ ((visibility ("default")))
-#define YUNIT_HELPER_DLL_LOCAL  __attribute__ ((visibility ("hidden")))
-#else
-#define YUNIT_HELPER_DLL_IMPORT
-#define YUNIT_HELPER_DLL_EXPORT
-#define YUNIT_HELPER_DLL_LOCAL
-#endif
-#endif
-
-#ifdef YUNIT_DLL_EXPORTS // defined if we are building the YUNIT DLL (instead of using it)
-#define YUNIT_API YUNIT_HELPER_DLL_EXPORT
-#else
-#define YUNIT_API YUNIT_HELPER_DLL_IMPORT
-#endif
-#define YUNIT_LOCAL YUNIT_HELPER_DLL_LOCAL
 #endif
 
 /*
@@ -281,7 +257,7 @@ static int lfs_lock_dir(lua_State *L) {
   return 1;
 }
 static int lfs_unlock_dir(lua_State *L) {
-  lfs_Lock *lock = (lfs_Lock*) luaL_checkudata(L, 1, LOCK_METATABLE);
+  lfs_Lock *lock = luaL_checkudata(L, 1, LOCK_METATABLE);
   CloseHandle(lock->fd);
   return 0;
 }
