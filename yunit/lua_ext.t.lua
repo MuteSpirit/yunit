@@ -57,10 +57,14 @@ function toLuaCode()
         [{}] = {},
     }
     local spaceAsTab = string.rep(' ', 4);
-    local str = table.toLuaCode(t, spaceAsTab);
-    isNotNil(string.find(str, "['a'] = [=[a]=],", 1, true))
-    isNotNil(string.find(str, "[1] = 1,", 1, true))
-    isNotNil(string.find(str, "[{}] = {},", 1, true), str)
+    local str = table.toLuaCode(t, spaceAsTab .. spaceAsTab);
+    local designedStr = 
+    [[{
+        ['a'] = [=[a]=],
+        [1] = 1,
+        [{}] = {},
+}]]    
+    areEq(designedStr, str)
 end
 
 function testStringSplit()

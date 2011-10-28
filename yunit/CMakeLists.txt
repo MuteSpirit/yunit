@@ -42,23 +42,16 @@ endif(MSVC)
 #
 # yunit
 #
-add_library(yunit SHARED cppunit.cpp lfs.cpp cppunit.h lua_wrapper.h)
+add_library(yunit SHARED cppunit.cpp lfs.cpp yunit.h cppunit.h lua_wrapper.h)
 target_link_libraries(yunit ${LUA_LIBRARY})
 set_target_properties(yunit PROPERTIES 
-                                    PREFIX "")
+                      PREFIX "")
 #
 # trace
 #
 if(WIN32)
     add_library(trace SHARED trace.c)
     target_link_libraries(trace ${LUA_LIBRARY})
-endif(WIN32)
-#
-# minidump
-#
-if(WIN32)
-    add_library(minidump SHARED minidump.c)
-    target_link_libraries(minidump dbghelp ${LUA_LIBRARY})
 endif(WIN32)
 #
 # yunit.t
@@ -81,46 +74,30 @@ else(MSVC)
 endif(MSVC)
 
 if(WIN32)
-   set(SHARED_LIB_EXT "dll")
-   # set(SHARED_LIB_OUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
-   set(SHARED_LIB_OUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    set(SHARED_LIB_EXT "dll")
+    set(SHARED_LIB_OUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 else(WIN32)
-   set(SHARED_LIB_EXT "so")
-   set(SHARED_LIB_OUT_DIR "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+    set(SHARED_LIB_EXT "so")
+    set(SHARED_LIB_OUT_DIR "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 endif(WIN32)
+
+
 
 if(WIN32)
+# we copy target files (*.dll) outside $(Configuration) directory, because on WIN32 value of 
+# ${CMAKE_CFG_INTDIR} is equal $(Configuration), i.e. not substituted by real name (Debug, Release, etc).
+# So we cannot use value ${CMAKE_CFG_INTDIR} in test commands
     add_custom_command(TARGET yunit
                        POST_BUILD
-                       COMMAND copy $(TargetPath) $(TargetDir)\\..
-                       )
+                       COMMAND copy $(TargetPath) $(TargetDir)\\..)
     add_custom_command(TARGET yunit.t
                        POST_BUILD
-                       COMMAND copy $(TargetPath) $(TargetDir)\\..
-                       )
-    # add_custom_command(TARGET yunit.t
-                       # POST_BUILD
-                       # COMMAND ${LUA_EXE} -e \"package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path\" -e \"package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath\" -l ${WORK_IN} -l yunit.default_test_run -e \"run([[${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/yunit.t.${SHARED_LIB_EXT}]])\"
-                       # )
-# else(WIN32)
-#    add_test(yunit.t ${LUA_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.default_test_run -e "run([[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/yunit.t.${SHARED_LIB_EXT}]])")
+                       COMMAND copy $(TargetPath) $(TargetDir)\\..)
 endif(WIN32)
-
+#
+# This test run test from all test container of project
+#
 add_test(all_cppunit_tests ${LUA_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.all_test_run -e "runFrom{[[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}]], [[${CMAKE_CURRENT_SOURCE_DIR}]]}")
-
-#add_test(cppunit.t.lua ${LUA_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.lua_test_run -e "run([[${CMAKE_CURRENT_SOURCE_DIR}/cppunit.t.lua]])")
-
-#add_test(filesystem.t.lua ${LUA_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.lua_test_run -e "run([[${CMAKE_CURRENT_SOURCE_DIR}/filesystem.t.lua]])")
-
-#add_test(aux_test_func.t.lua ${LUA_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.lua_test_run -e "run([[${CMAKE_CURRENT_SOURCE_DIR}/aux_test_func.t.lua]])")
-
-#add_test(lua_ext.t.lua ${LUA_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.lua_test_run -e "run([[${CMAKE_CURRENT_SOURCE_DIR}/lua_ext.t.lua]])")
-
-#add_test(test_result_handlers.t.lua ${LUA_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.lua_test_run -e "run([[${CMAKE_CURRENT_SOURCE_DIR}/test_result_handlers.t.lua]])")
-
-#add_test(luaunit.t.lua ${LUA_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.lua_test_run -e "run([[${CMAKE_CURRENT_SOURCE_DIR}/luaunit.t.lua]])")
-
-#add_test(test_runner.t.lua ${LUA_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.lua_test_run -e "run([[${CMAKE_CURRENT_SOURCE_DIR}/test_runner.t.lua]])")
 #
 # Installation rules
 #

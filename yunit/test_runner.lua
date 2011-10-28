@@ -15,69 +15,68 @@ TestResultHandler = {
     onTestsBegin = function() end;
     onTestsEnd = function() end;
     outputMessage = function(message) end;
-};
 
-function TestResultHandler:new(o)
-    o = o or {};
-    setmetatable(o, self);
-    self.__index = self;
-    return o;
-end
+    new = function(self, o)
+        o = o or {};
+        setmetatable(o, self);
+        self.__index = self;
+        return o;
+    end;
+}
 
 ------------------------------------------------------
 TestResultHandlerList = TestResultHandler:new{
-    testResultHandlers = {}
-};
-------------------------------------------------------
+    testResultHandlers = {};
 
-function TestResultHandlerList:new(o)
-    o = o or {testResultHandlers = {}};
-    setmetatable(o, self);
-    self.__index = self;
-    return o;
-end
+    new = function(self, o)
+        o = o or {testResultHandlers = {}};
+        setmetatable(o, self);
+        self.__index = self;
+        return o;
+    end;
 
-function TestResultHandlerList:addHandler(handler)
-    table.insert(self.testResultHandlers, handler)
-end
+    addHandler = function(self, handler)
+        table.insert(self.testResultHandlers, handler)
+    end;
 
-function TestResultHandlerList:callHandlersMethod(functionName, ...)
-    for _, handler in ipairs(self.testResultHandlers) do
-        handler[functionName](handler, ...);
-    end
-end
+    callHandlersMethod = function(self, functionName, ...)
+        for _, handler in ipairs(self.testResultHandlers) do
+            handler[functionName](handler, ...);
+        end
+    end;
 
-function TestResultHandlerList:onTestSuccessfull(testCaseName)
-    self:callHandlersMethod('onTestSuccessfull', testCaseName);
-end
+    onTestSuccessfull = function(self, testCaseName)
+        self:callHandlersMethod('onTestSuccessfull', testCaseName);
+    end;
 
-function TestResultHandlerList:onTestFailure(testCaseName, errorObject)
-    self:callHandlersMethod('onTestFailure', testCaseName, errorObject);
-end
+    onTestFailure = function(self, testCaseName, errorObject)
+        self:callHandlersMethod('onTestFailure', testCaseName, errorObject);
+    end;
 
-function TestResultHandlerList:onTestError(testCaseName, errorObject)
-    self:callHandlersMethod('onTestError', testCaseName, errorObject);
-end
+    onTestError = function(self, testCaseName, errorObject)
+        self:callHandlersMethod('onTestError', testCaseName, errorObject);
+    end;
 
-function TestResultHandlerList:onTestIgnore(testCaseName, errorObject)
-    self:callHandlersMethod('onTestIgnore', testCaseName, errorObject);
-end
+    onTestIgnore = function(self, testCaseName, errorObject)
+        self:callHandlersMethod('onTestIgnore', testCaseName, errorObject);
+    end;
 
-function TestResultHandlerList:onTestBegin(testCaseName)
-    self:callHandlersMethod('onTestBegin', testCaseName);
-end
+    onTestBegin = function(self, testCaseName)
+        self:callHandlersMethod('onTestBegin', testCaseName);
+    end;
 
-function TestResultHandlerList:onTestEnd(testCaseName)
-    self:callHandlersMethod('onTestEnd', testCaseName);
-end
+    onTestEnd = function(self, testCaseName)
+        self:callHandlersMethod('onTestEnd', testCaseName);
+    end;
 
-function TestResultHandlerList:onTestsBegin()
-    self:callHandlersMethod('onTestsBegin');
-end
+    onTestsBegin = function(self)
+        self:callHandlersMethod('onTestsBegin');
+    end;
 
-function TestResultHandlerList:onTestsEnd()
-    self:callHandlersMethod('onTestsEnd');
-end
+    onTestsEnd = function(self)
+        self:callHandlersMethod('onTestsEnd');
+    end;
+}
 
 local function isFunction(variable)
     return "function" == type(variable);
@@ -148,18 +147,19 @@ function runTestCase(testcase, testResultHandler)
     else
         local setUpSuccess
         if isFunction(testcase.setUp) then
-            setUpSuccess, errorObject = testcase:setUp();
+            setUpSuccess, errorObject = testcase:setUp()
         else
             -- testcase may has not 'setUp' method, but must be run
             setUpSuccess, errorObject = true, errorObjectDefault
         end
 
         if not setUpSuccess then
+            errorObject = errorObject or errorObjectDefault
             errorObject.func = 'setUp'
-            testResultHandler:onTestError(testName, errorObject or errorObjectDefault);
+            testResultHandler:onTestError(testName, errorObject);
         else
             local testSuccess
-            if isFunction(testcase.setUp) then
+            if isFunction(testcase.test) then
                 testSuccess, errorObject = testcase:test()
             else
                 testSuccess, errorObject = false, errorObjectDefault
@@ -167,8 +167,9 @@ function runTestCase(testcase, testResultHandler)
             end
 
             if not testSuccess then
+                errorObject = errorObject or errorObjectDefault
                 errorObject.func = ''
-                testResultHandler:onTestFailure(testName, errorObject or errorObjectDefault);
+                testResultHandler:onTestFailure(testName, errorObject);
             else
                 testResultHandler:onTestSuccessfull(testName);
             end
@@ -182,8 +183,9 @@ function runTestCase(testcase, testResultHandler)
             end
 
             if not tearDownSuccess then
+                errorObject = errorObject or errorObjectDefault
                 errorObject.func = 'tearDown'
-                testResultHandler:onTestError(testName, errorObject or errorObjectDefault);
+                testResultHandler:onTestError(testName, errorObject);
             end
         end
     end
@@ -299,77 +301,5 @@ TestRunner =
         self.resultHandlers_:onTestsEnd()
     end;
 }
-
-------------------------------------------------------
-GlobalTestCaseList = {};
---------------------------------------------------------------------
-GlobalTestUnitEngineList = {}
---------------------------------------------------------------------
-
-function loadTestUnitEngines(tueList)
-    for _, tueName in ipairs(tueList) do
-        if not package.loaded[tueName] then
-            local tue, errMsg = require(tueName);
-            
-            if 'boolean' == type(tue) then
-                error('Cannot load "' .. tueName .. '" test container')
-            elseif tue and 'table' == type(tue) then
-                local tcExtList = tue.getTestContainerExtensions();
-                
-                for _, ext in ipairs(tcExtList) do
-                    GlobalTestUnitEngineList[ext] = tue; 
-                end
-            end
-        end
-    end
-end
-
-function loadTestContainers(filePathList)
-    -- load test containers into test case lists inside Test Unit Engines
-    local res, errMsg
-    for _, filePath in ipairs(filePathList) do
-        res = false
-        errMsg = nil
-        
-        for ext, tue in pairs(GlobalTestUnitEngineList) do
-            if string.find(string.lower(filePath), string.lower(ext), -string.len(ext), true) then
-                res, errMsg = tue.loadTestContainer(filePath);
-                break;
-            end
-        end
-        if not res and errMsg then
-            io.stderr:write('Could not load test container "' .. filePath .. '". Error: \n\t"' .. errMsg .. '"\n')
-        elseif not res then
-            io.stderr:write('Could not load test container "' .. filePath .. '". Error: \n\t"There are not Test Unit Engine, support such test container"\n');
-        else
-            io.stdout:write('Test container "' .. filePath .. '" has been loaded\n');
-        end
-    end
-
-    -- get from Test Unit Engines Test Case objects lists and copy them into GlobalTestUnitEngineList
-    for _, tue in pairs(GlobalTestUnitEngineList) do    
-        local testcases = tue.getTestList();
-        
-        for _, testcase in ipairs(testcases) do
-            table.insert(GlobalTestCaseList, testcase);
-        end
-    end
-end
-
-function runAllTestCases(testResultHandler)
-    testResultHandler = testResultHandler or TestResultHandlerList;
-
-    for _, test in ipairs(GlobalTestCaseList) do
-        normalizeTestCaseInterface(test)
-    end
-    
-	table.sort(GlobalTestCaseList, operatorLess)
-    
-    testResultHandler:onTestsBegin();
-    for _, test in ipairs(GlobalTestCaseList) do
-        runTestCase(test, testResultHandler);
-    end
-    testResultHandler:onTestsEnd();
-end
 
 return _M

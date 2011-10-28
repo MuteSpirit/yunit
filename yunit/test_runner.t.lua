@@ -79,96 +79,6 @@ local aux = require "yunit.aux_test_func"
 
 --[[ Test Fixtures ]]
 
--- This fixture save (at setUp) and restore (at tearDown) currentSuite variable at luaunit module for possibility TEST_* macro testing
-substitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir = 
-{
-    setUp = function(self)
-        testRegistry = luaUnit.TestRegistry:new();
-        currentTestRegistry = luaUnit.currentTestRegistry();
-        luaUnit.currentTestRegistry(testRegistry);
-        
-        currentSuite = luaUnit.currentSuite();
-
-        self.curDir = lfs.currentdir();
-        tmpDir = fs.tmpDirName();
-        lfs.mkdir(tmpDir);
-    end
-    ;
-    tearDown = function(self)
-        luaUnit.currentSuite(currentSuite);
-        luaUnit.currentTestRegistry(currentTestRegistry);
-        currentSuite = nil;
-        testRegistry = nil;
-        
-        -- delete tmpDir recursively
-        isNotNil(tmpDir);
-        isTrue(lfs.chdir(self.curDir))
-        local status, msg = fs.rmdir(tmpDir)
-        areEq(nil, msg)
-        isTrue(status)
-    end
-    ;
-};
-
-globalTestCaseListFixture = 
-{
-    setUp = function(self)
-        testRegistry = luaUnit.TestRegistry:new();
-        currentTestRegistry = luaUnit.currentTestRegistry();
-        luaUnit.currentTestRegistry(testRegistry);
-        
-        currentSuite = luaUnit.currentSuite();
-
-        globalTestCaseList = luaUnit.copyTable(testRunner.GlobalTestCaseList);
-        testRunner.GlobalTestCaseList = {};
-    end
-    ;
-    tearDown = function(self)
-        luaUnit.currentSuite(currentSuite);
-        luaUnit.currentTestRegistry(currentTestRegistry);
-        currentSuite = nil;
-        testRegistry = nil;
-
-        testRunner.GlobalTestCaseList = luaUnit.copyTable(globalTestCaseList);
-    end
-    ;
-};
-
-globalTestCaseListFixturePlusUseTmpDir =
-{
-    setUp = function(self)
-        self.testRegistry = luaUnit.TestRegistry:new();
-        self.currentTestRegistry = luaUnit.currentTestRegistry();
-        luaUnit.currentTestRegistry(self.testRegistry);
-        
-        self.currentSuite = luaUnit.currentSuite();
-        luaUnit.currentSuite(self.testRegistry.testsuites[1]);
-
-        self.globalTestCaseList = luaUnit.copyTable(testRunner.GlobalTestCaseList);
-        testRunner.GlobalTestCaseList = {};
-
-        self.curDir = lfs.currentdir();
-        self.tmpDir_ = fs.tmpDirName();
-        lfs.mkdir(self.tmpDir_);
-    end
-    ;
-    tearDown = function(self)
-        luaUnit.currentSuite(self.currentSuite);
-        luaUnit.currentTestRegistry(self.currentTestRegistry);
-        self.currentSuite = nil;
-        self.testRegistry = nil;
-
-        testRunner.GlobalTestCaseList = luaUnit.copyTable(self.globalTestCaseList);
-
-        -- delete tmpDir recursively
-        isNotNil(self.tmpDir_);
-        isTrue(lfs.chdir(self.curDir))
-        local status, msg = fs.rmdir(self.tmpDir_)
-        areEq(nil, msg)
-        isTrue(status)
-    end
-    ;
-};
 
 useTmpDir = 
 {
@@ -247,36 +157,6 @@ function testObserverStartTestsFunctionTest()
     isTrue(ttpl2.onTestsBeginCall);
 end
 
-function substitutionCurrentTestRegistryAndTestSuitePlusUseTmpDir.loadLuaContainerTest()
-    local luaTestContainerText = 
-        [[fixture =
-            {
-                setUp = function()
-                end,
-
-                tearDown = function()
-                end
-            }
-            function testCase() end 
-            function fixture.fixtureTestCase() end 
-            local function notTestCase() end
-            function _ignoredTest() end
-            ]]
-    local luaTestContainerFilename = tmpDir .. fs.osSlash() .. 'load_lua_container.t.lua'
-    isTrue(aux.createTextFileWithContent(luaTestContainerFilename, luaTestContainerText))
-    
-    areEq(0, #testRegistry.testsuites)
-    
-    local status, msg = luaUnit.loadTestContainer(luaTestContainerFilename)
-    areEq(nil, msg)
-    isTrue(status)
-    
-    areEq(1, #testRegistry.testsuites)
-    areEq(3, #testRegistry.testsuites[1].testcases)
-
-    areEq(luaTestContainerFilename, testRegistry.testsuites[1].name_)
-end
-
 function testSetGoodWorkingDir()
     isTrue(fs.isExist('test_runner.t.lua'))
 end
@@ -310,7 +190,7 @@ function sortTestCasesAccordingFileAndLine()
 	areEq(9, tests[3]:lineNumber())
 end
 
-function globalTestCaseListFixturePlusUseTmpDir:find_all_test_containers_from_current_folder()
+function useTmpDir:find_all_test_containers_from_current_folder()
     local testContainer1path = self.tmpDir_ .. fs.osSlash() .. 'test_container.t.lua'
     local testContainer1content = 
 [[function test1()
@@ -328,5 +208,34 @@ end]]
     areNotEq(0, #runner.dirs_)
     runner:runAll()
     isTrue(fixFailed:passed())
+end
+
+function test_frame()
+    ---------------------------------------------------
+    -- initialize message system
+    local testObserver = testRunner.TestResultHandlerList:new()
+    local mockTestListener = testRunner.TestResultHandler:new()
+    mockTestListener.error_ = false
+    function mockTestListener:onTestError(name, errObj)
+        mockTestListener.error_ = true
+        print(name)
+        print(errObj.func)
+    end
+    function mockTestListener:onTestFailure(name, errObj)
+        mockTestListener.error_ = true
+    end
+    testObserver:addHandler(mockTestListener)
+
+    -- Make TestCase manually, then run it 
+
+    local testcase = luaUnit.TestCase:new("testFrameTestCase")
+    testcase.test = function()
+        return true, {}
+    end
+    testcase.setUp = testcase.test
+    testcase.tearDown = testcase.test
+    
+    testRunner.runTestCase(testcase, testObserver)
+    isFalse(mockTestListener.error_)
 end
 

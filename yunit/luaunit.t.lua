@@ -1,40 +1,8 @@
---- \fn copyTable(object, clone)
---- \brief Make full copy of table
---- \param[in] object Sample for cloning
---- \return Cloned object of original object
-
---- \class TestFixture
---- \brief Class, whtich has setUp and tearDown function. It is base for TestCase class.
-
---- \class TestCase
---- \brief Single Test. TestCase object contain test code and namely it is executed.
-
---- \class TestSuite
---- \brief Class, whitch has name and contains TestCase objects. One level at tree of tests.
-
---- \class TestRegistry
---- \brief Contain all TestSuites from loaded Lua test scripts (*.t.lua) and C++ test drivers (*.t.dll)
-
---- \fn TestRegistry:reset()
---- \brief return TestRegistry to the default state
-
---- \fn getTestList()
---- \brief Return collection of objects with TestCase interface ("name_", setUp, test, tearDown). Names of TestCases contains TestSuite and TestCase name, separated by '::'
---- \return List of TestCases-like objects 
-
---- \fn callTestCaseMethod(testcase, testFunc)
---- \brief Call method of TestCase object and get advanced info in case of mistaken execution
---- \param[in] testcase TestCase object
---- \param[in] testFunc 'test', 'setUp' or 'tearDown' function of 'testcase'
---- \return status code of 'testFunc' execution and ErrorObject with additional info
-
-
-
 local testRunner = require "yunit.test_runner"
-local luaExt = require "yunit.lua_ext"
-local fs = require "yunit.filesystem"
 local luaUnit = require "yunit.luaunit"
-local testResultHandlers = require "yunit.test_result_handlers"
+local aux = require "yunit.aux_test_func"
+local fs = require "yunit.filesystem"
+local lfs = require "yunit.lfs"
 
 assertsAtSetUpFixture = 
 {
@@ -58,25 +26,22 @@ assertsAtTearDownFixture =
     ;
 };
 
--- This fixture save (at setUp) and restore (at tearDown) currentSuite variable at luaunit module for possibility assert macro testing
-luaUnitSelfTestFixture = 
+useTmpDir = 
 {
     setUp = function(self)
-        testRegistry = luaUnit.TestRegistry:new();
-        currentTestRegistry = luaUnit.currentTestRegistry();
-        luaUnit.currentTestRegistry(testRegistry);
-        
-        currentSuite = luaUnit.currentSuite();
+        self.currentDir_ = lfs.currentdir()
+        self.tmpDir_ = fs.tmpDirName()
+        isTrue(lfs.mkdir(self.tmpDir_))
     end
     ;
     tearDown = function(self)
-        luaUnit.currentSuite(currentSuite);
-        luaUnit.currentTestRegistry(currentTestRegistry);
-        currentSuite = nil;
-        testRegistry = nil;
+        isTrue(lfs.chdir(self.currentDir_))
+        local status, msg = fs.rmdir(self.tmpDir_)
+        areEq(nil, msg)
+        isTrue(status)
     end
     ;
-};
+}
 
 function copyTableTest()
 	local object = 
@@ -122,109 +87,6 @@ function runSimpleTestCaseTest()
 	noThrow(testcase.test);
 	noThrow(testcase.tearDown);
 end
-    
-function luaUnitSelfTestFixture.addingTestCasesToTestRegistryTest()
-    areEq(0, #testRegistry.testsuites);
-    
-    local testsuite = luaUnit.TestSuite:new("NotDefaultTestSuite");
-    testRegistry:addTestSuite(testsuite);
-    areEq(1, #testRegistry.testsuites);
-    areEq(0, #testRegistry.testsuites[1].testcases);
-
-    testsuite:addTestCase(luaUnit.TestCase:new("TestCase1"));
-    areEq(1, #testRegistry.testsuites);
-    areEq(1, #testRegistry.testsuites[1].testcases);
-    
-    testRegistry:reset();
-    areEq(0, #testRegistry.testsuites);
-end
-
-function luaUnitSelfTestFixture._getTestListTest()
-    local testList = luaUnit.getTestList();
-    isNotNil(testList);
-    areEq(0, #testList);
-    
-    -- add one TestCase
-    local testcaseName = "GetTestListTestCase";
-    local testcase = luaUnit.TestCase:new(testcaseName);
-    testcase.test = function()
-        luaUnit.areEq(0, 0);
-    end
-
-    testList = luaUnit.getTestList();
-    isNotNil(testList);
-    areEq(0, #testList);
-    
-    local testsuite = luaUnit.TestSuite:new("GetTestListTestSuite");
-    testsuite:addTestCase(testcase);
-    testRegistry:addTestSuite(testsuite);
-    
-    testList = luaUnit.getTestList();
-    isNotNil(testList);
-    areEq(1, #testList);
-end
-
-function luaUnitSelfTestFixture.protectTestCaseMethodCallTest()
-	-- we try to call create simple TestCAse and call 'setUp', 'test', 'tearDown' in protected mode
-	-- in the result we must receive object with such data:
-	-- - file name of script  with error
-	-- - line number of failed ASSERT
-	-- - text message from that ASSERT
-	
-	local testcase = luaUnit.TestCase:new("TestCaseForProtectCall");
-	testcase.test = function()
-		-- must except error
-		luaUnit.areNotEq(0, 0);
-	end
-	
-	local statusCode, errorObject = luaUnit.callTestCaseMethod(testcase, testcase.test);
-	isFalse(statusCode)
-	isNotNil(errorObject)
-
-	isTrue(string.find(errorObject.source, 'luaunit%.t%.lua$'))
-	areEq("testFunc", errorObject.func);
-	
-	isNotNil(errorObject.line);
-	isNumber(errorObject.line);
-	areNotEq(0, errorObject.line);
-	
-	isNotNil(errorObject.message);
-	isString(errorObject.message);
-end
-
-function luaUnitSelfTestFixture._testFrame()
-    ---------------------------------------------------
-    -- initialize message system
-    local testObserver = testRunner.TestResultHandlerList:new();
-    local mockTestListener = testRunner.TestResultHandler:new();
-    mockTestListener.error_ = false;
-    function mockTestListener:onTestError()
-        mockTestListener.error_ = true;
-    end
-    function mockTestListener:onTestFailure()
-        mockTestListener.error_ = true;
-    end
-    testObserver:addHandler(mockTestListener);
-    ---------------------------------------------------
-    -- Make TestCase manually, then run it 
-    mockTestListener.error_ = false;
-    local testcase = luaUnit.TestCase:new("testFrameTestCase");
-    testcase.test = function()
-        luaUnit.areEq(0, 0);
-    end
-    
-    local testsuite = luaUnit.TestSuite:new("testFrameTestSuite");
-    testsuite:addTestCase(testcase);
-    testRegistry:addTestSuite(testsuite);
-    
-    local testList = luaUnit.getTestList();
-    isNotNil(testList);
-    areEq(1, #testList);
-
-    testRunner.runTestCase(testList[1], testObserver);
-    isFalse(mockTestListener.error_);
-end
-
     
 function getTestEnvTest()
     local testContainerName = 'yunit.luaunit'
@@ -304,8 +166,9 @@ function collectTestcasesFromSimpleTestCaseEnvironment()
     isTrue(table.isEqual(expectedTestList, testList))
 end
 
-function loadTestCases()
-    local luaTestContainerName = 'lua_test_container.t'
+function useTmpDir.loadLuaContainer(self)
+    lfs.chdir(self.tmpDir_)
+    local luaTestContainerPath = 'lua_test_container.t.lua'
     local sourceCode = 
         [[fixture =										-- 1
             {													-- 2
@@ -320,21 +183,23 @@ function loadTestCases()
             local function notTestCase() end				-- 11
             function _ignoredTest() end					-- 12
             ]]
-	local testcases = luaUnit.loadTestCases(sourceCode, luaTestContainerName)
+    aux.createTextFileWithContent(luaTestContainerPath, sourceCode)
+
+	local testcases = luaUnit.loadTestContainer(luaTestContainerPath)
 
 	isTable(testcases)
     areEq(3, #testcases)
 
     areEq(12, testcases[1].lineNumber_)
-    areEq('_ignoredTest', testcases[1].name_)
+    areEq(luaTestContainerPath .. '::_ignoredTest', testcases[1].name_)
     isTrue(testcases[1].isIgnored_)
 	
     areEq(10, testcases[2].lineNumber_)
-    areEq('fixtureTestCase', testcases[2].name_)
+    areEq(luaTestContainerPath .. '::fixtureTestCase', testcases[2].name_)
     isFalse(testcases[2].isIgnored_)
 	
     areEq(9, testcases[3].lineNumber_)
-    areEq('testCase', testcases[3].name_)
+    areEq(luaTestContainerPath .. '::testCase', testcases[3].name_)
     isFalse(testcases[3].isIgnored_)
 end
 
