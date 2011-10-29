@@ -261,44 +261,74 @@ TestRunner =
             local tests, errMsg = state.ltue_.loadTestContainer(testContainerPath);
 
             if 'boolean' == type(tests) then
-                if errMsg then
-                    error('Could not load test container "' .. testContainerPath .. '": \n\t"' .. errMsg .. '"')
-                else
-                    error('Could not load test container "' .. testContainerPath .. '": There are not Test Unit Engine, support such test container')
-                end
-            else
-                print('Test container "' .. testContainerPath .. '" has been loaded');
+                table.insert(state.notLoadedTestContainers, {path = testContainerPath, msg = errMsg})
+                return
+            end
                 
-                for _, test in ipairs(tests) do
-                    normalizeTestCaseInterface(test)
-                end
-                table.sort(tests, operatorLess)
-                
-                lfs.chdir(fs.dirname(testContainerPath))
-                
-                for _, test in ipairs(tests) do
-                    runTestCase(test, self.resultHandlers_)
-                end
+            table.insert(state.loadedTestContainers, {path = testContainerPath, testNum = #tests})
+                            
+            for _, test in ipairs(tests) do
+                normalizeTestCaseInterface(test)
+            end
+            table.sort(tests, operatorLess)
+            
+            lfs.chdir(fs.dirname(testContainerPath))
+            
+            for _, test in ipairs(tests) do
+                runTestCase(test, self.resultHandlers_)
             end
         end
         
         self.resultHandlers_:onTestsBegin()
         
-        local workingDir = lfs.currentdir()
+        local savedWorkingDir = lfs.currentdir()
         
         -- looking for and load test containers into self.dirs_
+        local loadTestsState = 
+        {
+            filters = {fs.fileFilter, findOutTestContainer},
+            loadedTestContainers = {},
+            notLoadedTestContainers = {},
+        }
+        
         for _, dirPath in ipairs(self.dirs_) do
-            fs.applyOnFiles(dirPath, {
-                filter = fs.multiFilter,
-                handler = loadAndRunTests,
-                recursive = true,
-                state = {filters = {fs.fileFilter, findOutTestContainer},},
-            })
+            fs.applyOnFiles(dirPath, 
+                    {
+                        filter = fs.multiFilter,
+                        handler = loadAndRunTests,
+                        recursive = true,
+                        state = loadTestsState,
+                    }
+                )
         end
         
-        lfs.chdir(workingDir);
+        lfs.chdir(savedWorkingDir);
         
         self.resultHandlers_:onTestsEnd()
+        
+        do -- display info about used test containers
+            print('')
+            
+            local numOfNotLoaded = #loadTestsState.notLoadedTestContainers
+            if numOfNotLoaded > 0 then
+                print('Coukd not load ' .. numOfNotLoaded .. ' test containers:')
+                
+                for _, errData in ipairs(loadTestsState.notLoadedTestContainers) do
+                    print('"' .. errData.path .. '": \r\n\t' .. errData.msg)
+                end
+            end
+
+            local numOfLoaded = #loadTestsState.loadedTestContainers
+            print('There were ' .. numOfLoaded .. ' test containers loaded:')
+            for _, tcData in ipairs(loadTestsState.loadedTestContainers) do
+                local msg = '"' .. tcData.path .. '" (' .. tcData.testNum
+                if tcData.testNum == 0 or tcData.testNum > 1 then
+                    print(msg .. ' tests)')
+                else
+                    print(msg .. ' test)')
+                end
+            end
+        end
     end;
 }
 
