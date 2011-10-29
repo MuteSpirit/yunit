@@ -319,14 +319,20 @@ function callTestCaseMethod(testcase, testFunc)
     end
     
     local function errorHandler(errorMsg)
-        local errorObject = {};
-        local errorInfo = debug.getinfo(4, "Sln");
+        local errorObject = {}
+        local errorInfo = debug.getinfo(4, "Sln")
         
-        errorObject.source = errorInfo.short_src;
+        errorObject.source = errorInfo.short_src
         --- @todo Sometimes short_src contains info such as '[C]:-1: ' at the begin of line. Need cut it.
-        errorObject.func = errorInfo.name;
-        errorObject.line = errorInfo.currentline;
-        errorObject.message = errorMsg;
+        errorObject.func = errorInfo.name
+        errorObject.line = errorInfo.currentline
+
+        local isLuaunitAssertFailed = nil ~= string.find(debug.getinfo(3, "S").short_src, 'luaunit.lua')
+        if isLuaunitAssertFailed then
+            errorObject.message = errorMsg
+        else
+            errorObject.message = debug.traceback(errorMsg, 3)
+        end
         
         return errorObject;
     end
