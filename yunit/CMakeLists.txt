@@ -20,15 +20,16 @@ if(WIN32)
     )
 else(WIN32)
     find_path(LUA_INCLUDE_DIR lua.h
-                PATHS lua5.2
-                      lua5.1
+                PATH_SUFFIXES lua5.2
+                              lua5.1
     )
     include_directories(${LUA_INCLUDE_DIR} ${LUA_INCLUDE_DIR}/lua5.2
-    )
-    find_library(LUA_LIBRARY lua
+    ) 
+    find_library(LUA_LIBRARY NAMES lua5.2 lua lua5.1
+                PATH_SUFFIXES i386-linux-gnu
     )
 	find_program(LUA_EXE
-					NAMES lua5.2 lua5.1 lua
+					NAMES lua5.2 lua lua5.1 
     )
 endif(WIN32)
 #
