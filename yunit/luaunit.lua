@@ -130,7 +130,8 @@ for _, typename in ipairs(typenames) do
     _M[assertTypename] = function(actual, explanatoryMessage)
         local actualType = type(actual);
         if actualType ~= typename then
-            error(typename.." expected but was a " .. actualType .. ': ' .. explanatoryMessage .. '"', 0)
+            local msgPostfix = explanatoryMessage and ': "' .. explanatoryMessage .. '"' or ''
+            error(typename.." expected but was a " .. actualType .. msgPostfix, 0)
         end
     end
 end
@@ -143,7 +144,8 @@ for _, typename in ipairs(typenames) do
     _M[assertTypename] = function(actual, explanatoryMessage)
         local actualType = type(actual);
         if actualType == typename then
-            error(typename .. " not expected but was one" .. ': "' .. explanatoryMessage .. '"', 0);
+            local msgPostfix = explanatoryMessage and ': "' .. explanatoryMessage .. '"' or ''
+            error(typename .. " not expected but was one" .. msgPostfix, 0);
         end
     end
 end

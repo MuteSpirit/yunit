@@ -97,20 +97,19 @@ if(WIN32)
 endif(WIN32)
 #
 # This test run test from all test container of project
-#
+
 add_test(all_cppunit_tests ${LUA_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.all_test_run -e "runFrom{[[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}]], [[${CMAKE_CURRENT_SOURCE_DIR}]]}")
+
 #
 # Installation rules
-#
 if(WIN32)
-    set(YUNIT_TARGETS yunit trace minidump)
+    set(YUNIT_TARGETS yunit trace)
     set(YUNIT_RUNTIME_DIR 5.1)
     set(YUNIT_LIBRARY_DIR 5.1/lib)
     set(YUNIT_ARCHIVE_DIR 5.1/lib)
     install(FILES 
                 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/yunit.pdb"
                 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/trace.pdb"
-                "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/minidump.pdb"
                 CONFIGURATIONS RelWithDebInfo
                 DESTINATION 5.1)
     set(YUNIT_HEADERS_DIR 5.1/include/yunit)

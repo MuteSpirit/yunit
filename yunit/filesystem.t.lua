@@ -160,6 +160,7 @@ useUnixPathDelimiterFixture =
     ;
 }
 
+if 'unix' == fs.whatOs() then
 function useUnixPathDelimiterFixture.unixCanonizePath()
     areEq('c:/path/to/dir', fs.canonizePath('c:/path/to/dir/'))
     areEq('c:/path/to/dir', fs.canonizePath('c:\\path\\to\\dir\\'))
@@ -169,6 +170,7 @@ function useUnixPathDelimiterFixture.unixCanonizePath()
     areEq('c:/', fs.canonizePath('c:'));
     areEq('c:/', fs.canonizePath('c:/'));
     areEq('/', fs.canonizePath('/'));
+end
 end
 
 if fs.whatOs() == 'win' then
@@ -184,6 +186,7 @@ if fs.whatOs() == 'win' then
     end
 end
 
+if 'unix' == fs.whatOs() then
 function useUnixPathDelimiterFixture.splitFullPathTest()
     local head, tail;
     head, tail = fs.split('c:/dir/file.ext')
@@ -351,7 +354,7 @@ function useUnixPathDelimiterFixture.filenameTest()
     areEq('test spaces', name);
     areEq('ini', ext);
 end
-
+end
 
 function isExistTest()
     isTrue(fs.isExist(lfs.currentdir()));
@@ -381,14 +384,14 @@ function isDirTest()
     isTrue(fs.isDir(path));
 end
 
-
+if 'unix' == fs.whatOs() then
 function useUnixPathDelimiterFixture.dirnameTest()
     areEq('c:/', fs.dirname('c:/'));
     areEq('c:/path/to/dir', fs.dirname('c:/path/to/dir/file.ext'));
     areEq('c:/', fs.dirname('c:/file'));
     areEq('c:/', fs.dirname('c:/dir'));
 end
-
+end
 
 function isFullPathTest()
     local OS = fs.whatOs();
@@ -707,29 +710,32 @@ function useTestTmpDirFixture.dirBypassTest()
 
 end
 
+if 'win' == fs.whatOs() then
+    function useWinPathDelimiterFixture.absPathOnFullFilePaths()
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:/dir1/./dir2/file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:/dir1/./dir2/./file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:/dir1/././dir2/file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:/dir1/dir2/dir3/../file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:/dir1/dir2/./dir3/../file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:/dir1/dir2/dir3/.././file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:/dir1/dir2/dir3/./../file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:/dir1/dir2/dir3/./.././file.txt'));
+        areEq('d:\\dir1\\file.txt', fs.absPath('d:/dir1/dir2/../dir3/../file.txt'));
 
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:\\dir1\\.\\dir2\\file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:\\dir1\\.\\dir2\\.\\file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:\\dir1\\.\\.\\dir2\\file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\..\\file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:\\dir1\\dir2\\.\\dir3\\..\\file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\..\\.\\file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\.\\..\\file.txt'));
+        areEq('d:\\dir1\\dir2\\file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\.\\..\\.\\file.txt'));
+        areEq('d:\\dir1\\file.txt', fs.absPath('d:\\dir1\\dir2\\..\\dir3\\..\\file.txt'));
+    end
+end
+
+if 'unix' == fs.whatOs() then
 function useUnixPathDelimiterFixture.absPathOnFullFilePaths()
-    if 'win' == fs.whatOs() then
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/./dir2/file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/./dir2/./file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/././dir2/file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/../file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/./dir3/../file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/.././file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/./../file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:/dir1/dir2/dir3/./.././file.txt'));
-        areEq('d:/dir1/file.txt', fs.absPath('d:/dir1/dir2/../dir3/../file.txt'));
-
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\dir2\\file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\dir2\\.\\file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\.\\.\\dir2\\file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\..\\file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\.\\dir3\\..\\file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\..\\.\\file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\.\\..\\file.txt'));
-        areEq('d:/dir1/dir2/file.txt', fs.absPath('d:\\dir1\\dir2\\dir3\\.\\..\\.\\file.txt'));
-        areEq('d:/dir1/file.txt', fs.absPath('d:\\dir1\\dir2\\..\\dir3\\..\\file.txt'));
-    else
         areEq('/dir1/dir2/file.txt', fs.absPath('/dir1/./dir2/file.txt', '/'));
         areEq('/dir1/dir2/file.txt', fs.absPath('/dir1/./dir2/./file.txt'));
         areEq('/dir1/dir2/file.txt', fs.absPath('/dir1/././dir2/file.txt'));
@@ -740,13 +746,12 @@ function useUnixPathDelimiterFixture.absPathOnFullFilePaths()
         areEq('/dir1/dir2/file.txt', fs.absPath('/dir1/dir2/dir3/./.././file.txt'));
         areEq('/dir1/file.txt', fs.absPath('/dir1/dir2/../dir3/../file.txt'));
     end
-end
-
 
 function useUnixPathDelimiterFixture.absPathOnRelativePaths()
     areEq('c:/dir1', fs.absPath('./dir1/', 'c:/'));
     areEq(fs.canonizePath(lfs.currentdir()) .. fs.osSlash() .. 'dir1', fs.absPath('./dir1/'));
     areEq('/dir/dir1', fs.absPath('/dir/./dir1/'))
+end
 end
 
 function useTestTmpDirFixture.copyDirWithFileTest()
