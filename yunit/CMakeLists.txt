@@ -98,7 +98,7 @@ endif(WIN32)
 #
 # This test run test from all test container of project
 
-add_test(all_cppunit_tests ${LUA_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.all_test_run -e "runFrom{[[${CMAKE_LIBRARY_OUTPUT_DIRECTORY}]], [[${CMAKE_CURRENT_SOURCE_DIR}]]}")
+add_test(all_cppunit_tests ${LUA_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.all_test_run -e "runFrom{[[${SHARED_LIB_OUT_DIR}]], [[${CMAKE_CURRENT_SOURCE_DIR}]]}")
 
 #
 # Installation rules
