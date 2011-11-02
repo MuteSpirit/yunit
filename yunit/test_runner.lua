@@ -270,6 +270,8 @@ TestRunner =
             for _, test in ipairs(tests) do
                 normalizeTestCaseInterface(test)
             end
+            -- we have to call table.sort after normalize tests interface, 
+            -- because 'operatorLess' require concrete interface
             table.sort(tests, operatorLess)
             
             lfs.chdir(fs.dirname(testContainerPath))
@@ -311,7 +313,7 @@ TestRunner =
             
             local numOfNotLoaded = #loadTestsState.notLoadedTestContainers
             if numOfNotLoaded > 0 then
-                print('Coukd not load ' .. numOfNotLoaded .. ' test containers:')
+                print('Could not load ' .. numOfNotLoaded .. ' test containers:')
                 
                 for _, errData in ipairs(loadTestsState.notLoadedTestContainers) do
                     print('"' .. errData.path .. '": \r\n\t' .. errData.msg)
@@ -329,6 +331,46 @@ TestRunner =
                 end
             end
         end
+    end;
+    
+    runTestsOf = function(self, testContainerPath)
+        local usedLtue
+        for ext, ltue in pairs(self.fileExts_) do
+            if string.find(string.lower(path), string.lower(ext), -string.len(ext), true) then
+                usedLtue = ltue
+                break
+            end
+        end
+        if not usedLtue then
+            return
+        end
+
+        self.resultHandlers_:onTestsBegin()
+        
+        local tests, errMsg = usedLtue.loadTestContainer(testContainerPath);
+
+        if 'boolean' == type(tests) then
+            self.resultHandlers_:onTestsEnd()
+            print('Could not load test container "' .. testContainerPath .. '": ' .. errMsg)
+            return
+        end
+
+        local savedWorkingDir = lfs.currentdir()
+        
+        for _, test in ipairs(tests) do
+            normalizeTestCaseInterface(test)
+        end
+        -- we have to call table.sort after normalize tests interface, 
+        -- because 'operatorLess' require concrete interface
+        table.sort(tests, operatorLess)
+
+        lfs.chdir(fs.dirname(testContainerPath))
+        
+        for _, test in ipairs(tests) do
+            runTestCase(test, self.resultHandlers_)
+        end
+        
+        self.resultHandlers_:onTestsEnd()
     end;
 }
 
