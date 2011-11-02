@@ -1,27 +1,57 @@
 if(WIN32)
-    find_path(LUA_INCLUDE_DIR lua.h
-                   PATHS ../../lua/src
-                         $ENV{PROGRAMFILES}/lua/5.2/include
-                         $ENV{PROGRAMFILES}/lua/5.1/include
-    )
-    include_directories(${LUA_INCLUDE_DIR}
-    )
-    find_library(LUA_LIBRARY
-                      NAMES lua5.2 lua52 lua5.1 lua51 lua
+    set(LUA_VERSION 5.2)
+    find_library(LUA_LIBRARY NAMES lua5.2 lua52 lua
                       PATHS ../../lua/src
                             $ENV{PROGRAMFILES}/lua/5.2/lib
-                            $ENV{PROGRAMFILES}/lua/5.1/lib
     )
-	find_program(LUA_EXE
-					NAMES lua5.2.exe lua5.1.exe lua.exe
-				    PATHS ../../lua/src
-                          $ENV{PROGRAMFILES}/lua/5.2
-				          $ENV{PROGRAMFILES}/lua/5.1
-    )
+    if(NOT LUA_LIBRARY)
+        set(LUA_VERSION 5.2)
+        find_library(LUA_CORE_LIBRARY NAMES lua_core
+                          PATHS ../../lua/src
+                                $ENV{PROGRAMFILES}/lua/5.2/lib
+        )
+        find_library(LUA_LIB_LIBRARY NAMES lua_lib
+                          PATHS ../../lua/src
+                                $ENV{PROGRAMFILES}/lua/5.2/lib
+        )
+        set(LUA_LIBRARY ${LUA_CORE_LIBRARY} ${LUA_LIB_LIBRARY})
+        
+        if(NOT LUA_LIBRARY)
+            set(LUA_VERSION 5.1)
+            find_library(LUA_LIBRARY NAMES lua5.1 lua51 lua
+                              PATHS ../../lua/src
+                                    $ENV{PROGRAMFILES}/lua/5.1/lib
+            )
+        endif(NOT LUA_LIBRARY)
+    endif(NOT LUA_LIBRARY)
+    
+    if(LUA_VERSION EQUAL 5.2)
+        find_path(LUA_INCLUDE_DIR lua.h
+                  PATHS ../../lua/src
+                        $ENV{PROGRAMFILES}/lua/5.2/include
+        )
+        include_directories(${LUA_INCLUDE_DIR})
+        
+        find_program(LUA_EXE
+                     NAMES lua5.2.exe lua.exe
+                     PATHS ../../lua/src
+                              $ENV{PROGRAMFILES}/lua/5.2
+        )
+    else(LUA_VERSION EQUAL 5.2)
+        find_path(LUA_INCLUDE_DIR lua.h
+                  PATHS $ENV{PROGRAMFILES}/lua/5.1/include
+        )
+        include_directories(${LUA_INCLUDE_DIR})
+        
+        find_program(LUA_EXE
+                     NAMES lua5.1.exe
+                     PATHS $ENV{PROGRAMFILES}/lua/5.1
+        )
+    endif(LUA_VERSION EQUAL 5.2)
 else(WIN32)
     find_path(LUA_INCLUDE_DIR lua.h
-                PATH_SUFFIXES lua5.2
-                              lua5.1
+              PATH_SUFFIXES lua5.2
+                            lua5.1
     )
     include_directories(${LUA_INCLUDE_DIR} ${LUA_INCLUDE_DIR}/lua5.2
     ) 
@@ -98,29 +128,32 @@ endif(WIN32)
 #
 # This test run test from all test container of project
 
-add_test(all_cppunit_tests ${LUA_EXE} -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path" -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath" -l ${WORK_IN} -l yunit.all_test_run -e "runFrom{[[${SHARED_LIB_OUT_DIR}]], [[${CMAKE_CURRENT_SOURCE_DIR}]]}")
+set(SET_LUA_PATH -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;]]..package.path")
+set(SET_LUA_CPATH -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath")
+
+add_test(all_cppunit_tests ${LUA_EXE} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l ${WORK_IN} -l yunit.default_test_run -e "runFrom{[[${SHARED_LIB_OUT_DIR}]], [[${CMAKE_CURRENT_SOURCE_DIR}]]}")
 
 #
 # Installation rules
 if(WIN32)
     set(YUNIT_TARGETS yunit trace)
-    set(YUNIT_RUNTIME_DIR 5.1)
-    set(YUNIT_LIBRARY_DIR 5.1/lib)
-    set(YUNIT_ARCHIVE_DIR 5.1/lib)
+    set(YUNIT_RUNTIME_DIR ${LUA_VERSION})
+    set(YUNIT_LIBRARY_DIR ${LUA_VERSION}/lib)
+    set(YUNIT_ARCHIVE_DIR ${LUA_VERSION}/lib)
     install(FILES 
                 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/yunit.pdb"
                 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/trace.pdb"
                 CONFIGURATIONS RelWithDebInfo
-                DESTINATION 5.1)
-    set(YUNIT_HEADERS_DIR 5.1/include/yunit)
-    set(YUNIT_LUA_MODULES_DIR 5.1/lua/yunit)
+                DESTINATION ${LUA_VERSION})
+    set(YUNIT_HEADERS_DIR ${LUA_VERSION}/include/yunit)
+    set(YUNIT_LUA_MODULES_DIR ${LUA_VERSION}/lua/yunit)
 else(WIN32)
     set(YUNIT_TARGETS yunit)
-    set(YUNIT_RUNTIME_DIR local/lib/lua/5.1)
-    set(YUNIT_LIBRARY_DIR local/lib/lua/5.1)
-    set(YUNIT_ARCHIVE_DIR local/lib/lua/5.1)
+    set(YUNIT_RUNTIME_DIR local/lib/lua/${LUA_VERSION})
+    set(YUNIT_LIBRARY_DIR local/lib/lua/${LUA_VERSION})
+    set(YUNIT_ARCHIVE_DIR local/lib/lua/${LUA_VERSION})
     set(YUNIT_HEADERS_DIR include/lua5.2/yunit)
-    set(YUNIT_LUA_MODULES_DIR local/lib/lua/5.1/yunit)
+    set(YUNIT_LUA_MODULES_DIR local/lib/lua/${LUA_VERSION}/yunit)
 endif(WIN32)
 
 install(TARGETS ${YUNIT_TARGETS} 
