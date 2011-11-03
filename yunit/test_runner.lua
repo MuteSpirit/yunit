@@ -334,9 +334,12 @@ TestRunner =
     end;
     
     runTestsOf = function(self, testContainerPath)
+        if not self.fileExts_ then
+            error('LTUE not loaded')
+        end
         local usedLtue
         for ext, ltue in pairs(self.fileExts_) do
-            if string.find(string.lower(path), string.lower(ext), -string.len(ext), true) then
+            if string.find(string.lower(testContainerPath), string.lower(ext), -string.len(ext), true) then
                 usedLtue = ltue
                 break
             end

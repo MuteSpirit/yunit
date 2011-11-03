@@ -26,7 +26,7 @@ function runFrom(dirPaths)
     end
 end
 
-function runFrom(testContainerPath)
+function run(testContainerPath)
     local runner = testRunner.TestRunner:new()
 
     local fixFailed = testResultHandlers.FixFailed:new()
@@ -39,14 +39,9 @@ function runFrom(testContainerPath)
     runner:loadLtue('yunit.luaunit')
     runner:loadLtue('yunit.cppunit')
     
-    for _, dirPath in pairs(dirPaths) do
-        runner:lookTestsAt(dirPath)
-    end
-    
-    runner:runAll()
+    runner:runTestsOf(testContainerPath)
 
     if not fixFailed:passed() then
         error("Test run executed with fail(es) and/or error(s)")
     end
 end
-
