@@ -1,3 +1,9 @@
+# We need to link Lua as dynamic library(ies)
+# If we link lua statically, then lua command interpreter and yunit DLL will have 
+# own copy of lua core copy. So when Lua of yunit.cppunit will allocate new TestCase objects and return
+# them from 'loadTestContainer' call, then Lua of command interpreter will try to delete them after 
+# finish usage and will crash with 'HEAP CORRUPTION' error
+
 if(WIN32)
     set(LUA_VERSION 5.2)
     find_library(LUA_LIBRARY NAMES lua5.2 lua52 lua
