@@ -144,7 +144,7 @@ function TextTestProgressHandler:totalErrorStr()
     end
 
     for _, record in ipairs(self.tableWithErrors) do
-        testName, errorObject = unpack(record)
+        testName, errorObject = record[1], record[2]
         
         local funcName = ''
         if string.len(errorObject.func) > 0 then
@@ -167,7 +167,7 @@ function TextTestProgressHandler:totalFailureStr()
     end
     
     for _, record in ipairs(self.tableWithFailures) do
-        testName, errorObject = unpack(record)
+        testName, errorObject = record[1], record[2]
 
         local funcName = ''
         if string.len(errorObject.func) > 0 then
@@ -190,7 +190,7 @@ function TextTestProgressHandler:totalIgnoreStr()
     end
     
     for _, record in ipairs(self.tableWithIgnores) do
-        testName, errorObject = unpack(record)
+        testName, errorObject = record[1], record[2]
         table.insert(res, self:editorSpecifiedErrorLine(errorObject) ..  testName)
     end;
     
