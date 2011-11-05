@@ -244,3 +244,58 @@ function errorObjectFixture.fixed_failed_test_result_handler_return_not_ok_on_la
     fixFailedTestRes:onTestSuccessfull(fakeTestCaseName)
 	isFalse(fixFailedTestRes:passed())
 end
+
+function check_that_error_message_does_not_contain_stack_traceback()
+    local errMsg = [[yunit/test.t.lua::test1
+	yunit/test.t.lua:249: true expected but was nil or false
+]]
+    isFalse(testResultHandlers.isThereStackTraceback(errMsg))
+
+    errMsg = [[yunit/test.t.lua::test1
+	yunit/test.t.lua:249: true expected but was nil or false
+stack traceback:
+]]
+    isFalse(testResultHandlers.isThereStackTraceback(errMsg))
+end
+
+function check_that_error_message_contain_stack_traceback()
+    local errMsg = [[stack traceback:
+	yunit/test.t.lua:5: in function 'throwErrorFunc'
+]]
+    isTrue(testResultHandlers.isThereStackTraceback(errMsg))
+end
+
+function change_stack_traceback_to_visual_studio_error_message_format()
+    local luaErrMsg = "yunit/test.t.lua:5: in function 'throwErrorFunc'"
+    local vsErrMsg =  "yunit/test.t.lua(5) : in function 'throwErrorFunc'"
+    areEq(vsErrMsg, testResultHandlers.tracebackToVsFormat(luaErrMsg))
+end
+
+--[[
+function failedTests()
+    local function throwErrorFunc()
+        error("ERROR")
+    end
+    
+    throwErrorFunc()
+end
+--]]
+--[[
+/home/mutespirit/ws/yunit/yunit/test_result_handlers.t.lua::failedTests
+	/home/mutespirit/ws/yunit/yunit/test_result_handlers.t.lua:250: ERROR
+stack traceback:
+	/home/mutespirit/ws/yunit/yunit/test_result_handlers.t.lua:250: in function 'throwErrorFunc'
+	/home/mutespirit/ws/yunit/yunit/test_result_handlers.t.lua:253: in function 'testFunc'
+	/home/mutespirit/ws/yunit/yunit/../yunit/luaunit.lua:318: in function </home/mutespirit/ws/yunit/yunit/../yunit/luaunit.lua:317>
+	[C]: in function 'xpcall'
+	/home/mutespirit/ws/yunit/yunit/../yunit/luaunit.lua:340: in function </home/mutespirit/ws/yunit/yunit/../yunit/luaunit.lua:315>
+	(tail call): ?
+	...e/mutespirit/ws/yunit/yunit/../yunit/test_runner.lua:163: in function 'runTestCase'
+	...e/mutespirit/ws/yunit/yunit/../yunit/test_runner.lua:278: in function 'handler'
+	...me/mutespirit/ws/yunit/yunit/../yunit/filesystem.lua:349: in function 'applyOnFiles'
+	...e/mutespirit/ws/yunit/yunit/../yunit/test_runner.lua:295: in function 'runAll'
+	.../mutespirit/ws/yunit/yunit/../yunit/all_test_run.lua:22: in function 'runFrom'
+	(command line):1: in main chunk
+	[C]: ?
+--]]
+
