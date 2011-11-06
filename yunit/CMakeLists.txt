@@ -79,17 +79,15 @@ endif(MSVC)
 #
 # yunit
 #
-add_library(yunit SHARED cppunit.cpp lfs.cpp yunit.h cppunit.h lua_wrapper.h)
+if(WIN32)
+    add_library(yunit SHARED cppunit.cpp lfs.cpp yunit.h cppunit.h lua_wrapper.h trace.c)
+else(WIN32)
+    add_library(yunit SHARED cppunit.cpp lfs.cpp yunit.h cppunit.h lua_wrapper.h)
+endif(WIN32)
+
 target_link_libraries(yunit ${LUA_LIBRARY})
 set_target_properties(yunit PROPERTIES 
                       PREFIX "")
-#
-# trace
-#
-if(WIN32)
-    add_library(trace SHARED trace.c)
-    target_link_libraries(trace ${LUA_LIBRARY})
-endif(WIN32)
 #
 # yunit.t
 #
@@ -121,15 +119,19 @@ endif(WIN32)
 
 
 if(WIN32)
-# we copy target files (*.dll) outside $(Configuration) directory, because on WIN32 value of 
-# ${CMAKE_CFG_INTDIR} is equal $(Configuration), i.e. not substituted by real name (Debug, Release, etc).
-# So we cannot use value ${CMAKE_CFG_INTDIR} in test commands
+# we copy target files (*.dll, *.pdb) outside $(Configuration) directory, because on WIN32 value of 
+# ${CMAKE_CFG_INTDIR} is equal to '$(Configuration)' and not substituted by real name (Debug, Release, etc).
+# So we cannot use value ${CMAKE_CFG_INTDIR} in test and install commands
     add_custom_command(TARGET yunit
                        POST_BUILD
-                       COMMAND copy $(TargetPath) $(TargetDir)\\..)
+                       COMMAND copy /b /y $(TargetPath) $(TargetDir)\\..
+                       COMMAND copy /b /y $(TargetDir)\\$(TargetName).pdb $(TargetDir)\\..
+                       )
     add_custom_command(TARGET yunit.t
                        POST_BUILD
-                       COMMAND copy $(TargetPath) $(TargetDir)\\..)
+                       COMMAND copy /b /y $(TargetPath) $(TargetDir)\\..
+                       COMMAND copy /b /y $(TargetDir)\\$(TargetName).pdb $(TargetDir)\\..
+                       )
 endif(WIN32)
 #
 # This test run test from all test container of project

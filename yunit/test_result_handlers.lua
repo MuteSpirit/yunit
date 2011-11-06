@@ -28,20 +28,33 @@ function TextTestProgressHandler:new()
 end
 
 function TextTestProgressHandler:sciteErrorLine(errorObject)
-    if string.find(errorObject.message, ':[%d]+:') or '[C]' == errorObject.source then
+    if string.find(errorObject.message, ':%d+:') or '[C]' == errorObject.source then
         return errorObject.message;
     else
         return errorObject.source .. ":" .. tostring(errorObject.line) .. ": " .. errorObject.message .. "\n"
     end
 end
 
+function isThereStackTraceback(msg)
+    return nil ~= string.find(msg, 'stack%s+traceback%s*:[%s\r\n]+%w')
+end
+
+function tracebackToVsFormat(msg)
+    return string.gsub(msg, '(%w)%s*:%s*(%d+)%s*:(%s+)', '%1(%2) :%3')
+end
+
 function TextTestProgressHandler:msvcErrorLine(errorObject)
-    if string.find(errorObject.message, '%([%d]+%)') or '[C]' == errorObject.source then
-        return errorObject.message;
+    if string.find(errorObject.message, '%(%d+%)') or '[C]' == errorObject.source then
+        return errorObject.message
     else
+        if isThereStackTraceback(errorObject.message) then
+            errorObject.message = tracebackToVsFormat(errorObject.message)
+        end
+
         return errorObject.source .. "(" .. tostring(errorObject.line) .. ") : " .. errorObject.message
     end
 end
+
 
 TextTestProgressHandler.editorSpecifiedErrorLine = TextTestProgressHandler.msvcErrorLine;
 
