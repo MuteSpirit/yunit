@@ -258,6 +258,13 @@ TestRunner =
         end
         
         local function loadAndRunTests(testContainerPath, state)
+            local testContainerDir = fs.dirname(testContainerPath)
+
+            -- we may load DLL, which are depend on other DLL, situated in test container folder
+            -- we may load test containers, which do some initial code on loading and assume, 
+            --    that working directory is test container folder
+            lfs.chdir(testContainerDir)
+
             local tests, errMsg = state.ltue_.loadTestContainer(testContainerPath);
 
             if 'boolean' == type(tests) then
@@ -274,7 +281,8 @@ TestRunner =
             -- because 'operatorLess' require concrete interface
             table.sort(tests, operatorLess)
             
-            lfs.chdir(fs.dirname(testContainerPath))
+            -- during test execution they assume, that working directory is test container folder
+            lfs.chdir(testContainerDir)
             
             for _, test in ipairs(tests) do
                 runTestCase(test, self.resultHandlers_)
@@ -349,6 +357,15 @@ TestRunner =
         end
 
         self.resultHandlers_:onTestsBegin()
+
+        local savedWorkingDir = lfs.currentdir()
+
+        local testContainerDir = fs.dirname(testContainerPath)
+
+        -- we may load DLL, which are depend on other DLL, situated in test container folder
+        -- we may load test containers, which do some initial code on loading and assume, 
+        --    that working directory is test container folder
+        lfs.chdir(testContainerDir)
         
         local tests, errMsg = usedLtue.loadTestContainer(testContainerPath);
 
@@ -357,8 +374,6 @@ TestRunner =
             print('Could not load test container "' .. testContainerPath .. '": ' .. errMsg)
             return
         end
-
-        local savedWorkingDir = lfs.currentdir()
         
         for _, test in ipairs(tests) do
             normalizeTestCaseInterface(test)
@@ -367,7 +382,8 @@ TestRunner =
         -- because 'operatorLess' require concrete interface
         table.sort(tests, operatorLess)
 
-        lfs.chdir(fs.dirname(testContainerPath))
+        -- during test execution they assume, that working directory is test container folder
+        lfs.chdir(testContainerDir)
         
         for _, test in ipairs(tests) do
             runTestCase(test, self.resultHandlers_)
