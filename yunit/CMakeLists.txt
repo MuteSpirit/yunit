@@ -144,15 +144,12 @@ add_test(all_cppunit_tests ${LUA_EXE} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l ${WORK
 #
 # Installation rules
 if(WIN32)
-    set(YUNIT_TARGETS yunit trace)
+    set(YUNIT_TARGETS yunit)
     set(YUNIT_RUNTIME_DIR ${LUA_VERSION})
     set(YUNIT_LIBRARY_DIR ${LUA_VERSION}/lib)
     set(YUNIT_ARCHIVE_DIR ${LUA_VERSION}/lib)
-    install(FILES 
-                "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/yunit.pdb"
-                "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RelWithDebInfo/trace.pdb"
-                CONFIGURATIONS RelWithDebInfo
-                DESTINATION ${LUA_VERSION})
+    install(FILES "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/yunit.pdb"
+            DESTINATION ${LUA_VERSION})
     set(YUNIT_HEADERS_DIR ${LUA_VERSION}/include/yunit)
     set(YUNIT_LUA_MODULES_DIR ${LUA_VERSION}/lua/yunit)
 else(WIN32)
