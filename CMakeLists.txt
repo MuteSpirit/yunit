@@ -18,7 +18,7 @@ add_subdirectory(yunit)
 # Package info
 #
 set(YUNIT_NAME "yUnit")
-set(YUNIT_VERSION 0 3 11)
+set(YUNIT_VERSION 0 3 12)
 set(YUNIT_DESCRIPTION "yUnit (Yet another xUnit)")
 set(YUNIT_VENDOR "Ivan Efimov aka MuteSpirit")
 set(YUNIT_CONTACT "mutespirit@gmail.com")
