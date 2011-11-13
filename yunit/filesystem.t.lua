@@ -983,3 +983,24 @@ end
 
 function useTestTmpDirFixture.localPathToFormatOfNetworkPathTest()
 end
+
+function check_filter_call_sequense_by_multifilter()
+    local function returnTrue() return true; end
+    local function returnFalse() return false; end
+    
+    local path = 'not_used_in_test'
+    
+    
+    isTrue(fs.multiFilter(path, {filters = {}}))
+    
+    isTrue(returnTrue())
+    isFalse(returnFalse())
+    
+    isTrue(fs.multiFilter(path, {filters = {returnTrue}}))
+    isTrue(fs.multiFilter(path, {filters = {returnTrue, returnTrue}}))
+    
+    isFalse(fs.multiFilter(path, {filters = {returnFalse}}))
+    isFalse(fs.multiFilter(path, {filters = {returnTrue, returnFalse}}))
+    isFalse(fs.multiFilter(path, {filters = {returnFalse, returnFalse}}))
+    isFalse(fs.multiFilter(path, {filters = {returnFalse, returnTrue}}))
+end
