@@ -312,8 +312,7 @@ function callTestCaseMethod(testcase, testFunc)
         local errorObject = {}
         local errorInfo = debug.getinfo(4, "Sln")
         
-        errorObject.source = errorInfo.short_src
-        --- @todo Sometimes short_src contains info such as '[C]:-1: ' at the begin of line. Need cut it.
+        errorObject.source = string.sub(errorInfo.source, 2)
         errorObject.func = errorInfo.name
         errorObject.line = errorInfo.currentline
 
