@@ -36,30 +36,6 @@ extern "C" {
 namespace YUNIT_NS {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class TestSuite
-{
-public:
-    typedef Chain<TestCase*> TestCases;
-    typedef TestCases::ReverseIterator TestCaseIter;
-
-public:
-    TestSuite(const char* name = 0);
-    TestSuite(const TestSuite& rhs);
-    TestSuite& operator=(const TestSuite& rhs);
-    virtual ~TestSuite();
-
-    const char* name() const;
-
-    TestCaseIter rbegin();
-    TestCaseIter rend();
-
-    void addTestCase(TestCase* testCase);
-
-private:
-    const char* name_;
-    TestCases testCases_;
-};
-
 const char** getTestContainerExtensions();
     
 } // namespace YUNIT_NS
@@ -128,13 +104,19 @@ LUA_METHOD(Cppunit, loadTestContainer)
         lua.push("file doesn't exist");
         return 2;
     }
-    //
+
     // we load library for initialize global objects, registed test cases during their creation
-    //
-    // one test container is equal to one TestSuite, so after loading, we must harvest and return
-    // test cases from new TestSuite
-    //
-    //
+
+    class TestCasesRegistry : public TestRegistry
+    {
+    public:
+        void add(TestCase* testCase) { tests_ << testCase; }
+        Chain<TestCase*> tests_;
+    };
+    
+    TestCasesRegistry testRegistry;
+    TestRegistry::set(&testRegistry);
+    
     // push error handling function
     lua.getglobal("debug");
     lua.getfield(-1, "traceback");
@@ -162,10 +144,7 @@ LUA_METHOD(Cppunit, loadTestContainer)
     
     lua.pop(1);  // remove return value of 'package.loadlib' function
 
-    TestRegistry* testRegistry = TestRegistry::initialize();
-    TestSuite* loadedTestSuite = testRegistry->lastLoadedTestSuite();
-
-    if (!loadedTestSuite || (testRegistry->rbegin() == testRegistry->rend()))
+    if (testRegistry.tests_.rbegin() == testRegistry.tests_.rend())
     {
         lua.push(false);
         lua_pushfstring(lua, "no one test case has been loaded from \"%s\"", testContainerPath);
@@ -174,9 +153,12 @@ LUA_METHOD(Cppunit, loadTestContainer)
     
 	lua.newtable(); // return value
 	
-	TestSuite::TestCaseIter it = loadedTestSuite->rbegin(), endIt = loadedTestSuite->rend();
+	Chain<TestCase*>::ReverseIterator it = testRegistry.tests_.rbegin();
+	Chain<TestCase*>::ReverseIterator endIt = testRegistry.tests_.rend();
+	
 	for (int i = 1; it != endIt; ++it)
 	{
+	    // every TestCase object is static, so they will be deleted automatically on exit process
         lua.push<TestCase>(*it, MT_NAME(TestCase));
         lua.rawseti(-2, i++);
 	}
@@ -549,115 +531,17 @@ const SourceLine& TestCase::source() const
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-TestSuite::TestSuite(const char *name)
-: name_(name ? name : "")
-, testCases_()
+TestRegistry* TestRegistry::this_ = 0;
+
+TestRegistry* TestRegistry::get()
 {
+	return this_;
 }
 
-TestSuite::TestSuite(const TestSuite& rhs)
-: name_(rhs.name_)
-, testCases_(rhs.testCases_)
+void TestRegistry::set(TestRegistry* instanse)
 {
+    this_ = instanse;
 }
-
-TestSuite& TestSuite::operator=(const TestSuite& rhs)
-{
-    if (this == &rhs)
-        return *this;
-    name_ = rhs.name_;
-    testCases_ = rhs.testCases_;
-    return *this;
-}
-
-TestSuite::~TestSuite()
-{
-}
-
-const char* TestSuite::name() const
-{
-	return name_;
-}
-
-void TestSuite::addTestCase(TestCase* testCase)
-{
-    testCases_ << testCase;
-}
-
-TestSuite::TestCaseIter TestSuite::rbegin()
-{
-    return testCases_.rbegin();
-}
-
-TestSuite::TestCaseIter TestSuite::rend()
-{
-    return testCases_.rend();
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-TestRegistry* TestRegistry::thisPtr_ = 0;
-
-TestRegistry::TestRegistry()
-: testSuites_()
-, lastLoadedTestSuite_(0)
-{
-}
-
-TestRegistry::~TestRegistry()
-{
-	for (TestSuiteIter it = testSuites_.rbegin(), itEnd = testSuites_.rend(); it != itEnd; ++it)
-		delete *it;
-    testSuites_.clear();
-}
-
-TestRegistry* TestRegistry::initialize()
-{
-	static TestRegistry testRegistry;
-	if (0 == thisPtr_)
-		thisPtr_ = &testRegistry;
-	return thisPtr_;
-}
-
-void TestRegistry::addTestCase(TestCase* testCase)
-{
-    TestSuite* testSuite = getTestSuite(testCase->source());
-    testSuite->addTestCase(testCase);
-    
-    lastLoadedTestSuite_ = testSuite;
-}
-
-TestRegistry::TestSuiteIter TestRegistry::rbegin()
-{
-    return testSuites_.rbegin();
-}
-
-TestRegistry::TestSuiteIter TestRegistry::rend()
-{
-    return testSuites_.rend();
-}
-
-TestSuite* TestRegistry::getTestSuite(const SourceLine& source)
-{
-    TestSuiteIter it = testSuites_.rbegin();
-    TestSuiteIter itEnd = testSuites_.rend();
-    for (; it != itEnd; ++it)
-        if (0 == strcmp((*it)->name(), source.fileName()))
-            break;
-
-    if (it == itEnd)
-    {
-        testSuites_ << new TestSuite(source.fileName());
-        it = testSuites_.rbegin();
-    }
-
-    return *it;
-}
-
-TestSuite* TestRegistry::lastLoadedTestSuite()
-{
-    return lastLoadedTestSuite_;
-}
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SourceLine::SourceLine()
