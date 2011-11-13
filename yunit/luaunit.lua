@@ -316,7 +316,7 @@ function callTestCaseMethod(testcase, testFunc)
         errorObject.func = errorInfo.name
         errorObject.line = errorInfo.currentline
 
-        local isLuaunitAssertFailed = nil ~= string.find(debug.getinfo(3, "S").short_src, 'luaunit.lua')
+        local isLuaunitAssertFailed = nil ~= string.find(debug.getinfo(3, "S").source, 'luaunit.lua')
         if isLuaunitAssertFailed then
             errorObject.message = errorMsg
         else
