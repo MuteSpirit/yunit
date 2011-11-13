@@ -62,9 +62,12 @@ function errorObjectFixture.testErrorString()
 	ttpl:onTestError(fakeTestCaseName .. '2', fakeErrorObject)
 	ttpl:onTestError(fakeTestCaseName .. '1', fakeErrorObject)
 	funcName = ' (' ..  fakeErrorObject.func .. ')'
-	local desiredString = '----Errors----\n' .. fakeTestCaseName .. "2" .. funcName .. "\n\t" .. ttpl:sciteErrorLine(fakeErrorObject) .. 
-								   "\n------------------------------------------------------------------------------------------------------\n" .. 
-								   fakeTestCaseName .. "1" .. funcName .. "\n\t" .. ttpl:sciteErrorLine(fakeErrorObject)
+	local desiredString = '----Errors----\n'
+	                   .. fakeErrorObject.source .. '::' .. fakeTestCaseName .. "2" .. funcName .. '\n'
+	                   .. '\t' .. ttpl:sciteErrorLine(fakeErrorObject)
+	                   .. "\n------------------------------------------------------------------------------------------------------\n"
+	                   .. fakeErrorObject.source .. '::' .. fakeTestCaseName .. "1" .. funcName .. '\n'
+	                   .. '\t' .. ttpl:sciteErrorLine(fakeErrorObject)
 	areEq(desiredString, ttpl:totalErrorStr())
 end
 
@@ -76,9 +79,12 @@ function errorObjectFixture.testFailureString()
 	ttpl:onTestFailure(fakeTestCaseName .. '1', fakeErrorObject)
 	
 	funcName = ' (' ..  fakeErrorObject.func .. ')'
-	local desiredString = '----Failures----\n' .. fakeTestCaseName .. "2" .. funcName .. "\n\t" .. ttpl:sciteErrorLine(fakeErrorObject) .. 
-								   "\n------------------------------------------------------------------------------------------------------\n" .. 
-								   fakeTestCaseName .. "1" .. funcName .. "\n\t" .. ttpl:sciteErrorLine(fakeErrorObject)
+	local desiredString = '----Failures----\n'
+	                   .. fakeErrorObject.source .. '::' .. fakeTestCaseName .. "2" .. funcName .. '\n'
+	                   .. '\t' .. ttpl:sciteErrorLine(fakeErrorObject)
+	                   .. "\n------------------------------------------------------------------------------------------------------\n"
+	                   .. fakeErrorObject.source .. '::' .. fakeTestCaseName .. "1" .. funcName .. '\n'
+	                   .. '\t' .. ttpl:sciteErrorLine(fakeErrorObject)
 	
 	areEq(desiredString, ttpl:totalFailureStr())
 end
@@ -90,8 +96,10 @@ function errorObjectFixture.testIgnoreString()
 	ttpl:onTestIgnore(fakeTestCaseName .. '2', fakeErrorObject)
 	ttpl:onTestIgnore(fakeTestCaseName .. '1', fakeErrorObject)
 	
-	local desiredString = '----Ignored----\n' .. ttpl:sciteErrorLine(fakeErrorObject) .. fakeTestCaseName .. "2\n" ..
-								   ttpl:sciteErrorLine(fakeErrorObject) .. fakeTestCaseName .. "1" 
+	local desiredString = '----Ignored----\n'
+	                    .. ttpl:sciteErrorLine(fakeErrorObject) .. fakeTestCaseName .. "2\n"
+	                    .. ttpl:sciteErrorLine(fakeErrorObject) .. fakeTestCaseName .. "1" 
+	                    
 	areEq(desiredString, ttpl:totalIgnoreStr())
 end
 
@@ -271,31 +279,4 @@ function change_stack_traceback_to_visual_studio_error_message_format()
     areEq(vsErrMsg, testResultHandlers.tracebackToVsFormat(luaErrMsg))
 end
 
---[[
-function failedTests()
-    local function throwErrorFunc()
-        error("ERROR")
-    end
-    
-    throwErrorFunc()
-end
---]]
---[[
-/home/mutespirit/ws/yunit/yunit/test_result_handlers.t.lua::failedTests
-	/home/mutespirit/ws/yunit/yunit/test_result_handlers.t.lua:250: ERROR
-stack traceback:
-	/home/mutespirit/ws/yunit/yunit/test_result_handlers.t.lua:250: in function 'throwErrorFunc'
-	/home/mutespirit/ws/yunit/yunit/test_result_handlers.t.lua:253: in function 'testFunc'
-	/home/mutespirit/ws/yunit/yunit/../yunit/luaunit.lua:318: in function </home/mutespirit/ws/yunit/yunit/../yunit/luaunit.lua:317>
-	[C]: in function 'xpcall'
-	/home/mutespirit/ws/yunit/yunit/../yunit/luaunit.lua:340: in function </home/mutespirit/ws/yunit/yunit/../yunit/luaunit.lua:315>
-	(tail call): ?
-	...e/mutespirit/ws/yunit/yunit/../yunit/test_runner.lua:163: in function 'runTestCase'
-	...e/mutespirit/ws/yunit/yunit/../yunit/test_runner.lua:278: in function 'handler'
-	...me/mutespirit/ws/yunit/yunit/../yunit/filesystem.lua:349: in function 'applyOnFiles'
-	...e/mutespirit/ws/yunit/yunit/../yunit/test_runner.lua:295: in function 'runAll'
-	.../mutespirit/ws/yunit/yunit/../yunit/all_test_run.lua:22: in function 'runFrom'
-	(command line):1: in main chunk
-	[C]: ?
---]]
 

@@ -164,7 +164,7 @@ function TextTestProgressHandler:totalErrorStr()
             funcName = ' (' ..  errorObject.func .. ')'
         end
         
-        table.insert(res, testName .. funcName .. '\n\t' .. self:editorSpecifiedErrorLine(errorObject))
+        table.insert(res, errorObject.source .. '::' .. testName .. funcName .. '\n\t' .. self:editorSpecifiedErrorLine(errorObject))
     end;
     
     return prefix .. table.concat(res, '\n------------------------------------------------------------------------------------------------------\n')
@@ -187,7 +187,7 @@ function TextTestProgressHandler:totalFailureStr()
             funcName = ' (' ..  errorObject.func .. ')'
         end
         
-        table.insert(res, testName .. funcName .. '\n\t' .. self:editorSpecifiedErrorLine(errorObject))
+        table.insert(res, errorObject.source .. '::' .. testName .. funcName .. '\n\t' .. self:editorSpecifiedErrorLine(errorObject))
     end;
     
     return prefix .. table.concat(res, '\n------------------------------------------------------------------------------------------------------\n')
