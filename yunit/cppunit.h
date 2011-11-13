@@ -367,34 +367,20 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class TestSuite;
-
-
 class TestRegistry
 {
 public:
-    typedef Chain<TestSuite*> TestSuites;
-    typedef TestSuites::ReverseIterator TestSuiteIter;
-
-public:
-    YUNIT_API static TestRegistry* initialize();
-    YUNIT_API void addTestCase(TestCase* testCase);
-
-    TestSuite* lastLoadedTestSuite();
-    TestSuiteIter rbegin();
-    TestSuiteIter rend();
+    YUNIT_API static TestRegistry* get();
+    static void set(TestRegistry* instanse);
+    
+    YUNIT_API virtual void add(TestCase* testCase) = 0;
 
 protected:
-    TestRegistry();
-    ~TestRegistry();
-
-    TestSuite* getTestSuite(const SourceLine& source);
-
-private:
-    static TestRegistry* thisPtr_;
-
-    TestSuites testSuites_;
-    TestSuite* lastLoadedTestSuite_;
+    TestRegistry() {}
+    virtual ~TestRegistry() {}
+    
+protected:
+    static TestRegistry* this_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -514,7 +500,7 @@ RegisterTestCase<TestCaseClass>::RegisterTestCase(const char* name,
 {
     const bool ignore = true;
     static TestCaseClass testcase(name, !ignore, source);
-    TestRegistry::initialize()->addTestCase(&testcase);
+    TestRegistry::get()->add(&testcase);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -524,7 +510,7 @@ RegisterIgnoredTestCase<TestCaseClass>::RegisterIgnoredTestCase(const char* name
 {
     const bool ignore = true;
     static TestCaseClass testcase(name, ignore, source);
-    TestRegistry::initialize()->addTestCase(&testcase);
+    TestRegistry::get()->add(&testcase);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
