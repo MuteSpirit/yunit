@@ -7,17 +7,14 @@
 if(WIN32)
     set(LUA_VERSION 5.2)
     find_library(LUA_LIBRARY NAMES lua5.2 lua52 lua
-                      PATHS ../../lua/src
                             $ENV{PROGRAMFILES}/lua/5.2/lib
     )
     if(NOT LUA_LIBRARY)
         set(LUA_VERSION 5.2)
         find_library(LUA_CORE_LIBRARY NAMES lua_core
-                          PATHS ../../lua/src
                                 $ENV{PROGRAMFILES}/lua/5.2/lib
         )
         find_library(LUA_LIB_LIBRARY NAMES lua_lib
-                          PATHS ../../lua/src
                                 $ENV{PROGRAMFILES}/lua/5.2/lib
         )
         set(LUA_LIBRARY ${LUA_CORE_LIBRARY} ${LUA_LIB_LIBRARY})
@@ -25,7 +22,6 @@ if(WIN32)
         if(NOT LUA_LIBRARY)
             set(LUA_VERSION 5.1)
             find_library(LUA_LIBRARY NAMES lua5.1 lua51 lua
-                              PATHS ../../lua/src
                                     $ENV{PROGRAMFILES}/lua/5.1/lib
             )
         endif(NOT LUA_LIBRARY)
@@ -33,14 +29,12 @@ if(WIN32)
     
     if(LUA_VERSION EQUAL 5.2)
         find_path(LUA_INCLUDE_DIR lua.h
-                  PATHS ../../lua/src
                         $ENV{PROGRAMFILES}/lua/5.2/include
         )
         include_directories(${LUA_INCLUDE_DIR})
         
         find_program(LUA_EXE
                      NAMES lua5.2.exe lua.exe
-                     PATHS ../../lua/src
                               $ENV{PROGRAMFILES}/lua/5.2
         )
     else(LUA_VERSION EQUAL 5.2)
