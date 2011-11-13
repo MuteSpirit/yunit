@@ -29,6 +29,8 @@ TestCase = TestFixture:new
         {
             name_ = name,
             isIgnored_ = false,
+            fileName_ = "unknown",
+            lineNumber_ = 0,
         }
         setmetatable(o, self)
         self.__index = self
@@ -43,11 +45,11 @@ TestCase = TestFixture:new
     end;
     
     fileName = function(self)
-        return 'unknown'
+        return self.fileName_
     end;
     
     lineNumber = function(self)
-        return 0
+        return self.lineNumber_
     end;
     
     isIgnored = function(self)
@@ -285,12 +287,7 @@ end
 -------------------------------------------------------
 function makeTestCasesReadyForPublicUsage(testcases)
 -------------------------------------------------------
-    local testList = {}
-    
-    for _, testcase in ipairs(testcases) do
-        local testcaseName = testcase.name_
-        local test = copyTable(testcase)
-        
+    for _, test in ipairs(testcases) do
         test.originalSetUp = test.setUp
         test.setUp = callTestCaseSetUp
 
@@ -299,18 +296,9 @@ function makeTestCasesReadyForPublicUsage(testcases)
 
         test.originalTearDown = test.tearDown
         test.tearDown = callTestCaseTearDown
-        
-        test.name_ = testcase.fileName_ .. "::" .. testcaseName
-        test.name = function(self) return self.name_ end
-        
-        test.isIgnored = function(self) return self.isIgnored_ end
-        test.fileName = function(self) return self.fileName_ end
-        test.lineNumber = function(self) return self.lineNumber_ end
-        
-        table.insert(testList, test)
     end
     
-    return testList;
+    return testcases
 end
 
 -------------------------------------------------------
@@ -341,27 +329,6 @@ function callTestCaseMethod(testcase, testFunc)
     
     local statusCode, errorObject = xpcall(callMethod, errorHandler);
     return statusCode, errorObject;
-end
-
--------------------------------------------------------
-function copyTable(object)
--------------------------------------------------------
-    local clone = {};
-    for k, v in pairs(object) do
-        -- variant of k is table will not handle
-        if "table" ~= v then
-            clone[k] = v;
-        else
-            clone[k] = copyTable(v);
-        end
-    end
-    
-    local mt = getmetatable(object);
-    if mt then
-        setmetatable(clone, mt);
-    end
-    
-    return clone;
 end
 
 return _M

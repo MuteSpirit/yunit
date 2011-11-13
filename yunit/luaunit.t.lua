@@ -43,30 +43,6 @@ useTmpDir =
     ;
 }
 
-function copyTableTest()
-	local object = 
-	{
-		a_ = 5;
-		get = function() return a_; end;
-		set = function(v) a_ = v; end;
-	};
-	
-	local mt; mt = 
-	{
-		b_ = "arigato";
-		__index = mt;
-	};
-	
-	setmetatable(object, mt);
-	local clone = luaUnit.copyTable(object);
-	areEq(object.a_, clone.a_);
-	areEq(object.get(), clone.get());
-	object.set(1); clone.set(1);
-	areEq(object.get(), clone.get());
-	areEq(object.b_, clone.b_);
-	areEq(getmetatable(object), getmetatable(clone));
-end
-
 function createTestCaseTest()
 	local testcase = luaUnit.TestCase:new("OnlyCreatedTestCase");
 	isNotNil(testcase);
@@ -190,17 +166,20 @@ function useTmpDir.loadLuaContainer(self)
 	isTable(testcases)
     areEq(3, #testcases)
 
-    areEq(12, testcases[1].lineNumber_)
-    areEq(luaTestContainerPath .. '::_ignoredTest', testcases[1].name_)
-    isTrue(testcases[1].isIgnored_)
+    areEq(12, testcases[1]:lineNumber())
+    areEq('_ignoredTest', testcases[1]:name())
+    areEq(luaTestContainerPath, testcases[1]:fileName())
+    isTrue(testcases[1]:isIgnored())
 	
-    areEq(10, testcases[2].lineNumber_)
-    areEq(luaTestContainerPath .. '::fixtureTestCase', testcases[2].name_)
-    isFalse(testcases[2].isIgnored_)
+    areEq(10, testcases[2]:lineNumber())
+    areEq('fixtureTestCase', testcases[2]:name())
+    areEq(luaTestContainerPath, testcases[2]:fileName())
+    isFalse(testcases[2]:isIgnored())
 	
-    areEq(9, testcases[3].lineNumber_)
-    areEq(luaTestContainerPath .. '::testCase', testcases[3].name_)
-    isFalse(testcases[3].isIgnored_)
+    areEq(9, testcases[3]:lineNumber())
+    areEq('testCase', testcases[3]:name())
+    areEq(luaTestContainerPath, testcases[3]:fileName())
+    isFalse(testcases[3]:isIgnored())
 end
 
 function isLuaTestContainerTest()
