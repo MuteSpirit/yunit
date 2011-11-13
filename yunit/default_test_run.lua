@@ -22,7 +22,8 @@ function runFrom(dirPaths)
     runner:runAll()
 
     if not fixFailed:passed() then
-        error("Test run executed with fail(es) and/or error(s)")
+        print("Test run executed with fail(es) and/or error(s)")
+        os.exit(-1)
     end
 end
 
@@ -42,6 +43,7 @@ function run(testContainerPath)
     runner:runTestsOf(testContainerPath)
 
     if not fixFailed:passed() then
-        error("Test run executed with fail(es) and/or error(s)")
+        print("Test run executed with fail(es) and/or error(s)")
+        os.exit(-1)
     end
 end
