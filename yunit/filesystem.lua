@@ -311,7 +311,7 @@ function fileFilter(path, state)
 end
 
 function multiFilter(path, state)
-    for _, filter in pairs(state.filters) do
+    for _, filter in ipairs(state.filters) do
         if not filter(path, state) then
             return false
         end
@@ -324,7 +324,7 @@ function dirFilter(path, state)
 end
 
 function multiHandler(path, state)
-    for _, handler in pairs(state.handlers) do
+    for _, handler in ipairs(state.handlers) do
         handler(path, state)
     end
 end
