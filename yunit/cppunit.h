@@ -118,7 +118,7 @@
         if (!catched)																						\
         {                                                                                                   \
             YUNIT_NS::throwException(YUNIT_SOURCELINE(),												\
-            "Expected exception "" #exceptionType "" hasn't been not thrown.", true);						\
+            "Expected exception \"" #exceptionType "\" has not been thrown", true);						\
         }                                                                                                   \
     }
 
@@ -130,7 +130,7 @@
     catch(const exceptionType&)																			\
     {																									\
         YUNIT_NS::throwException(YUNIT_SOURCELINE(),													\
-            "Not expected exception \"" #exceptionType "\" has been thrown.", true);			\
+            "Not expected exception \"" #exceptionType "\" has been thrown", true);			\
     }
 
 #define noAnyCppThrow(expression)														\
@@ -141,7 +141,7 @@
     catch(...)																			\
     {																									\
         YUNIT_NS::throwException(YUNIT_SOURCELINE(),													\
-            "Unwanted C++ exception has been thrown.", true);			\
+            "Unwanted C++ exception has been thrown", true);			\
     }
 
 #define noSehThrow(expression)																	\
@@ -151,7 +151,7 @@
     }																										\
     __except(EXCEPTION_EXECUTE_HANDLER)																		\
     {																										\
-        YUNIT_NS::throwException(YUNIT_SOURCELINE(), "Unwanted SEH exception has been thrown.", true);		\
+        YUNIT_NS::throwException(YUNIT_SOURCELINE(), "Unwanted SEH exception has been thrown", true);		\
     }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

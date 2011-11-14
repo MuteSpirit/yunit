@@ -700,3 +700,32 @@ test(simple_list_use_case)
     chain.clear();
 }
 
+test(check_willThrow_macro_error_message)
+{
+    try
+    {
+        willThrow(int a = 10, int);
+    }
+    catch (YUNIT_NS::TestException& ex)
+    {
+        enum {bufferSize = 256};
+        char buffer[bufferSize];
+        ex.message(buffer, bufferSize);
+        areEq("Expected exception \"int\" has not been thrown", buffer);
+    }
+}
+
+test(check_noSpecificError_macro_error_message)
+{
+    try
+    {
+        noSpecificThrow(throw (int)0, int);
+    }
+    catch (YUNIT_NS::TestException& ex)
+    {
+        enum {bufferSize = 256};
+        char buffer[bufferSize];
+        ex.message(buffer, bufferSize);
+        areEq("Not expected exception \"int\" has been thrown", buffer);
+    }
+}
