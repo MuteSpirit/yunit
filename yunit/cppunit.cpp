@@ -840,7 +840,7 @@ static lua_State *getthread (lua_State *L, int *arg);
 static int countlevels (lua_State *L);
 static void luaL_traceback_ex (lua_State *L, lua_State *L1, const char *msg, int level);
 
-static int db_traceback (lua_State *L)
+static int db_traceback_ex (lua_State *L)
 {
   int arg;
   lua_State *L1 = getthread(L, &arg);
@@ -849,7 +849,7 @@ static int db_traceback (lua_State *L)
     lua_pushvalue(L, arg + 1);  /* return it untouched */
   else {
     int level = luaL_optint(L, arg + 2, (L == L1) ? 1 : 0);
-    luaL_traceback(L, L1, msg, level);
+    luaL_traceback_ex(L, L1, msg, level);
   }
   return 1;
 }
