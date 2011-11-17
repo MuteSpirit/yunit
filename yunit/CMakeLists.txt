@@ -73,11 +73,7 @@ endif(MSVC)
 #
 # yunit
 #
-if(WIN32)
-    add_library(yunit SHARED cppunit.cpp lfs.cpp yunit.h cppunit.h lua_wrapper.h trace.c)
-else(WIN32)
-    add_library(yunit SHARED cppunit.cpp lfs.cpp yunit.h cppunit.h lua_wrapper.h)
-endif(WIN32)
+add_library(yunit SHARED yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.cpp)
 
 target_link_libraries(yunit ${LUA_LIBRARY})
 set_target_properties(yunit PROPERTIES 
@@ -88,11 +84,7 @@ set_target_properties(yunit PROPERTIES
 add_library(yunit.t SHARED cppunit.t.cpp)
 target_link_libraries(yunit.t yunit)
 set_target_properties(yunit.t PROPERTIES PREFIX "")
-if(WIN32)
-    add_dependencies(yunit.t yunit trace)
-else(WIN32)
-    add_dependencies(yunit.t yunit)
-endif(WIN32)
+add_dependencies(yunit.t yunit)
 #
 # Tests
 #
