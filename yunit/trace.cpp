@@ -6,6 +6,9 @@
 #include "yunit.h"
 #include "lua_wrapper.h"
 
+#include <string.h>
+#include <stdlib.h>
+
 #ifdef _WIN32
 #  include <windows.h>
 #else
@@ -58,53 +61,94 @@ LUA_METHOD(Trace, traceback)
     int numlevels = countlevels(L1);
     int mark = (numlevels > LEVELS1 + LEVELS2) ? LEVELS1 : 0;
 
-    const char *msg;
-    lua.to(arg + 1, &msg);
+    lua.newtable(); // return value 'traceback'
+    int tracebackIdx = lua.gettop();
 
-    lua.newtable(); // return value
-    int retValIdx = lua.gettop();
-    
-    lua.push(msg);
-    lua.setfield(retValIdx, "message");
-
-    lua_Debug debInfo;
-
-    lua.newtable(); // step table
-    int stepsIdx = lua.gettop();
-    
-    unsigned int cStep = 0;
-    
-    while (lua_getstack(L1, level++, &debInfo))
+    // Make 'error' element of 'traceback'
     {
-        if (level == mark)
-        {  // too many levels?
-            level = numlevels - LEVELS2;  // and skip to last ones
-        }
-        else
+        lua.newtable();
+        int errorIdx = lua.gettop();
+
+        const char *message;
+        size_t len;
+        lua.to(arg + 1, &message, &len);
+        
+        char* msg = new char[len + 1];
+        strncpy(msg, message, len);
+        msg[len] = '\0';
+        
+        const char* errorMessageTokensDelimiter = ":";
+        const char* errorSource = ::strtok(msg, errorMessageTokensDelimiter);
+        if (errorSource)
         {
-            lua_getinfo(L1, "Slnt", &debInfo);
-
-            lua.newtable();
-            int stepIdx = lua.gettop();
+            lua.push(errorSource);
+            lua.setfield(errorIdx, "source");
             
-            if (debInfo.namewhat != '\0')
+            const char* errorLine = ::strtok(NULL, errorMessageTokensDelimiter);
+            if (errorLine)
             {
-                pushfuncname(L, &debInfo);
-                lua.setfield(stepIdx, "funcname");
+                lua.push(atoi(errorLine));
+                lua.setfield(errorIdx, "line");
+                
+                const char* errorMessage = ::strtok(NULL, errorMessageTokensDelimiter);
+                if (errorMessage)
+                {
+                    for (; ' ' == *errorMessage; ++errorMessage)
+                        ;
+                    
+                    lua.push(errorMessage);
+                    lua.setfield(errorIdx, "message");
+                }
             }
-
-            lua.push(debInfo.source);
-            lua.setfield(stepIdx, "source");
-
-            lua.push(debInfo.currentline);
-            lua.setfield(stepIdx, "line");
-
-            lua.rawseti(stepsIdx, ++cStep);
         }
+        
+        delete [] msg;
+        
+        lua.setfield(tracebackIdx, "error");
     }
-    
-    lua.setfield(retValIdx, "step");
-  
+
+    // Make 'stack' element of 'traceback'
+    {
+        lua_Debug debInfo;
+
+        lua.newtable();
+        int stackIdx = lua.gettop();
+        
+        unsigned int cStep = 0;
+        
+        while (lua_getstack(L1, level++, &debInfo))
+        {
+            if (level == mark)
+            {  // too many levels?
+                level = numlevels - LEVELS2;  // and skip to last ones
+            }
+            else
+            {
+                lua_getinfo(L1, "Slnt", &debInfo);
+
+                lua.newtable();
+                int stepIdx = lua.gettop();
+                
+                if (debInfo.namewhat != '\0')
+                {
+                    pushfuncname(L, &debInfo);
+                    lua.setfield(stepIdx, "funcname");
+                }
+
+                lua.push(debInfo.source);
+                lua.setfield(stepIdx, "source");
+
+                lua.push(debInfo.currentline);
+                lua.setfield(stepIdx, "line");
+
+                lua.rawseti(stackIdx, ++cStep);
+            }
+        }
+        
+        lua.setfield(tracebackIdx, "stack");
+    }
+ 
+   
     return 1;
 }
 

@@ -51,3 +51,6 @@ syntax: glob
 *.blg
 *.src
 *.out
+
+# bak files
+*.*~
