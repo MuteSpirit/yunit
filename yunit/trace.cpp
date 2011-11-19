@@ -8,6 +8,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #ifdef _WIN32
 #  include <windows.h>
@@ -72,34 +73,50 @@ LUA_METHOD(Trace, traceback)
         const char *message;
         size_t len;
         lua.to(arg + 1, &message, &len);
-        
+                
         char* msg = new char[len + 1];
         strncpy(msg, message, len);
         msg[len] = '\0';
+
+        char *errorSource = 0, *errorLine = 0, *errorMessage = 0;
+        {
+            const char* tokensDelimiter = ":";
+
+            errorSource = ::strtok(msg, tokensDelimiter);
+            errorLine = ::strtok(NULL, tokensDelimiter);
+            errorMessage = ::strtok(NULL, tokensDelimiter);
+
+            const char* p = errorLine;
+            for (; p && *p && isdigit(*p); ++p)
+                ;
+            if (p && *p) // msg does not contain message in format "source:line: message"
+                errorSource = errorLine = errorMessage = 0;
+        }
         
-        const char* errorMessageTokensDelimiter = ":";
-        const char* errorSource = ::strtok(msg, errorMessageTokensDelimiter);
-        if (errorSource)
+        if (errorSource && errorLine && errorMessage)
         {
             lua.push(errorSource);
             lua.setfield(errorIdx, "source");
-            
-            const char* errorLine = ::strtok(NULL, errorMessageTokensDelimiter);
-            if (errorLine)
-            {
-                lua.push(atoi(errorLine));
-                lua.setfield(errorIdx, "line");
+
+            lua.push(atoi(errorLine));
+            lua.setfield(errorIdx, "line");
+
+            for (; ' ' == *errorMessage; ++errorMessage)
+                ;
                 
-                const char* errorMessage = ::strtok(NULL, errorMessageTokensDelimiter);
-                if (errorMessage)
-                {
-                    for (; ' ' == *errorMessage; ++errorMessage)
-                        ;
-                    
-                    lua.push(errorMessage);
-                    lua.setfield(errorIdx, "message");
-                }
-            }
+            lua.push(errorMessage);
+            lua.setfield(errorIdx, "message");
+        }        
+        else
+        {
+            lua.push("");
+            lua.setfield(errorIdx, "source");
+
+            lua.push(-1);
+            lua.setfield(errorIdx, "line");
+
+            lua.push(msg, len);
+            lua.setfield(errorIdx, "message");
         }
         
         delete [] msg;

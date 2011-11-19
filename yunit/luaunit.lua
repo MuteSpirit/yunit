@@ -5,6 +5,8 @@ local _Mmt = {__index = _G}
 setmetatable(_M, _Mmt)
 local _G = _M
 
+local ytrace = require "yunit.trace"
+
 --[[////////////////////////////////////////////////////////////////////////////////////////////////////////]]
 TestFixture = 
 {
@@ -207,7 +209,7 @@ end
 -- use common metatable to decrease memory usage
 local testCaseMt = {}
 registerAssertFucntionsInto(testCaseMt)
-testCaseMt.__index = function(table, key) return table[key] or _M[key]; end
+testCaseMt.__index = function(table, key) return rawget(table, key) or rawget(testCaseMt, key) or _M[key]; end
 
 -------------------------------------------------------
 function getTestEnv(moduleName)
@@ -261,17 +263,9 @@ function collectPureTestCaseList(env)
     return testCaseList
 end
 
-local function callTestCaseSetUp(testcase)
-    return callTestCaseMethod(testcase, testcase.originalSetUp)
-end
-
-local function callTestCaseTest(testcase)
-    return callTestCaseMethod(testcase, testcase.originalTest)
-end
-
-local function callTestCaseTearDown(testcase)
-    return callTestCaseMethod(testcase, testcase.originalTearDown)
-end
+local callTestCaseSetUp
+local callTestCaseTest
+local callTestCaseTearDown
 
 -------------------------------------------------------
 function makeTestCasesReadyForPublicUsage(testcases)
@@ -290,33 +284,50 @@ function makeTestCasesReadyForPublicUsage(testcases)
     return testcases
 end
 
--------------------------------------------------------
-function callTestCaseMethod(testcase, testFunc)
--------------------------------------------------------
-    local function callMethod()
-        testFunc(testcase);
-    end
-    
-    local function errorHandler(errorMsg)
-        local errorObject = {}
-        local errorInfo = debug.getinfo(4, "Sln")
-        
-        errorObject.source = string.sub(errorInfo.source, 2)
-        errorObject.func = errorInfo.name
-        errorObject.line = errorInfo.currentline
+local callTestCaseMethod
 
-        local isLuaunitAssertFailed = nil ~= string.find(debug.getinfo(3, "S").source, 'luaunit.lua')
-        if isLuaunitAssertFailed then
-            errorObject.message = errorMsg
-        else
-            errorObject.message = debug.traceback(errorMsg, 3)
+callTestCaseSetUp = function(testcase)
+    return callTestCaseMethod(testcase, testcase.originalSetUp)
+end
+
+callTestCaseTest = function(testcase)
+    return callTestCaseMethod(testcase, testcase.originalTest)
+end
+
+callTestCaseTearDown = function(testcase)
+    return callTestCaseMethod(testcase, testcase.originalTearDown)
+end
+
+-------------------------------------------------------
+callTestCaseMethod = function(testcase, testFunc)
+-------------------------------------------------------
+    local rc, stackTraceback, errorLevel
+    if _VERSION == 'Lua 5.2' then
+        rc, stackTraceback = xpcall(testFunc, ytrace.traceback, testcase);
+        errorLevel = 3
+    else
+        local function callMethod()
+            testFunc(testcase)
         end
-        
-        return errorObject;
+        rc, stackTraceback = xpcall(callMethod, ytrace.traceback)
+        errorLevel = 4
     end
     
-    local statusCode, errorObject = xpcall(callMethod, errorHandler);
-    return statusCode, errorObject;
+    if stackTraceback then
+        local errorObject = 
+        {
+            source = string.sub(stackTraceback.stack[errorLevel].source, 2), -- skip '=' in 'source' begin
+            line = stackTraceback.stack[errorLevel].line,
+            message = stackTraceback.error.message,
+        }
+        local isLuaunitAssertFailed = nil ~= string.find(stackTraceback.stack[errorLevel - 1].source, 'luaunit%.lua$')
+        if not isLuaunitAssertFailed then
+            errorObject.traceback = stackTraceback.stack
+        end
+        return rc, errorObject
+    else
+        return rc
+    end
 end
 
 return _M
