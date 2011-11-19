@@ -57,7 +57,7 @@ end
 function runSimpleTestCaseTest()
 	local testcase = luaUnit.TestCase:new("runSimpleTestCase");
 	testcase.test = function()
-		luaUnit.areEq(0, 0);
+		areEq(0, 0);
 	end
 	noThrow(testcase.setUp);
 	noThrow(testcase.test);

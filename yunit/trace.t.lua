@@ -9,9 +9,9 @@ function traceback_message()
     local rc, traceback = xpcall(step, ytrace.traceback)
     local stepInfo = debug.getinfo(step, "Sl")
     
+    areEq(expectedMessage, traceback.error.message)
     areEq(string.sub(stepInfo.source, 2), traceback.error.source)
     areEq(stepInfo.linedefined + 1, traceback.error.line)
-    areEq(expectedMessage, traceback.error.message)
 end
 
 function traceback_stack_steps_use()

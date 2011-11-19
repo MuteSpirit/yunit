@@ -18,6 +18,51 @@ errorObjectFixture =
             line = 113;
             message = fakeFailureMessage;
         }
+        self.fakeErrorObjectWithTraceback = 
+        {
+            source = 'test_runner.t.lua';
+            func = 'setUp';
+            line = 113;
+            message = fakeFailureMessage;
+            stack = 
+            {
+                [1] = {
+                    source = '=[C]',
+                    line = -1,
+                    funcname = "function 'error'",
+                },
+                [2] = {
+                    source = "@/home/mutespirit/ws/yunit/yunit/../yunit/luaunit.lua",
+                    line = 125,
+                    funcname = "function 'isTrue'",
+                },
+                [3] = {
+                    source = "=/home/mutespirit/ws/yunit/yunit/luaunit.t.lua",
+                    line = 338,
+                    funcname = "function </home/mutespirit/ws/yunit/yunit/luaunit.t.lua:337>",
+                },
+                [4] = {
+                    source = '=[C]',
+                    line = -1,
+                    funcname = "function 'xpcall'",
+                },
+                [5] = {
+                    source = "@/home/mutespirit/ws/yunit/yunit/../yunit/luaunit.lua",
+                    line = 306,
+                    funcname = "function </home/mutespirit/ws/yunit/yunit/../yunit/luaunit.lua:302>",
+                },
+                [6] = {
+                    source = "@/home/mutespirit/ws/yunit/yunit/../yunit/test_runner.lua",
+                    line = 163,
+                    funcname = "function 'runTestCase'",
+                },
+                [7] = {
+                    source = "@/home/mutespirit/ws/yunit/yunit/../yunit/test_runner.lua",
+                    line = 288,
+                    funcname = "function 'handler'",
+                },
+            };
+        }
     end
     ;
     
@@ -51,7 +96,7 @@ end
 function errorObjectFixture.testSciteErrorFormatterString()
 	local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
   
-	local desiredString = fakeErrorObject.source .. ":" .. tostring(fakeErrorObject.line) .. ": " .. fakeErrorObject.message .. "\n"
+	local desiredString = fakeErrorObject.source .. ":" .. tostring(fakeErrorObject.line) .. ": " .. fakeErrorObject.message
 	areEq(desiredString, ttpl:sciteErrorLine(fakeErrorObject))
 end
 
@@ -68,6 +113,7 @@ function errorObjectFixture.testErrorString()
 	                   .. "\n------------------------------------------------------------------------------------------------------\n"
 	                   .. fakeErrorObject.source .. '::' .. fakeTestCaseName .. "1" .. funcName .. '\n'
 	                   .. '\t' .. ttpl:sciteErrorLine(fakeErrorObject)
+	                   .. "\n------------------------------------------------------------------------------------------------------\n"
 	areEq(desiredString, ttpl:totalErrorStr())
 end
 
@@ -85,6 +131,7 @@ function errorObjectFixture.testFailureString()
 	                   .. "\n------------------------------------------------------------------------------------------------------\n"
 	                   .. fakeErrorObject.source .. '::' .. fakeTestCaseName .. "1" .. funcName .. '\n'
 	                   .. '\t' .. ttpl:sciteErrorLine(fakeErrorObject)
+	                   .. "\n------------------------------------------------------------------------------------------------------\n"
 	
 	areEq(desiredString, ttpl:totalFailureStr())
 end
@@ -278,5 +325,4 @@ function change_stack_traceback_to_visual_studio_error_message_format()
     local vsErrMsg =  "yunit/test.t.lua(5) : in function 'throwErrorFunc'"
     areEq(vsErrMsg, testResultHandlers.tracebackToVsFormat(luaErrMsg))
 end
-
 

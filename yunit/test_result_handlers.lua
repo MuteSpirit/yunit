@@ -28,11 +28,7 @@ function TextTestProgressHandler:new()
 end
 
 function TextTestProgressHandler:sciteErrorLine(errorObject)
-    if string.find(errorObject.message, ':%d+:') or '[C]' == errorObject.source then
-        return errorObject.message;
-    else
-        return errorObject.source .. ":" .. tostring(errorObject.line) .. ": " .. errorObject.message .. "\n"
-    end
+    return errorObject.source .. ":" .. tostring(errorObject.line) .. ": " .. tostring(errorObject.message)
 end
 
 function isThereStackTraceback(msg)
@@ -44,15 +40,7 @@ function tracebackToVsFormat(msg)
 end
 
 function TextTestProgressHandler:msvcErrorLine(errorObject)
-    if string.find(errorObject.message, '%(%d+%)') or '[C]' == errorObject.source then
-        return errorObject.message
-    else
-        if isThereStackTraceback(errorObject.message) then
-            errorObject.message = tracebackToVsFormat(errorObject.message)
-        end
-
-        return errorObject.source .. "(" .. tostring(errorObject.line) .. ") : " .. errorObject.message
-    end
+    return errorObject.source .. "(" .. tostring(errorObject.line) .. ") : " .. errorObject.message
 end
 
 
@@ -147,67 +135,66 @@ function TextTestProgressHandler:onTestsEnd()
     self:outputMessage(table.concat(res, '\n'));
 end
 
-function TextTestProgressHandler:totalErrorStr()
-    local res = {}
+function TextTestProgressHandler:addFailedTestsMessageLines(res, tests)
     local testName, errorObject
 
-    local prefix = ''
-    if #self.tableWithErrors > 0 then
-        prefix = '----Errors----\n'
-    end
-
-    for _, record in ipairs(self.tableWithErrors) do
+    for _, record in ipairs(tests) do
         testName, errorObject = record[1], record[2]
-        
+
         local funcName = ''
         if string.len(errorObject.func) > 0 then
             funcName = ' (' ..  errorObject.func .. ')'
         end
         
-        table.insert(res, errorObject.source .. '::' .. testName .. funcName .. '\n\t' .. self:editorSpecifiedErrorLine(errorObject))
+        table.insert(res, errorObject.source .. '::' .. testName .. funcName)
+        table.insert(res, '\t' .. self:editorSpecifiedErrorLine(errorObject))
+
+        if errorObject.traceback then
+            for _, step in ipairs(errorObject.traceback) do
+                table.insert(res, '\t' .. self:editorSpecifiedErrorLine{source = step.source, line = step.line, message = step.funcname})
+            end
+        end
+        
+        table.insert(res, '------------------------------------------------------------------------------------------------------')
     end;
+end
+
+function TextTestProgressHandler:totalErrorStr()
+    if #self.tableWithErrors == 0 then
+        return ''
+    end
     
-    return prefix .. table.concat(res, '\n------------------------------------------------------------------------------------------------------\n')
+    local res = {'----Errors----'}
+    self:addFailedTestsMessageLines(res, self.tableWithErrors)
+    table.insert(res, '') -- for one more '\n'
+    return table.concat(res, '\n')
 end
 
 function TextTestProgressHandler:totalFailureStr()
-    local res = {}
-    local testName, errorObject
-
-    local prefix = ''
-    if #self.tableWithFailures > 0 then
-        prefix = '----Failures----\n'
+    if #self.tableWithFailures == 0 then
+        return ''
     end
-    
-    for _, record in ipairs(self.tableWithFailures) do
-        testName, errorObject = record[1], record[2]
 
-        local funcName = ''
-        if string.len(errorObject.func) > 0 then
-            funcName = ' (' ..  errorObject.func .. ')'
-        end
-        
-        table.insert(res, errorObject.source .. '::' .. testName .. funcName .. '\n\t' .. self:editorSpecifiedErrorLine(errorObject))
-    end;
-    
-    return prefix .. table.concat(res, '\n------------------------------------------------------------------------------------------------------\n')
+    local res = {'----Failures----'}
+    self:addFailedTestsMessageLines(res, self.tableWithFailures)
+    table.insert(res, '') -- for one more '\n'
+    return table.concat(res, '\n')
 end
 
 function TextTestProgressHandler:totalIgnoreStr()
-    local res = {}
-    local testName
-
-    local prefix = ''
-    if #self.tableWithIgnores > 0 then
-        prefix = '----Ignored----\n'
+    if #self.tableWithIgnores == 0 then
+        return ''
     end
+
+    local res = {'----Ignored----'}
+    local testName
     
     for _, record in ipairs(self.tableWithIgnores) do
         testName, errorObject = record[1], record[2]
         table.insert(res, self:editorSpecifiedErrorLine(errorObject) ..  testName)
     end;
     
-    return prefix .. table.concat(res, '\n')
+    return table.concat(res, '\n')
 end
 
 
