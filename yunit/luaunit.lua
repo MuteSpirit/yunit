@@ -15,11 +15,8 @@ TestFixture =
         return obj
     end;
     
-    setUp = function(self)
-    end;
-
-    tearDown = function(self)
-    end;
+    setUp =    function(self) end;
+    tearDown = function(self) end;
 }
 --[[////////////////////////////////////////////////////////////////////////////////////////////////////////]]
 TestCase = TestFixture:new
@@ -37,128 +34,19 @@ TestCase = TestFixture:new
         return o
     end;
 
-    name = function(self)
-        return self.name_
-    end;
-
-    test = function(self)
-    end;
-    
-    fileName = function(self)
-        return self.fileName_
-    end;
-    
-    lineNumber = function(self)
-        return self.lineNumber_
-    end;
-    
-    isIgnored = function(self)
-        return self.isIgnored_
-    end;
+    name =       function(self) return self.name_; end;
+    test =       function(self) return; end;
+    fileName =   function(self) return self.fileName_; end;
+    lineNumber = function(self) return self.lineNumber_; end;
+    isIgnored =  function(self) return self.isIgnored_; end;
 }
 
--------------------------------------------------------
--- Assert macro
--------------------------------------------------------
-
-local function wrapValue(v)
-    if "string" == type(v) then
-        return "'"..v.."'"
-    end
-    return tostring(v);
-end
-
-function isTrue(actual)
-    if not actual then
-        error("true expected but was nil or false", 0)
-    end
-end
-
-function isFalse(actual)
-    if actual then
-        error("nil or false expected but was true", 0)
-    end
-end
-
-function areEq(expected, actual)
-    local expectedType = type(expected) or 'nil'
-    local actualType = type(actual) or 'nil';
-
-    if actualType ~= expectedType then
-        error("expected type is " .. expectedType .. " but was a ".. actualType, 0)
-    end
-
-	if  actual ~= expected  then
-		local errorMsg = "\nexpected: "..wrapValue(expected).."\n"..
-                         "actual  : "..wrapValue(actual).."\n";
-		error(errorMsg, 0);
-	end
-end
-
-function areNotEq(expected, actual)
-	if  actual == expected  then
-		local errorMsg = "expected that actual will not equal "..wrapValue(actual)
-		error(errorMsg, 0);
-	end
-end
-
-function noThrow(functionForRun, ...)
-    local functype = type(functionForRun);
-    if functype ~= "function" then
-        error(string.format("expected a function as last argument but was a %s", functype), 0);
-    end
-    local ok, errmsg = pcall(functionForRun, ...);
-    if not ok then
-        error(string.format("no error expected but error was: '%s'", errmsg), 0)
-    end
-end
-
-function willThrow(functionForRun, ...)
-    local functype = type(functionForRun);
-    if functype ~= "function" then
-        error(string.format("expected a function as last argument but was a %s", functype), 0);
-    end
-    local ok, errmsg = pcall(functionForRun, ...);
-    if ok then
-        error("error expected but everything was OK", 0)
-    end
-end
-
-local typenames = { "nil", "boolean", "number", "string", "table", "function", "thread", "userdata" }
-
--- isTypename functions
-for _, typename in ipairs(typenames) do
-    local assertTypename = "is" .. string.upper(string.sub(typename, 1 , 1)) .. string.sub (typename, 2);
-    _M[assertTypename] = function(actual, explanatoryMessage)
-        local actualType = type(actual);
-        if actualType ~= typename then
-            local msgPostfix = explanatoryMessage and ': "' .. explanatoryMessage .. '"' or ''
-            error(typename.." expected but was a " .. actualType .. msgPostfix, 0)
-        end
-    end
-end
-_M.isBool = _M.isBoolean
-
-
--- isNotTypename functions
-for _, typename in ipairs(typenames) do
-    local assertTypename = "isNot" .. string.upper(string.sub(typename, 1 , 1)) .. string.sub (typename, 2);
-    _M[assertTypename] = function(actual, explanatoryMessage)
-        local actualType = type(actual);
-        if actualType == typename then
-            local msgPostfix = explanatoryMessage and ': "' .. explanatoryMessage .. '"' or ''
-            error(typename .. " not expected but was one" .. msgPostfix, 0);
-        end
-    end
-end
-_M.isNotBool = _M.isNotBoolean
-
-
-
+--[[
+    Luaunit interface functions
+--]]
 function getTestContainerExtensions()
     return {'.t.lua'}
 end
-
 
 function loadTestContainer(filePath)
     -- get test container source code
@@ -218,8 +106,108 @@ function loadTestContainer(filePath)
     return makeTestCasesReadyForPublicUsage(testcases)
 end
 
+--[[
+    Internal functions (used in module and in module tests)
+--]]
+
+local function wrapValue(v)
+    if "string" == type(v) then
+        return "'"..v.."'"
+    end
+    return tostring(v);
+end
+
+function registerAssertFucntionsInto(mt)
+    mt.isTrue = function(actual)
+        if not actual then
+            error("true expected but was nil or false", 0)
+        end
+    end
+
+    mt.isFalse = function(actual)
+        if actual then
+            error("nil or false expected but was true", 0)
+        end
+    end
+
+    mt.areEq = function(expected, actual)
+        local expectedType = type(expected) or 'nil'
+        local actualType = type(actual) or 'nil';
+
+        if actualType ~= expectedType then
+            error("expected type is " .. expectedType .. " but was a ".. actualType, 0)
+        end
+
+	    if  actual ~= expected  then
+		    local errorMsg = "\nexpected: "..wrapValue(expected).."\n"..
+                             "actual  : "..wrapValue(actual).."\n";
+		    error(errorMsg, 0);
+	    end
+    end
+
+    mt.areNotEq = function(expected, actual)
+	    if  actual == expected  then
+		    local errorMsg = "expected that actual will not equal "..wrapValue(actual)
+		    error(errorMsg, 0);
+	    end
+    end
+
+    mt.noThrow = function(functionForRun, ...)
+        local functype = type(functionForRun);
+        if functype ~= "function" then
+            error(string.format("expected a function as last argument but was a %s", functype), 0);
+        end
+        local ok, errmsg = pcall(functionForRun, ...);
+        if not ok then
+            error(string.format("no error expected but error was: '%s'", errmsg), 0)
+        end
+    end
+
+    mt.willThrow = function(functionForRun, ...)
+        local functype = type(functionForRun);
+        if functype ~= "function" then
+            error(string.format("expected a function as last argument but was a %s", functype), 0);
+        end
+        local ok, errmsg = pcall(functionForRun, ...);
+        if ok then
+            error("error expected but everything was OK", 0)
+        end
+    end
+
+    local typenames = { "nil", "boolean", "number", "string", "table", "function", "thread", "userdata" }
+
+    -- isTypename functions
+    for _, typename in ipairs(typenames) do
+        local assertTypename = "is" .. string.upper(string.sub(typename, 1 , 1)) .. string.sub (typename, 2);
+        mt[assertTypename] = function(actual, explanatoryMessage)
+            local actualType = type(actual);
+            if actualType ~= typename then
+                local msgPostfix = explanatoryMessage and ': "' .. explanatoryMessage .. '"' or ''
+                error(typename.." expected but was a " .. actualType .. msgPostfix, 0)
+            end
+        end
+    end
+    mt.isBool = mt.isBoolean
+
+
+    -- isNotTypename functions
+    for _, typename in ipairs(typenames) do
+        local assertTypename = "isNot" .. string.upper(string.sub(typename, 1 , 1)) .. string.sub (typename, 2);
+        mt[assertTypename] = function(actual, explanatoryMessage)
+            local actualType = type(actual);
+            if actualType == typename then
+                local msgPostfix = explanatoryMessage and ': "' .. explanatoryMessage .. '"' or ''
+                error(typename .. " not expected but was one" .. msgPostfix, 0);
+            end
+        end
+    end
+    mt.isNotBool = mt.isNotBoolean
+end
+
 -- use common metatable to decrease memory usage
-local testCaseMt = {__index = _M}
+local testCaseMt = {}
+registerAssertFucntionsInto(testCaseMt)
+testCaseMt.__index = function(table, key) return table[key] or _M[key]; end
 
 -------------------------------------------------------
 function getTestEnv(moduleName)
@@ -234,6 +222,7 @@ function getTestEnv(moduleName)
     
     return ns
 end
+
 
 -------------------------------------------------------
 function collectPureTestCaseList(env)
