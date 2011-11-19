@@ -120,9 +120,24 @@ void LuaState::getfield(int idx, const char* key)
     lua_getfield(l_, idx, key);
 }
 
+int LuaState::gettop()
+{
+    return lua_gettop(l_);
+}
+
+void LuaState::to(int idx, const char** str, size_t* len)
+{
+    *str = lua_tolstring(l_, idx, len);
+}
+
 const char* LuaState::to(int idx, size_t* len)
 {
     return lua_tolstring(l_, idx, len);
+}
+
+void LuaState::to(int idx, const char** str)
+{
+    *str = lua_tostring(l_, idx);
 }
 
 void LuaState::remove(int idx)

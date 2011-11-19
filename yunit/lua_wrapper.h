@@ -66,8 +66,11 @@ public:
     
     void getglobal(const char* name);
     void getfield(int idx, const char* key);
+    int gettop();    
     
     const char* to(int idx, size_t* len);
+    void to(int idx, const char** str, size_t* len);
+    void to(int idx, const char** str);
 
     template<typename CppType>
     void to(int idx, CppType** cppObj);
