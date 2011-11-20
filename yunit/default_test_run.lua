@@ -8,6 +8,8 @@ function runFrom(dirPaths)
     local fixFailed = testResultHandlers.FixFailed:new()
     runner:addResultHandler(fixFailed)
 
+    runner:addResultHandler(testResultHandlers.EstimatedTime:new())
+    
     if testResultHandler then
         runner:addResultHandler(testResultHandler)
     end
@@ -32,6 +34,8 @@ function run(testContainerPath)
 
     local fixFailed = testResultHandlers.FixFailed:new()
     runner:addResultHandler(fixFailed)
+
+    runner:addResultHandler(testResultHandlers.EstimatedTime:new())
 
     if testResultHandler then
         runner:addResultHandler(testResultHandler)

@@ -300,29 +300,4 @@ function errorObjectFixture.fixed_failed_test_result_handler_return_not_ok_on_la
 	isFalse(fixFailedTestRes:passed())
 end
 
-function check_that_error_message_does_not_contain_stack_traceback()
-    local errMsg = [[yunit/test.t.lua::test1
-	yunit/test.t.lua:249: true expected but was nil or false
-]]
-    isFalse(testResultHandlers.isThereStackTraceback(errMsg))
-
-    errMsg = [[yunit/test.t.lua::test1
-	yunit/test.t.lua:249: true expected but was nil or false
-stack traceback:
-]]
-    isFalse(testResultHandlers.isThereStackTraceback(errMsg))
-end
-
-function check_that_error_message_contain_stack_traceback()
-    local errMsg = [[stack traceback:
-	yunit/test.t.lua:5: in function 'throwErrorFunc'
-]]
-    isTrue(testResultHandlers.isThereStackTraceback(errMsg))
-end
-
-function change_stack_traceback_to_visual_studio_error_message_format()
-    local luaErrMsg = "yunit/test.t.lua:5: in function 'throwErrorFunc'"
-    local vsErrMsg =  "yunit/test.t.lua(5) : in function 'throwErrorFunc'"
-    areEq(vsErrMsg, testResultHandlers.tracebackToVsFormat(luaErrMsg))
-end
 
