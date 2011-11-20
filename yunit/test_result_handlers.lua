@@ -387,7 +387,7 @@ end
 function EstimatedTime:onTestsEnd()
     self.testsHasEndAt_ = os.time()
     local estimatedTime = os.difftime(self.testsHasEndAt_, self.testsHasBeganAt_)
-    self:outputMessage('Test time = ' .. tostring(estimatedTime) .. ' sec\n')
+    self:outputMessage('\nTest time = ' .. tostring(estimatedTime) .. ' sec\n')
 end
 
 return _M
