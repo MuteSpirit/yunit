@@ -2,21 +2,19 @@ local lfs = require "yunit.lfs"
 local testRunner = require "yunit.test_runner"
 local testResultHandlers = require "yunit.test_result_handlers"
 
-function runFrom(dirPaths)
-    local runner = testRunner.TestRunner:new()
+local usedLtueArray = {}
 
+function use(ltueArray)
+    usedLtueArray = ltueArray
+end
+
+local makeDefaultTestRunner
+
+function runFrom(dirPaths)
+    local runner = makeDefaultTestRunner()
     local fixFailed = testResultHandlers.FixFailed:new()
     runner:addResultHandler(fixFailed)
 
-    runner:addResultHandler(testResultHandlers.EstimatedTime:new())
-    
-    if testResultHandler then
-        runner:addResultHandler(testResultHandler)
-    end
-
-    runner:loadLtue('yunit.luaunit')
-    runner:loadLtue('yunit.cppunit')
-    
     for _, dirPath in pairs(dirPaths) do
         runner:lookTestsAt(dirPath)
     end
@@ -30,19 +28,9 @@ function runFrom(dirPaths)
 end
 
 function run(testContainerPath)
-    local runner = testRunner.TestRunner:new()
-
+    local runner = makeDefaultTestRunner()
     local fixFailed = testResultHandlers.FixFailed:new()
     runner:addResultHandler(fixFailed)
-
-    runner:addResultHandler(testResultHandlers.EstimatedTime:new())
-
-    if testResultHandler then
-        runner:addResultHandler(testResultHandler)
-    end
-
-    runner:loadLtue('yunit.luaunit')
-    runner:loadLtue('yunit.cppunit')
     
     runner:runTestsOf(testContainerPath)
 
@@ -50,4 +38,25 @@ function run(testContainerPath)
         print("Test run executed with fail(es) and/or error(s)")
         os.exit(-1)
     end
+end
+
+makeDefaultTestRunner = function()
+    local runner = testRunner.TestRunner:new()
+
+    runner:addResultHandler(testResultHandlers.EstimatedTime:new())
+    
+    if testResultHandler then
+        runner:addResultHandler(testResultHandler)
+    end
+    
+    if #usedLtueArray == 0 then
+        runner:loadLtue('yunit.luaunit')
+        runner:loadLtue('yunit.cppunit')
+    else
+        for _, ltueName in ipairs(usedLtueArray) do
+            runner:loadLtue(ltueName)
+        end
+    end
+    
+    return runner
 end
