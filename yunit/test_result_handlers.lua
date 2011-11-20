@@ -31,18 +31,9 @@ function TextTestProgressHandler:sciteErrorLine(errorObject)
     return errorObject.source .. ":" .. tostring(errorObject.line) .. ": " .. tostring(errorObject.message)
 end
 
-function isThereStackTraceback(msg)
-    return nil ~= string.find(msg, 'stack%s+traceback%s*:[%s\r\n]+%w')
-end
-
-function tracebackToVsFormat(msg)
-    return string.gsub(msg, '(%w)%s*:%s*(%d+)%s*:(%s+)', '%1(%2) :%3')
-end
-
 function TextTestProgressHandler:msvcErrorLine(errorObject)
     return errorObject.source .. "(" .. tostring(errorObject.line) .. ") : " .. errorObject.message
 end
-
 
 TextTestProgressHandler.editorSpecifiedErrorLine = TextTestProgressHandler.msvcErrorLine;
 
@@ -344,12 +335,12 @@ function XmlTestResultHandler:onTestsEnd()
     self:outputMessage(' done\r\n');
 end
 
+------------------------------------------------------
 FixFailed = testRunner.TestResultHandler:new{
     thereIsFailureTest_ = false,
     thereIsAlmostOneTest_ = false,
 }
 
-------------------------------------------------------
 function FixFailed:new()
     local o =
     {
@@ -377,6 +368,26 @@ end
 function FixFailed:onTestError(testCaseName, errorObject)
     self.thereIsAlmostOneTest_ = true
     self.thereIsFailureTest_ = true
+end
+
+------------------------------------------------------
+EstimatedTime = testRunner.TextTestProgressHandler:new()
+
+function EstimatedTime:new()
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function EstimatedTime:onTestsBegin()
+    self.testsHasBeganAt_ = os.time()
+end
+
+function EstimatedTime:onTestsEnd()
+    self.testsHasEndAt_ = os.time()
+    local estimatedTime = os.difftime(self.testsHasEndAt_, self.testsHasBeganAt_)
+    self:outputMessage('Test time = ' .. tostring(estimatedTime) .. ' sec\n')
 end
 
 return _M
