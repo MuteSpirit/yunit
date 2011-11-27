@@ -300,4 +300,18 @@ function errorObjectFixture.fixed_failed_test_result_handler_return_not_ok_on_la
 	isFalse(fixFailedTestRes:passed())
 end
 
+function load_test_container_text_messages_test()
+    local handler = testResultHandlers.TextLoadTestContainerHandler:new()
+    local message
+    handler.outputMessage = function(msg) message = message..msg end;
+    
+    local testContainerPath = './load_test_container_text_messages_test.t.lua'
+    
+    local errMsg = 'no such file or directory'
+    handler:onLoadError{path = testContainerPath, message = errMsg}
+    handler:onLoadEnd()
+    areEq('Could not load 1 test container:\n'
+        ..'\t'..testContainerPath..': '..errMsg..'\n',
+        message)
+end
 
