@@ -4,8 +4,10 @@ setmetatable(_M, _Mmt)
 local _G = _M
 
 local fs = require "yunit.filesystem"
+local ytrace = require "yunit.trace"
 
-TestResultHandler = {
+TestResultHandler = 
+{
     onTestSuccessfull = function(testCaseName) end;
     onTestFailure = function(testCaseName, errorObject) end;
     onTestError = function(testCaseName, errorObject) end;
@@ -77,6 +79,52 @@ TestResultHandlerList = TestResultHandler:new{
         self:callHandlersMethod('onTestsEnd');
     end;
 }
+
+------------------------------------------------------
+LoadTestContainerHandler = 
+{
+    onLoadBegin =       function(self, info) end; -- usual 'info' is {path = testContainerPath}
+    onLtueNotFound =    function(self, info) end; -- usual 'info' is {path = testContainerPath}
+    onLtueFound =       function(self, info) end; -- usual 'info' is {path = testContainerPath, ltue = ltue}
+    onLoadSuccess =     function(self, info) end; -- usual 'info' is {path = testContainerPath, numOfTests = #tests}
+    onLoadError =       function(self, info) end; -- usual 'info' is {path = testContainerPath, message}
+
+    new = function(self)
+        local o = {};
+        setmetatable(o, self);
+        self.__index = self;
+        return o;
+    end;
+}
+
+LoadTestContainerHandlerList = 
+{
+    handlers_ = {},
+
+    new = function(self)
+        local o = {};
+        setmetatable(o, self);
+        self.__index = self;
+        return o;
+    end;
+    
+    add = function(self, handler)
+        table.insert(self.handlers_, handler)
+    end;
+
+    callHandlersMethod = function(self, functionName, ...)
+        for _, handler in ipairs(self.handlers_) do
+            handler[functionName](handler, ...);
+        end
+    end;
+
+    onLoadBegin =       function(self, info) self:callHandlersMethod('onLoadBegin', info) end;
+    onLtueNotFound =    function(self, info) self:callHandlersMethod('onLtueNotFound', info) end;
+    onLtueFound =       function(self, info) self:callHandlersMethod('onLtueFound', info) end;
+    onLoadSuccess =     function(self, info) self:callHandlersMethod('onLoadSuccess', info) end;
+    onLoadError =       function(self, info) self:callHandlersMethod('onLoadError', info) end;
+}
+------------------------------------------------------
 
 local function isFunction(variable)
     return "function" == type(variable);
@@ -197,6 +245,7 @@ end
 TestRunner = 
 {
     resultHandlers_ = TestResultHandlerList:new(),
+    loadHandlers_ = LoadTestContainerHandlerList:new(),
     ltues_ = {},
     fileExts_ = {},
     dirs_ = {},
@@ -217,6 +266,10 @@ TestRunner =
     
     addResultHandler = function(self, handler)
         self.resultHandlers_:addHandler(handler)
+    end;
+
+    addLoadtHandler = function(self, handler)
+        self.loadHandlers_:add(handler)
     end;
     
     loadLtue = function(self, ltueName)
@@ -246,60 +299,92 @@ TestRunner =
         table.insert(self.dirs_, dirPath)
     end;
     
-    runAll = function(self)
-        local function findOutTestContainer(path, state)
-            for ext, ltue in pairs(self.fileExts_) do
-                if string.find(string.lower(path), string.lower(ext), -string.len(ext), true) then
-                    state.ltue_ = ltue
-                    return true
-                end
-            end
-            return false
-        end
-        
-        local function loadAndRunTests(testContainerPath, state)
-            local testContainerDir = fs.dirname(testContainerPath)
-
-            -- we may load DLL, which are depend on other DLL, situated in test container folder
-            -- we may load test containers, which do some initial code on loading and assume, 
-            --    that working directory is test container folder
-            lfs.chdir(testContainerDir)
-
-            local tests, errMsg = state.ltue_.loadTestContainer(testContainerPath);
-
-            if 'boolean' == type(tests) then
-                table.insert(state.notLoadedTestContainers, {path = testContainerPath, msg = errMsg})
-                return
-            end
-                
-            table.insert(state.loadedTestContainers, {path = testContainerPath, testNum = #tests})
-                            
-            for _, test in ipairs(tests) do
-                normalizeTestCaseInterface(test)
-            end
-            -- we have to call table.sort after normalize tests interface, 
-            -- because 'operatorLess' require concrete interface
-            table.sort(tests, operatorLess)
-            
-            -- during test execution they assume, that working directory is test container folder
-            lfs.chdir(testContainerDir)
-            
-            for _, test in ipairs(tests) do
-                runTestCase(test, self.resultHandlers_)
+    findLtueForTestContainer = function(self, path)
+        for ext, ltue in pairs(self.fileExts_) do
+            if string.find(string.lower(path), string.lower(ext), -string.len(ext), true) then
+                return ltue
             end
         end
+        return nil
+    end;
+    
+    runTestsOfTestContainer = function(self, path)
+        path = fs.absPath(path)
+        self.loadHandlers_:onLoadBegin{path = path}
+
+        local ltue = self:findLtueForTestContainer(path)
+        if not ltue then
+            self.loadHandlers_:onLtueNotFound{path = path}
+            return
+        end
+        self.loadHandlers_:onLtueFound{path = path, ltue = ltue}
         
+        local testContainerDir = fs.dirname(path)
+        -- We change current directory, because
+        -- 1. we may load DLL, which are depend on other DLLs, situated in test container folder
+        -- 2. we may load test containers, which do some initial code on loading and assume, 
+        --    that working directory is test container folder
+        lfs.chdir(testContainerDir)
+
+        -- sometimes LTUE cannot load test container (they contain syntax errors, crashed during initializing and so on)
+        -- so we must protect than procedure call.
+        -- we use code, compatible with Lua 5.1 and Lua 5.2 to decrease number of testable configuration
+        local function callLoadTestContainer()
+            return ltue.loadTestContainer(path)
+        end
+        local xpcallRes, callRes, errMsg = xpcall(callLoadTestContainer, ytrace.traceback)
+        
+        if not xpcallRes then
+            local stackTraceback = callRes
+            self.loadHandlers_:onLoadError{path = path, message = stackTraceback.error.message}
+            return
+        end
+        
+        if not callRes or 'boolean' == type(callRes) then
+            self.loadHandlers_:onLoadError{path = path, message = errMsg}
+            return
+        end
+ 
+        local tests = callRes           
+        self.loadHandlers_:onLoadSuccess{path = path, numOfTests = #tests}
+                        
+        for _, test in ipairs(tests) do
+            normalizeTestCaseInterface(test)
+        end
+        -- we have to call table.sort after normalize tests interface, 
+        -- because 'operatorLess' require concrete interface of TestCase objects
+        table.sort(tests, operatorLess)
+        
+        -- We change current directory, because
+        -- during test execution they usually assume, that working directory is test container folder
+        lfs.chdir(testContainerDir)
+        
+        for _, test in ipairs(tests) do
+            runTestCase(test, self.resultHandlers_)
+        end
+    end;
+
+    runTestsOf = function(self, testContainerPath)
+        local previousWorkingDir = lfs.currentdir()
+
         self.resultHandlers_:onTestsBegin()
-        
-        local savedWorkingDir = lfs.currentdir()
-        
-        -- looking for and load test containers into self.dirs_
-        local loadTestsState = 
-        {
-            filters = {fs.fileFilter, findOutTestContainer},
-            loadedTestContainers = {},
-            notLoadedTestContainers = {},
-        }
+        self:runTestsOfTestContainer(testContainerPath)
+        self.resultHandlers_:onTestsEnd()
+
+        lfs.chdir(previousWorkingDir)
+    end;
+    
+    runAll = function(self)
+        local function filterTestContainer(path, state)
+            return nil ~= self:findLtueForTestContainer(path)
+        end
+        local function loadAndRunTests(testContainerPath, state)
+            self:runTestsOfTestContainer(testContainerPath)
+        end
+
+        local previousWorkingDir = lfs.currentdir()
+
+        self.resultHandlers_:onTestsBegin()
         
         for _, dirPath in ipairs(self.dirs_) do
             fs.applyOnFiles(dirPath, 
@@ -307,15 +392,16 @@ TestRunner =
                         filter = fs.multiFilter,
                         handler = loadAndRunTests,
                         recursive = true,
-                        state = loadTestsState,
+                        state = { filters = {fs.fileFilter, filterTestContainer},},
                     }
                 )
         end
         
-        lfs.chdir(savedWorkingDir);
-        
         self.resultHandlers_:onTestsEnd()
+
+        lfs.chdir(previousWorkingDir)
         
+        --[[
         do -- display info about used test containers
             print('')
             
@@ -339,57 +425,7 @@ TestRunner =
                 end
             end
         end
-    end;
-    
-    runTestsOf = function(self, testContainerPath)
-        if not self.fileExts_ then
-            error('LTUE not loaded')
-        end
-        local usedLtue
-        for ext, ltue in pairs(self.fileExts_) do
-            if string.find(string.lower(testContainerPath), string.lower(ext), -string.len(ext), true) then
-                usedLtue = ltue
-                break
-            end
-        end
-        if not usedLtue then
-            return
-        end
-
-        self.resultHandlers_:onTestsBegin()
-
-        local savedWorkingDir = lfs.currentdir()
-
-        local testContainerDir = fs.dirname(testContainerPath)
-
-        -- we may load DLL, which are depend on other DLL, situated in test container folder
-        -- we may load test containers, which do some initial code on loading and assume, 
-        --    that working directory is test container folder
-        lfs.chdir(testContainerDir)
-        
-        local tests, errMsg = usedLtue.loadTestContainer(testContainerPath);
-
-        if 'boolean' == type(tests) then
-            self.resultHandlers_:onTestsEnd()
-            print('Could not load test container "' .. testContainerPath .. '": ' .. errMsg)
-            return
-        end
-        
-        for _, test in ipairs(tests) do
-            normalizeTestCaseInterface(test)
-        end
-        -- we have to call table.sort after normalize tests interface, 
-        -- because 'operatorLess' require concrete interface
-        table.sort(tests, operatorLess)
-
-        -- during test execution they assume, that working directory is test container folder
-        lfs.chdir(testContainerDir)
-        
-        for _, test in ipairs(tests) do
-            runTestCase(test, self.resultHandlers_)
-        end
-        
-        self.resultHandlers_:onTestsEnd()
+        --]]
     end;
 }
 

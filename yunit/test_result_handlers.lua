@@ -390,4 +390,8 @@ function EstimatedTime:onTestsEnd()
     self:outputMessage('\nTest time = ' .. tostring(estimatedTime) .. ' sec\n')
 end
 
+------------------------------------------------------
+TextLoadTestContainerHandler = testRunner.LoadTestContainerHandler:new()
+
+
 return _M

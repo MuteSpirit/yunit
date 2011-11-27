@@ -8,7 +8,7 @@
 --- \param[in] содержимое, к-ое необходимо записать в созданный файл
 --- \return true, если все прошло без ошибок, иначе - false
 
-
+--clear()
 local lfs = require "yunit.lfs"
 local fs = require "yunit.filesystem"
 local luaExt = require "yunit.lua_ext"
