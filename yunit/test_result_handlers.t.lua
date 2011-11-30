@@ -5,12 +5,13 @@ local testResultHandlers = require "yunit.test_result_handlers"
 
 local testModuleName = 'TestListenerTest';
 
+--- @todo Make fake... elements not global, but self elements
 errorObjectFixture = 
 {
     setUp = function(self)
-        fakeTestCaseName = testModuleName;
-        fakeTestName = 'testObserverTest';
-        fakeFailureMessage = "This is test message. It hasn't usefull information";
+        fakeTestCaseName = testModuleName
+        fakeTestName = 'testObserverTest'
+        fakeFailureMessage = "This is test message. It hasn't usefull information"
         fakeErrorObject = 
         {
             source = 'test_runner.t.lua';
@@ -18,6 +19,23 @@ errorObjectFixture =
             line = 113;
             message = fakeFailureMessage;
         }
+
+        self.fakeTestCaseName = testModuleName
+        self.fakeTestName = 'testObserverTest'
+        self.fakeFailureMessage = "This is test message. It hasn't usefull information"
+        self.fakeErrorObject = 
+        {
+            source = 'test_runner.t.lua';
+            func = 'setUp';
+            line = 113;
+            message = self.fakeFailureMessage;
+        }
+        
+        self.testContainerPath = 'path/to/test_container.t.lua'
+        self.testContainerNumberOfTests = 1
+        self.ltue = {} -- stub LTUE
+        self.loadErrorMessage = 'Cannot find such file or directory'
+        
         self.fakeErrorObjectWithTraceback = 
         {
             source = 'test_runner.t.lua';
@@ -266,52 +284,90 @@ function errorObjectFixture.testXmlListenerSimulateTestRunning()
     ttpl:onTestsEnd()
 end
 
-function errorObjectFixture.fixed_failed_test_result_handler_return_ok()
-	local testResHandler = testResultHandlers.FixFailed:new()
-
-    testResHandler:onTestSuccessfull(fakeTestCaseName)
-	isTrue(testResHandler:passed())
-	
-    testResHandler:onTestIgnore(fakeTestCaseName)
-	isTrue(testResHandler:passed())
+function errorObjectFixture.fix_failed_test_result_handler_return_ok(self)
+    local fixFailed = testResultHandlers.FixFailed:new()
+    fixFailed:onTestSuccessfull(self.fakeTestCaseName)
+    isTrue(fixFailed:passed())
 end
 
-function errorObjectFixture.fixed_failed_test_result_handler_return_not_ok_on_tests_absent()
-	local testResHandler = testResultHandlers.FixFailed:new()
-	isFalse(testResHandler:passed())
+function errorObjectFixture.fix_failed_test_result_handler_not_passed_if_there_are_no_any_launched_test(self)
+    local fixFailed = testResultHandlers.FixFailed:new()
+    isFalse(fixFailed:passed())
+
+    fixFailed:onTestIgnore(fakeTestCaseName)
+    isFalse(fixFailed:passed())
+
+    fixFailed:onLtueFound{path = self.testContainerPath, ltue = self.ltue}
+    isFalse(fixFailed:passed())
+
+    fixFailed:onLoadSuccess{path = self.testContainerPath, numOfTests = self.testContainerNumberOfTests}
+    isFalse(fixFailed:passed())
 end
 
-function errorObjectFixture.fixed_failed_test_result_handler_return_not_ok_on_test_error()
-	local testResHandler = testResultHandlers.FixFailed:new()
-    testResHandler:onTestError(fakeTestCaseName, fakeErrorObject)
-	isFalse(testResHandler:passed())
+function fix_failed_test_result_handler_not_passed_if_there_are_no_loaded_test_container_or_tests()
+	local fixFailed = testResultHandlers.FixFailed:new()
+	isFalse(fixFailed:passed())
 end
 
-function errorObjectFixture.fixed_failed_test_result_handler_return_not_ok_on_test_failed()
-	local testResHandler = testResultHandlers.FixFailed:new()
-    testResHandler:onTestFailure(fakeTestCaseName, fakeErrorObject)
-	isFalse(testResHandler:passed())
+function errorObjectFixture.fix_failed_test_result_handler_not_passed_on_test_error(self)
+	local fixFailed = testResultHandlers.FixFailed:new()
+    fixFailed:onTestSuccessfull(self.fakeTestCaseName)
+    fixFailed:onTestError(self.fakeTestCaseName, self.fakeErrorObject)
+	isFalse(fixFailed:passed())
 end
 
-function errorObjectFixture.fixed_failed_test_result_handler_return_not_ok_on_last_successfull_test()
-	local fixFailedTestRes = testResultHandlers.FixFailed:new()
-    fixFailedTestRes:onTestFailure(fakeTestCaseName, fakeErrorObject)
-    fixFailedTestRes:onTestSuccessfull(fakeTestCaseName)
-	isFalse(fixFailedTestRes:passed())
+function errorObjectFixture.fix_failed_test_result_handler_not_passed_on_test_failed(self)
+	local fixFailed = testResultHandlers.FixFailed:new()
+    fixFailed:onTestSuccessfull(self.fakeTestCaseName)
+    fixFailed:onTestFailure(self.fakeTestCaseName, self.fakeErrorObject)
+	isFalse(fixFailed:passed())
 end
 
-function load_test_container_text_messages_test()
+function errorObjectFixture.fix_failed_test_result_handler_not_passed_on_ltue_not_found(self)
+	local fixFailed = testResultHandlers.FixFailed:new()
+    fixFailed:onTestSuccessfull(self.fakeTestCaseName)
+    fixFailed:onLtueNotFound{path = self.testContainerPath} --- @todo some internal error. replace with assert(...) check
+	isFalse(fixFailed:passed())
+end
+
+function errorObjectFixture.fix_failed_test_result_handler_not_passed_on_test_container_load_error(self)
+	local fixFailed = testResultHandlers.FixFailed:new()
+    fixFailed:onTestSuccessfull(self.fakeTestCaseName)
+    fixFailed:onLoadError{path = self.testContainerPath, message = self.loadErrorMessage}
+	isFalse(fixFailed:passed())
+end
+
+function errorObjectFixture.fix_failed_test_result_handler_not_passed_on_last_successfull_test(self)
+	local fixFailed = testResultHandlers.FixFailed:new()
+    fixFailed:onTestFailure(self.fakeTestCaseName, self.fakeErrorObject)
+    fixFailed:onTestSuccessfull(self.fakeTestCaseName)
+	isFalse(fixFailed:passed())
+end
+
+function errorObjectFixture.fix_failed_test_result_handler_not_passed_on_last_successfull_test(self)
+	local fixFailed = testResultHandlers.FixFailed:new()
+    fixFailed:onTestFailure(self.fakeTestCaseName, self.fakeErrorObject)
+    fixFailed:onLoadError{path = self.testContainerPath, message = self.loadErrorMessage}
+    fixFailed:onLtueNotFound{path = self.testContainerPath} --- @todo some internal error. replace with assert(...) check
+
+    fixFailed:onTestSuccessfull(self.fakeTestCaseName)
+	isFalse(fixFailed:passed())
+end
+
+--- @todo Add test if one unsuccessfull event, that all successfull, and FixFailed:passed() return false
+
+function _load_test_container_text_messages_test()
     local handler = testResultHandlers.TextLoadTestContainerHandler:new()
     local message
     handler.outputMessage = function(msg) message = message..msg end;
     
     local testContainerPath = './load_test_container_text_messages_test.t.lua'
     
-    local errMsg = 'no such file or directory'
+    local errMsg = 'Cannot find such file or directory'
     handler:onLoadError{path = testContainerPath, message = errMsg}
     handler:onLoadEnd()
     areEq('Could not load 1 test container:\n'
         ..'\t'..testContainerPath..': '..errMsg..'\n',
-        message)
+        message..'\n')
 end
 
