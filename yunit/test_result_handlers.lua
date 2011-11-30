@@ -336,24 +336,26 @@ function XmlTestResultHandler:onTestsEnd()
 end
 
 ------------------------------------------------------
-FixFailed = testRunner.TestResultHandler:new{
-    thereIsFailureTest_ = false,
-    thereIsAlmostOneTest_ = false,
-}
+FixFailed = {}
+
+local function fixFailedIndexMetaMethod(table, idx)
+    return rawget(FixFailed, idx) or rawget(TestResultHandler, idx) or rawget(LoadTestContainerHandler, idx) 
+end
 
 function FixFailed:new()
     local o =
     {
         thereIsFailureTest_ = false,
         thereIsAlmostOneTest_ = false,
+        thereIsAlmostOneNotLoadedTestContainer_ = false,
     };
-    setmetatable(o, self);
-    self.__index = self;
-    return o;
+    setmetatable(o, self)
+    self.__index = fixFailedIndexMetaMethod
+    return o
 end
 
 function FixFailed:passed()
-    return self.thereIsAlmostOneTest_ and not self.thereIsFailureTest_
+    return self.thereIsAlmostOneTest_ and not self.thereIsFailureTest_ and not self.thereIsAlmostOneNotLoadedTestContainer_
 end
 
 function FixFailed:onTestSuccessfull(testCaseName)
@@ -368,6 +370,14 @@ end
 function FixFailed:onTestError(testCaseName, errorObject)
     self.thereIsAlmostOneTest_ = true
     self.thereIsFailureTest_ = true
+end
+
+function FixFailed:onLtueNotFound()
+    self.thereIsAlmostOneNotLoadedTestContainer_ = true
+end
+
+function FixFailed:onLoadError()
+    self.thereIsAlmostOneNotLoadedTestContainer_ = true
 end
 
 ------------------------------------------------------

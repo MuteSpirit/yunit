@@ -4,6 +4,10 @@ local testResultHandlers = require "yunit.test_result_handlers"
 
 local usedLtueArray = {}
 
+--[=[ use this function to control what LTUE need to load and use, i.e. for usage only 'yunit.luaunit' run:
+lua -l yunit.work_in_scite -l yunit.default_test_run -e "use{'yunit.luaunit'}" -e "run[[test.t.lua]]"
+in command line
+--]=]
 function use(ltueArray)
     usedLtueArray = ltueArray
 end
@@ -49,7 +53,9 @@ makeDefaultTestRunner = function()
         runner:addResultHandler(testResultHandler)
     end
     
-    if #usedLtueArray == 0 then
+    local listOfUsedLtueWasNotSpecifiedInCommandLine = not next(usedLtueArray)
+    
+    if listOfUsedLtueWasNotSpecifiedInCommandLine then
         runner:loadLtue('yunit.luaunit')
         runner:loadLtue('yunit.cppunit')
     else

@@ -83,6 +83,7 @@ TestResultHandlerList = TestResultHandler:new{
 ------------------------------------------------------
 LoadTestContainerHandler = 
 {
+--- @todo remove onLoadBegin method 
     onLoadBegin =       function(self, info) end; -- usual 'info' is {path = testContainerPath}
     onLtueNotFound =    function(self, info) end; -- usual 'info' is {path = testContainerPath}
     onLtueFound =       function(self, info) end; -- usual 'info' is {path = testContainerPath, ltue = ltue}
