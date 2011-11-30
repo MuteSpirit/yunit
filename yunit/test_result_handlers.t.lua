@@ -5,21 +5,9 @@ local testResultHandlers = require "yunit.test_result_handlers"
 
 local testModuleName = 'TestListenerTest';
 
---- @todo Make fake... elements not global, but self elements
 errorObjectFixture = 
 {
     setUp = function(self)
-        fakeTestCaseName = testModuleName
-        fakeTestName = 'testObserverTest'
-        fakeFailureMessage = "This is test message. It hasn't usefull information"
-        fakeErrorObject = 
-        {
-            source = 'test_runner.t.lua';
-            func = 'setUp';
-            line = 113;
-            message = fakeFailureMessage;
-        }
-
         self.fakeTestCaseName = testModuleName
         self.fakeTestName = 'testObserverTest'
         self.fakeFailureMessage = "This is test message. It hasn't usefull information"
@@ -41,7 +29,7 @@ errorObjectFixture =
             source = 'test_runner.t.lua';
             func = 'setUp';
             line = 113;
-            message = fakeFailureMessage;
+            message = self.fakeFailureMessage;
             stack = 
             {
                 [1] = {
@@ -85,10 +73,10 @@ errorObjectFixture =
     ;
     
     tearDown = function(self)
-        fakeTestCaseName = nil;
-        fakeTestName = nil;
-        fakeFailureMessage = nil;
-        fakeErrorObject = nil;
+        self.fakeTestCaseName = nil;
+        self.fakeTestName = nil;
+        self.fakeFailureMessage = nil;
+        self.fakeErrorObject = nil;
     end
     ;
 };
@@ -111,65 +99,65 @@ function testTextTestProgressListenerCreation()
 	isNotNil(testResultHandlers.TextTestProgressHandler:new());
 end
 
-function errorObjectFixture.testSciteErrorFormatterString()
+function errorObjectFixture.testSciteErrorFormatterString(self)
 	local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
   
-	local desiredString = fakeErrorObject.source .. ":" .. tostring(fakeErrorObject.line) .. ": " .. fakeErrorObject.message
-	areEq(desiredString, ttpl:sciteErrorLine(fakeErrorObject))
+	local desiredString = self.fakeErrorObject.source .. ":" .. tostring(self.fakeErrorObject.line) .. ": " .. self.fakeErrorObject.message
+	areEq(desiredString, ttpl:sciteErrorLine(self.fakeErrorObject))
 end
 
-function errorObjectFixture.testErrorString()
+function errorObjectFixture.testErrorString(self)
 	local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
 
 	ttpl.outputMessage = function(self, msg) end
-	ttpl:onTestError(fakeTestCaseName .. '2', fakeErrorObject)
-	ttpl:onTestError(fakeTestCaseName .. '1', fakeErrorObject)
-	funcName = ' (' ..  fakeErrorObject.func .. ')'
+	ttpl:onTestError(self.fakeTestCaseName .. '2', self.fakeErrorObject)
+	ttpl:onTestError(self.fakeTestCaseName .. '1', self.fakeErrorObject)
+	funcName = ' (' ..  self.fakeErrorObject.func .. ')'
 	local desiredString = '----Errors----\n'
-	                   .. fakeErrorObject.source .. '::' .. fakeTestCaseName .. "2" .. funcName .. '\n'
-	                   .. '\t' .. ttpl:sciteErrorLine(fakeErrorObject)
+	                   .. self.fakeErrorObject.source .. '::' .. self.fakeTestCaseName .. "2" .. funcName .. '\n'
+	                   .. '\t' .. ttpl:sciteErrorLine(self.fakeErrorObject)
 	                   .. "\n------------------------------------------------------------------------------------------------------\n"
-	                   .. fakeErrorObject.source .. '::' .. fakeTestCaseName .. "1" .. funcName .. '\n'
-	                   .. '\t' .. ttpl:sciteErrorLine(fakeErrorObject)
+	                   .. self.fakeErrorObject.source .. '::' .. self.fakeTestCaseName .. "1" .. funcName .. '\n'
+	                   .. '\t' .. ttpl:sciteErrorLine(self.fakeErrorObject)
 	                   .. "\n------------------------------------------------------------------------------------------------------\n"
 	areEq(desiredString, ttpl:totalErrorStr())
 end
 
-function errorObjectFixture.testFailureString()
+function errorObjectFixture.testFailureString(self)
 	local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
 
 	ttpl.outputMessage = function(self, msg) end
-	ttpl:onTestFailure(fakeTestCaseName .. '2', fakeErrorObject)
-	ttpl:onTestFailure(fakeTestCaseName .. '1', fakeErrorObject)
+	ttpl:onTestFailure(self.fakeTestCaseName .. '2', self.fakeErrorObject)
+	ttpl:onTestFailure(self.fakeTestCaseName .. '1', self.fakeErrorObject)
 	
-	funcName = ' (' ..  fakeErrorObject.func .. ')'
+	funcName = ' (' ..  self.fakeErrorObject.func .. ')'
 	local desiredString = '----Failures----\n'
-	                   .. fakeErrorObject.source .. '::' .. fakeTestCaseName .. "2" .. funcName .. '\n'
-	                   .. '\t' .. ttpl:sciteErrorLine(fakeErrorObject)
+	                   .. self.fakeErrorObject.source .. '::' .. self.fakeTestCaseName .. "2" .. funcName .. '\n'
+	                   .. '\t' .. ttpl:sciteErrorLine(self.fakeErrorObject)
 	                   .. "\n------------------------------------------------------------------------------------------------------\n"
-	                   .. fakeErrorObject.source .. '::' .. fakeTestCaseName .. "1" .. funcName .. '\n'
-	                   .. '\t' .. ttpl:sciteErrorLine(fakeErrorObject)
+	                   .. self.fakeErrorObject.source .. '::' .. self.fakeTestCaseName .. "1" .. funcName .. '\n'
+	                   .. '\t' .. ttpl:sciteErrorLine(self.fakeErrorObject)
 	                   .. "\n------------------------------------------------------------------------------------------------------\n"
 	
 	areEq(desiredString, ttpl:totalFailureStr())
 end
 
-function errorObjectFixture.testIgnoreString()
+function errorObjectFixture.testIgnoreString(self)
 	local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
 
 	ttpl.outputMessage = function(self, msg) end
-	ttpl:onTestIgnore(fakeTestCaseName .. '2', fakeErrorObject)
-	ttpl:onTestIgnore(fakeTestCaseName .. '1', fakeErrorObject)
+	ttpl:onTestIgnore(self.fakeTestCaseName .. '2', self.fakeErrorObject)
+	ttpl:onTestIgnore(self.fakeTestCaseName .. '1', self.fakeErrorObject)
 	
 	local desiredString = '----Ignored----\n'
-	                    .. ttpl:sciteErrorLine(fakeErrorObject) .. fakeTestCaseName .. "2\n"
-	                    .. ttpl:sciteErrorLine(fakeErrorObject) .. fakeTestCaseName .. "1" 
+	                    .. ttpl:sciteErrorLine(self.fakeErrorObject) .. self.fakeTestCaseName .. "2\n"
+	                    .. ttpl:sciteErrorLine(self.fakeErrorObject) .. self.fakeTestCaseName .. "1" 
 	                    
 	areEq(desiredString, ttpl:totalIgnoreStr())
 end
 
-function errorObjectFixture.testOutput()
-	local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
+function errorObjectFixture.testOutput(self)
+	local ttpl = testResultHandlers.SciteTextTestProgressHandler:new()
 
 	local function successfullOutput(self, msg) areEq('.', msg) end
 	local function failedOutput(self, msg)        areEq('F', msg) end
@@ -180,40 +168,40 @@ function errorObjectFixture.testOutput()
 	ttpl:onTestsBegin();
 
 	ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
-	ttpl:onTestBegin(fakeTestCaseName, fakeTestName);
+	ttpl:onTestBegin(self.fakeTestCaseName, self.fakeTestName);
 	
 	ttpl.outputMessage = successfullOutput;
-	ttpl:onTestSuccessfull(fakeTestCaseName, fakeTestName);
+	ttpl:onTestSuccessfull(self.fakeTestCaseName, self.fakeTestName);
 	
 	ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
-	ttpl:onTestEnd(fakeTestCaseName, fakeTestName);
+	ttpl:onTestEnd(self.fakeTestCaseName, self.fakeTestName);
 
 	ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
-	ttpl:onTestBegin(fakeTestCaseName, fakeTestName);
+	ttpl:onTestBegin(self.fakeTestCaseName, self.fakeTestName)
 	
-	ttpl.outputMessage = failedOutput;
-	ttpl:onTestFailure(fakeTestCaseName, fakeErrorObject);
+	ttpl.outputMessage = failedOutput
+	ttpl:onTestFailure(self.fakeTestCaseName, self.fakeErrorObject)
 	
-	ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
-	ttpl:onTestEnd(fakeTestCaseName, fakeTestName);
+	ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end
+	ttpl:onTestEnd(self.fakeTestCaseName, self.fakeTestName)
 
-	ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
-	ttpl:onTestBegin(fakeTestCaseName, fakeTestName);
+	ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end
+	ttpl:onTestBegin(self.fakeTestCaseName, self.fakeTestName)
 	
 	ttpl.outputMessage = errorOutput;
-	ttpl:onTestError(fakeTestCaseName, fakeErrorObject);
+	ttpl:onTestError(self.fakeTestCaseName, self.fakeErrorObject);
 	
-	ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
-	ttpl:onTestEnd(fakeTestCaseName, fakeTestName);
+	ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end
+	ttpl:onTestEnd(self.fakeTestCaseName, self.fakeTestName);
 
 	ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
-	ttpl:onTestBegin(fakeTestCaseName, fakeTestName);
+	ttpl:onTestBegin(self.fakeTestCaseName, self.fakeTestName);
 	
 	ttpl.outputMessage = ignoredOutput;
-	ttpl:onTestIgnore(fakeTestCaseName, fakeErrorObject);
+	ttpl:onTestIgnore(self.fakeTestCaseName, self.fakeErrorObject);
 	
 	ttpl.outputMessage = function(self, msg) areEq('Must not any output message', msg) end;
-	ttpl:onTestEnd(fakeTestCaseName, fakeTestName);
+	ttpl:onTestEnd(self.fakeTestCaseName, self.fakeTestName);
 	
 	ttpl.outputMessage = function(self, msg) end;
 	ttpl:onTestsEnd();
@@ -227,12 +215,12 @@ function errorObjectFixture.emptyEndTestsTest()
 	ttpl:onTestsEnd();
 end
 
-function errorObjectFixture.filledEndTestsTest()
+function errorObjectFixture.filledEndTestsTest(self)
 	local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
 	
 	ttpl.outputMessage = function(self, msg) end;
-	ttpl:onTestFailure(fakeTestCaseName, fakeErrorObject);
-	ttpl:onTestError(fakeTestCaseName, fakeErrorObject);
+	ttpl:onTestFailure(self.fakeTestCaseName, self.fakeErrorObject);
+	ttpl:onTestError(self.fakeTestCaseName, self.fakeErrorObject);
 	
 	function ttpl:outputMessage(msg) 
 		areEq(']\n' .. self:totalResultsStr() .. '\n' .. self:totalFailureStr() .. '\n' .. self:totalErrorStr(), msg);
@@ -249,7 +237,7 @@ function sciteTextTestProgressListenerFixture.derivationTextTestListenerTest()
 	isNotNil(sttpl.outputMessage)
 end
 
-function errorObjectFixture.testXmlListenerSimulateTestRunning()
+function errorObjectFixture.testXmlListenerSimulateTestRunning(self)
     local ttpl = testResultHandlers.XmlTestResultHandler:new()
     
     function ttpl:outputMessage(message)
@@ -258,27 +246,27 @@ function errorObjectFixture.testXmlListenerSimulateTestRunning()
     ttpl:onTestsBegin()
 
     areEq(0, #ttpl.tableWithSuccesses)
-    ttpl:onTestBegin(fakeTestCaseName, fakeTestName)
-    ttpl:onTestSuccessfull(fakeTestCaseName)
-    ttpl:onTestEnd(fakeTestCaseName, fakeTestName)
+    ttpl:onTestBegin(self.fakeTestCaseName, self.fakeTestName)
+    ttpl:onTestSuccessfull(self.fakeTestCaseName)
+    ttpl:onTestEnd(self.fakeTestCaseName, self.fakeTestName)
     areEq(1, #ttpl.tableWithSuccesses)
     
     areEq(0, #ttpl.tableWithFailures)
-    ttpl:onTestBegin(fakeTestCaseName, fakeTestName)
-    ttpl:onTestFailure(fakeTestCaseName, fakeErrorObject)
-    ttpl:onTestEnd(fakeTestCaseName, fakeTestName)
+    ttpl:onTestBegin(self.fakeTestCaseName, self.fakeTestName)
+    ttpl:onTestFailure(self.fakeTestCaseName, self.fakeErrorObject)
+    ttpl:onTestEnd(self.fakeTestCaseName, self.fakeTestName)
     isNotNil(next(ttpl.tableWithFailures))
 
     areEq(0, #ttpl.tableWithErrors)
-    ttpl:onTestBegin(fakeTestCaseName, fakeTestName)
-    ttpl:onTestError(fakeTestCaseName, fakeErrorObject)
-    ttpl:onTestEnd(fakeTestCaseName, fakeTestName)
+    ttpl:onTestBegin(self.fakeTestCaseName, self.fakeTestName)
+    ttpl:onTestError(self.fakeTestCaseName, self.fakeErrorObject)
+    ttpl:onTestEnd(self.fakeTestCaseName, self.fakeTestName)
    isNotNil(next(ttpl.tableWithErrors))
 
     areEq(0, #ttpl.tableWithIgnores)
-    ttpl:onTestBegin(fakeTestCaseName, fakeTestName)
-    ttpl:onTestIgnore(fakeTestCaseName)
-    ttpl:onTestEnd(fakeTestCaseName, fakeTestName)
+    ttpl:onTestBegin(self.fakeTestCaseName, self.fakeTestName)
+    ttpl:onTestIgnore(self.fakeTestCaseName)
+    ttpl:onTestEnd(self.fakeTestCaseName, self.fakeTestName)
     isNotNil(next(ttpl.tableWithIgnores))
     
     ttpl:onTestsEnd()
@@ -294,7 +282,7 @@ function errorObjectFixture.fix_failed_test_result_handler_not_passed_if_there_a
     local fixFailed = testResultHandlers.FixFailed:new()
     isFalse(fixFailed:passed())
 
-    fixFailed:onTestIgnore(fakeTestCaseName)
+    fixFailed:onTestIgnore(self.fakeTestCaseName)
     isFalse(fixFailed:passed())
 
     fixFailed:onLtueFound{path = self.testContainerPath, ltue = self.ltue}
@@ -354,12 +342,10 @@ function errorObjectFixture.fix_failed_test_result_handler_not_passed_on_last_su
 	isFalse(fixFailed:passed())
 end
 
---- @todo Add test if one unsuccessfull event, that all successfull, and FixFailed:passed() return false
-
-function _load_test_container_text_messages_test()
+function text_load_test_container_error_loading_one_test_container()
     local handler = testResultHandlers.TextLoadTestContainerHandler:new()
-    local message
-    handler.outputMessage = function(msg) message = message..msg end;
+    local message = ''
+    handler.outputMessage = function(self, msg) message = message..msg end;
     
     local testContainerPath = './load_test_container_text_messages_test.t.lua'
     
@@ -368,6 +354,23 @@ function _load_test_container_text_messages_test()
     handler:onLoadEnd()
     areEq('Could not load 1 test container:\n'
         ..'\t'..testContainerPath..': '..errMsg..'\n',
-        message..'\n')
+        message)
 end
 
+function text_load_test_container_error_loading_two_test_container()
+    local handler = testResultHandlers.TextLoadTestContainerHandler:new()
+
+    local message = ''
+    handler.outputMessage = function(self, msg) message = message..msg end;
+    
+    local testContainerPath = './load_test_container_text_messages_test.t.lua'
+    
+    local errMsg = 'Cannot find such file or directory'
+    handler:onLoadError{path = testContainerPath, message = errMsg}
+    handler:onLoadError{path = testContainerPath}
+    handler:onLoadEnd()
+    areEq('Could not load 2 test containers:\n'
+        ..'\t'..testContainerPath..': '..errMsg..'\n'	
+        ..'\t'..testContainerPath..': LTUE not found\n'
+        , message)
+end

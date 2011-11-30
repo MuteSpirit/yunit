@@ -89,6 +89,7 @@ LoadTestContainerHandler =
     onLtueFound =       function(self, info) end; -- usual 'info' is {path = testContainerPath, ltue = ltue}
     onLoadSuccess =     function(self, info) end; -- usual 'info' is {path = testContainerPath, numOfTests = #tests}
     onLoadError =       function(self, info) end; -- usual 'info' is {path = testContainerPath, message}
+    onLoadEnd =         function(self) end;
 
     new = function(self)
         local o = {};
@@ -119,11 +120,12 @@ LoadTestContainerHandlerList =
         end
     end;
 
-    onLoadBegin =       function(self, info) self:callHandlersMethod('onLoadBegin', info) end;
-    onLtueNotFound =    function(self, info) self:callHandlersMethod('onLtueNotFound', info) end;
-    onLtueFound =       function(self, info) self:callHandlersMethod('onLtueFound', info) end;
-    onLoadSuccess =     function(self, info) self:callHandlersMethod('onLoadSuccess', info) end;
-    onLoadError =       function(self, info) self:callHandlersMethod('onLoadError', info) end;
+    onLoadBegin =    function(self, info) self:callHandlersMethod('onLoadBegin', info) end;
+    onLtueNotFound = function(self, info) self:callHandlersMethod('onLtueNotFound', info) end;
+    onLtueFound =    function(self, info) self:callHandlersMethod('onLtueFound', info) end;
+    onLoadSuccess =  function(self, info) self:callHandlersMethod('onLoadSuccess', info) end;
+    onLoadError =    function(self, info) self:callHandlersMethod('onLoadError', info) end;
+    onLoadEnd =      function(self, info) self:callHandlersMethod('onLoadEnd', info) end;
 }
 ------------------------------------------------------
 
@@ -371,6 +373,7 @@ TestRunner =
         self.resultHandlers_:onTestsBegin()
         self:runTestsOfTestContainer(testContainerPath)
         self.resultHandlers_:onTestsEnd()
+        self.loadHandlers_:onLoadEnd()
 
         lfs.chdir(previousWorkingDir)
     end;
@@ -399,6 +402,7 @@ TestRunner =
         end
         
         self.resultHandlers_:onTestsEnd()
+        self.loadHandlers_:onLoadEnd()
 
         lfs.chdir(previousWorkingDir)
         
