@@ -224,7 +224,7 @@ function XmlTestResultHandler:new()
 end
 
 function XmlTestResultHandler:outputMessage(message)
-    io.write(message);
+    io.write(message)
 end
 
 function XmlTestResultHandler:onTestSuccessfull(testCaseName)
@@ -358,6 +358,23 @@ function FixFailed:passed()
     return self.thereIsAlmostOneTest_ and not self.thereIsFailureTest_ and not self.thereIsAlmostOneNotLoadedTestContainer_
 end
 
+function FixFailed:message()
+    local msg = "Test run executed with error(s): "
+    if not self.thereIsAlmostOneTest_ then
+        msg = msg .. 'no one test has been run;'
+    end
+    
+    if self.thereIsFailureTest_ then
+        msg = msg .. ' almost one test has been failed;'
+    end
+    
+    if self.thereIsAlmostOneNotLoadedTestContainer_ then
+        msg = msg .. ' almost one test container has not been loaded'
+    end
+    
+    return msg
+end
+
 function FixFailed:onTestSuccessfull(testCaseName)
     self.thereIsAlmostOneTest_ = true
 end
@@ -402,6 +419,41 @@ end
 
 ------------------------------------------------------
 TextLoadTestContainerHandler = testRunner.LoadTestContainerHandler:new()
+
+function TextLoadTestContainerHandler:new()
+    local o = 
+    {
+        notLoadedTestContainers_ = {};
+    }
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function TextLoadTestContainerHandler:outputMessage(message)
+    io.write(message)
+end
+
+function TextLoadTestContainerHandler:onLtueNotFound(info)
+    table.insert(self.notLoadedTestContainers_, info)
+end
+
+function TextLoadTestContainerHandler:onLoadError(info)
+    table.insert(self.notLoadedTestContainers_, info)
+end
+
+function TextLoadTestContainerHandler:onLoadEnd()
+    local msg = {}
+    local numberOfNotLoaded = #self.notLoadedTestContainers_
+    
+    table.insert(msg, string.format('Could not load %d test container%s:', numberOfNotLoaded, 1 == numberOfNotLoaded and '' or 's'))
+    for _, info in pairs(self.notLoadedTestContainers_) do
+        local errMsg = info.message or 'LTUE not found'
+        table.insert(msg, '\t'..info.path..': '..errMsg)
+    end
+    table.insert(msg, '')
+    self:outputMessage(table.concat(msg, '\n'))
+end
 
 
 return _M

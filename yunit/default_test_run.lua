@@ -18,6 +18,7 @@ function runFrom(dirPaths)
     local runner = makeDefaultTestRunner()
     local fixFailed = testResultHandlers.FixFailed:new()
     runner:addResultHandler(fixFailed)
+    runner:addLoadtHandler(fixFailed)
 
     for _, dirPath in pairs(dirPaths) do
         runner:lookTestsAt(dirPath)
@@ -26,7 +27,7 @@ function runFrom(dirPaths)
     runner:runAll()
 
     if not fixFailed:passed() then
-        print("Test run executed with fail(es) and/or error(s)")
+        print(fixFailed:message())
         os.exit(-1)
     end
 end
@@ -35,6 +36,7 @@ function run(testContainerPath)
     local runner = makeDefaultTestRunner()
     local fixFailed = testResultHandlers.FixFailed:new()
     runner:addResultHandler(fixFailed)
+    runner:addLoadtHandler(fixFailed)
     
     runner:runTestsOf(testContainerPath)
 
