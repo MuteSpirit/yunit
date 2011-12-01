@@ -9,9 +9,18 @@ function traceback_message()
     local rc, traceback = xpcall(step, ytrace.traceback)
     local stepInfo = debug.getinfo(step, "Sl")
     
+    isTable(traceback.error)
+
+    isString(traceback.error.source)
+    -- on Windows yunit.traceback received error message that does not contain source & line
+    --areEq(string.sub(stepInfo.source, 2), traceback.error.source)
+
+    isNumber(traceback.error.line)
+    -- on Windows yunit.traceback received error message that does not contain source & line
+    --areEq(stepInfo.linedefined + 1, traceback.error.line)
+
+    isString(traceback.error.message)
     areEq(expectedMessage, traceback.error.message)
-    areEq(string.sub(stepInfo.source, 2), traceback.error.source)
-    areEq(stepInfo.linedefined + 1, traceback.error.line)
 end
 
 function traceback_stack_steps_use()

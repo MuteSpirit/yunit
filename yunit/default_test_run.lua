@@ -28,6 +28,8 @@ function runFrom(dirPaths)
 
     if not fixFailed:passed() then
         print(fixFailed:message())
+        io.stdout:flush()
+        io.stderr:flush()
         os.exit(-1)
     end
 end
@@ -41,7 +43,9 @@ function run(testContainerPath)
     runner:runTestsOf(testContainerPath)
 
     if not fixFailed:passed() then
-        print("Test run executed with fail(es) and/or error(s)")
+        print(fixFailed:message())
+        io.stdout():flush()
+        io.stderr():flush()
         os.exit(-1)
     end
 end

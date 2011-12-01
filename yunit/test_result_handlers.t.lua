@@ -151,7 +151,7 @@ function errorObjectFixture.testIgnoreString(self)
 	
 	local desiredString = '----Ignored----\n'
 	                    .. ttpl:sciteErrorLine(self.fakeErrorObject) .. self.fakeTestCaseName .. "2\n"
-	                    .. ttpl:sciteErrorLine(self.fakeErrorObject) .. self.fakeTestCaseName .. "1" 
+	                    .. ttpl:sciteErrorLine(self.fakeErrorObject) .. self.fakeTestCaseName .. "1\n" 
 	                    
 	areEq(desiredString, ttpl:totalIgnoreStr())
 end

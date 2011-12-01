@@ -78,11 +78,34 @@ LUA_METHOD(Trace, traceback)
         strncpy(msg, message, len);
         msg[len] = '\0';
 
-        char *errorSource = 0, *errorLine = 0, *errorMessage = 0;
+        char *errorSource = 0;
+        char *errorLine = 0;
+        char *errorMessage = 0;
         {
-            const char* tokensDelimiter = ":";
+            // @todo On Windows full path contain disk letter and : in the begin!!!
 
-            errorSource = ::strtok(msg, tokensDelimiter);
+            const char* p = msg;
+            // find regex patter ":%d"
+            for (; p && *p; ++p)
+                if (':' == *p && (p + 1) && *(p + 1) && isdigit(*(p + 1)))
+                    break;
+
+            if (p && *p)
+            {// we stay on ':' and before digit
+                errorSource = msg;
+                *p++ = '\0';
+                errorLine = p;
+
+                for (; p && *p && *p != ':'; ++p)
+                    ;
+
+                if (p && *p)
+                {
+                    *p++ = '\0';
+                    errorMessage = p;
+                }
+            }
+
             errorLine = ::strtok(NULL, tokensDelimiter);
             errorMessage = ::strtok(NULL, tokensDelimiter);
 
@@ -109,13 +132,13 @@ LUA_METHOD(Trace, traceback)
         }        
         else
         {
-            lua.push("");
+            lua.push("unknown");
             lua.setfield(errorIdx, "source");
 
             lua.push(-1);
             lua.setfield(errorIdx, "line");
 
-            lua.push(msg, len);
+            lua.push(message);
             lua.setfield(errorIdx, "message");
         }
         
