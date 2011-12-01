@@ -12,10 +12,10 @@ if(WIN32)
     if(NOT LUA_LIBRARY)
         set(LUA_VERSION 5.2)
         find_library(LUA_CORE_LIBRARY NAMES lua_core
-                                $ENV{PROGRAMFILES}/lua/5.2/lib
+                                PATHS $ENV{PROGRAMFILES}/lua/5.2/lib
         )
         find_library(LUA_LIB_LIBRARY NAMES lua_lib
-                                $ENV{PROGRAMFILES}/lua/5.2/lib
+                                PATHS $ENV{PROGRAMFILES}/lua/5.2/lib
         )
         set(LUA_LIBRARY ${LUA_CORE_LIBRARY} ${LUA_LIB_LIBRARY})
         

@@ -119,7 +119,7 @@ function TextTestProgressHandler:onTestsEnd()
     end
 
     local str = self:totalIgnoreStr()
-    if string.len(str) > 0 then 
+    if str and '' ~= str then 
         table.insert(res, str)
     end
 
@@ -133,7 +133,7 @@ function TextTestProgressHandler:addFailedTestsMessageLines(res, tests)
         testName, errorObject = record[1], record[2]
 
         local funcName = ''
-        if string.len(errorObject.func) > 0 then
+        if errorObject.func and '' ~= errorObject.func then
             funcName = ' (' ..  errorObject.func .. ')'
         end
         
@@ -142,7 +142,8 @@ function TextTestProgressHandler:addFailedTestsMessageLines(res, tests)
 
         if errorObject.traceback then
             for _, step in ipairs(errorObject.traceback) do
-                table.insert(res, '\t' .. self:editorSpecifiedErrorLine{source = step.source, line = step.line, message = step.funcname})
+                local sourcePathWithoutFirstSymbol = string.sub(step.source, 2)
+                table.insert(res, '\t' .. self:editorSpecifiedErrorLine{source = sourcePathWithoutFirstSymbol, line = step.line, message = step.funcname})
             end
         end
         
@@ -184,7 +185,9 @@ function TextTestProgressHandler:totalIgnoreStr()
         testName, errorObject = record[1], record[2]
         table.insert(res, self:editorSpecifiedErrorLine(errorObject) ..  testName)
     end;
-    
+
+    table.insert(res, '') -- for ending \n
+
     return table.concat(res, '\n')
 end
 

@@ -301,17 +301,12 @@ end
 -------------------------------------------------------
 callTestCaseMethod = function(testcase, testFunc)
 -------------------------------------------------------
-    local rc, stackTraceback, errorLevel
-    if _VERSION == 'Lua 5.2' then
-        rc, stackTraceback = xpcall(testFunc, ytrace.traceback, testcase);
-        errorLevel = 3
-    else
-        local function callMethod()
-            testFunc(testcase)
-        end
-        rc, stackTraceback = xpcall(callMethod, ytrace.traceback)
-        errorLevel = 4
+    -- use code of xpcall call, compatible with Lua 5.1 and Lua 5.2
+    local function callMethod()
+        testFunc(testcase)
     end
+    local rc, stackTraceback = xpcall(callMethod, ytrace.traceback)
+    local errorLevel = 3
     
     if stackTraceback then
         local errorObject = 
