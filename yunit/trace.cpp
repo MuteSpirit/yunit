@@ -27,7 +27,7 @@ int YUNIT_API luaopen_yunit_trace(lua_State *L)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-LUA_METHOD(Trace, trace)
+LUA_META_METHOD(Trace, trace)
 {
     const int msgArgInd = -1;
     if (lua_isstring(L, msgArgInd))
@@ -52,7 +52,7 @@ static void pushfuncname (lua_State *L, lua_Debug *ar);
 #define LEVELS2	10	/* size of the second part of the stack */
 
 
-LUA_METHOD(Trace, traceback)
+LUA_META_METHOD(Trace, traceback)
 {
     LuaState lua(L); /// @todo Add 'LuaState lua(L)' in macro as function argument
     
@@ -84,36 +84,36 @@ LUA_METHOD(Trace, traceback)
         {
             // @todo On Windows full path contain disk letter and : in the begin!!!
 
-            const char* p = msg;
-            // find regex patter ":%d"
-            for (; p && *p; ++p)
-                if (':' == *p && (p + 1) && *(p + 1) && isdigit(*(p + 1)))
-                    break;
+            //const char* p = msg;
+            //// find regex patter ":%d"
+            //for (; p && *p; ++p)
+            //    if (':' == *p && (p + 1) && *(p + 1) && isdigit(*(p + 1)))
+            //        break;
 
-            if (p && *p)
-            {// we stay on ':' and before digit
-                errorSource = msg;
-                *p++ = '\0';
-                errorLine = p;
+            //if (p && *p)
+            //{// we stay on ':' and before digit
+            //    errorSource = msg;
+            //    *p++ = '\0';
+            //    errorLine = p;
 
-                for (; p && *p && *p != ':'; ++p)
-                    ;
+            //    for (; p && *p && *p != ':'; ++p)
+            //        ;
 
-                if (p && *p)
-                {
-                    *p++ = '\0';
-                    errorMessage = p;
-                }
-            }
+            //    if (p && *p)
+            //    {
+            //        *p++ = '\0';
+            //        errorMessage = p;
+            //    }
+            //}
 
-            errorLine = ::strtok(NULL, tokensDelimiter);
-            errorMessage = ::strtok(NULL, tokensDelimiter);
+            //errorLine = ::strtok(NULL, tokensDelimiter);
+            //errorMessage = ::strtok(NULL, tokensDelimiter);
 
-            const char* p = errorLine;
-            for (; p && *p && isdigit(*p); ++p)
-                ;
-            if (p && *p) // msg does not contain message in format "source:line: message"
-                errorSource = errorLine = errorMessage = 0;
+            //const char* p = errorLine;
+            //for (; p && *p && isdigit(*p); ++p)
+            //    ;
+            //if (p && *p) // msg does not contain message in format "source:line: message"
+            //    errorSource = errorLine = errorMessage = 0;
         }
         
         if (errorSource && errorLine && errorMessage)
