@@ -13,14 +13,8 @@
 /// \class TestCase
 /// \brief Interface class for run single test function. We will use this class as fundamental
 
-/// \class TestSuite
-/// \brief Class, containing several TestCase objects. It can't run them, it is only container for them.
-
 /// \class TestRegistry
 /// \brief Singleton. Contains all C++ TestSuites, consequently contains all TestCases.
-
-/// \class template<typename TestSuiteClass> class RegisterTestSuite
-/// \brief Create at constructor static object of TestSuiteClass type, then register it into TestRegistry
 
 /// \class template<typename TestCaseClass> class RegisterTestCase
 /// \brief Create at constructor static object of TestCaseClass type, then add it into TestSuite, whitch pointer is

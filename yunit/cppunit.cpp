@@ -57,7 +57,7 @@ int YUNIT_API luaopen_yunit_cppunit(lua_State* L)
     return 1;
 }
 
-LUA_METHOD(Cppunit, getTestContainerExtensions)
+LUA_META_METHOD(Cppunit, getTestContainerExtensions)
 {
     const char** ext = YUNIT_NS::getTestContainerExtensions();
 
@@ -76,7 +76,7 @@ LUA_METHOD(Cppunit, getTestContainerExtensions)
     return 1;
 }
 
-LUA_METHOD(Cppunit, loadTestContainer)
+LUA_META_METHOD(Cppunit, loadTestContainer)
 {
     using namespace YUNIT_NS;
     
@@ -179,7 +179,7 @@ static int callTestCaseThunk(lua_State* L, TestCase* testCase, Thunk thunk);
 static bool wereCatchedCppExceptions(lua_State* L, TestCase* testCase, Thunk thunk, int& countReturnValues);
 static int luaPushErrorObject(lua_State* L, const SourceLine& source, const char* message);
 
-LUA_METHOD(TestCase, setUp)
+LUA_META_METHOD(TestCase, setUp)
 {
     LuaState lua(L);
 
@@ -187,7 +187,7 @@ LUA_METHOD(TestCase, setUp)
     return callTestCaseThunk(lua, tc, tc->setUpThunk());
 }
 
-LUA_METHOD(TestCase, test)
+LUA_META_METHOD(TestCase, test)
 {
     LuaState lua(L);
 
@@ -195,7 +195,7 @@ LUA_METHOD(TestCase, test)
     return callTestCaseThunk(lua, tc, tc->testThunk());
 }
 
-LUA_METHOD(TestCase, tearDown)
+LUA_META_METHOD(TestCase, tearDown)
 {
     LuaState lua(L);
 
@@ -203,7 +203,7 @@ LUA_METHOD(TestCase, tearDown)
     return callTestCaseThunk(lua, tc, tc->tearDownThunk());
 }
 
-LUA_METHOD(TestCase, isIgnored)
+LUA_META_METHOD(TestCase, isIgnored)
 {
     LuaState lua(L);
     
@@ -212,7 +212,7 @@ LUA_METHOD(TestCase, isIgnored)
     return 1;
 }
 
-LUA_METHOD(TestCase, lineNumber)
+LUA_META_METHOD(TestCase, lineNumber)
 {
     LuaState lua(L);
 
@@ -221,7 +221,7 @@ LUA_METHOD(TestCase, lineNumber)
     return 1;
 }
 
-LUA_METHOD(TestCase, fileName)
+LUA_META_METHOD(TestCase, fileName)
 {
     LuaState lua(L);
 
@@ -230,7 +230,7 @@ LUA_METHOD(TestCase, fileName)
     return 1;
 }
 
-LUA_METHOD(TestCase, name)
+LUA_META_METHOD(TestCase, name)
 {
     LuaState lua(L);
 

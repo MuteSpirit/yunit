@@ -18,7 +18,7 @@ extern "C" {
 }
 #endif
 
-#define LUA_METHOD(CppType, method)\
+#define LUA_META_METHOD(CppType, method)\
     static int method##CppType(lua_State* L);\
     static AddMethod<CppType> add##method##to##CppType##Wrapper(#method, &method##CppType);\
     static int method##CppType(lua_State* L)
