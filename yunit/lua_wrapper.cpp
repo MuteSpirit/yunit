@@ -67,7 +67,13 @@ void LuaState::pushnil()
 
 void LuaState::pushglobaltable()
 {
+#if LUA_VERSION_NUM == 501
     lua_pushvalue(l_, LUA_GLOBALSINDEX);
+#elif LUA_VERSION_NUM == 502
+    lua_pushglobaltable(l_);
+#else
+#  error Unsupported Lua version
+#endif
 }
 
 void LuaState::pop(int n)

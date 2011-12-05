@@ -20,15 +20,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef __cplusplus
 extern "C" {
-#endif
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#ifdef __cplusplus
 }
-#endif
 
 #define YUNIT_DLL_EXPORTS
 #include "cppunit.h"

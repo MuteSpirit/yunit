@@ -5,8 +5,13 @@
 #ifndef _YUNIT_LUA_WRAPPER_HEADER_
 #define _YUNIT_LUA_WRAPPER_HEADER_
 
+extern "C" {
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+}
+
 #include <vector>
-#include "lua.hpp"
 
 /// @todo If use next define
 /// #define ... (className, methodName)
