@@ -80,7 +80,7 @@ set_target_properties(yunit PROPERTIES
 #
 # yunit.t
 #
-add_library(yunit.t SHARED cppunit.t.cpp trace.t.cpp)
+add_library(yunit.t SHARED cppunit.t.cpp trace.t.cpp lua_wrapper.t.cpp)
 target_link_libraries(yunit.t yunit)
 set_target_properties(yunit.t PROPERTIES PREFIX "")
 add_dependencies(yunit.t yunit)
