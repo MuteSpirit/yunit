@@ -1,28 +1,34 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// class_wrapper.h
+// lua_wrapper.h
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef _YUNIT_LUA_CLASS_WRAPPER_HEADER_
-#define _YUNIT_LUA_CLASS_WRAPPER_HEADER_
+#ifndef _YUNIT_LUA_WRAPPER_HEADER_
+#define _YUNIT_LUA_WRAPPER_HEADER_
 
 #include <vector>
+#include "lua.hpp"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "lua.h"
-#include "lauxlib.h"
-
-#ifdef __cplusplus
-}
-#endif
+/// @todo If use next define
+/// #define ... (className, methodName)
+/// static struct SomeName
+/// {
+///     SomeName()
+///     {
+///         LuaWrapper<className>::addMethod(methodName, &(SomeName::method));
+///     }
+///     static int method(lua_State* L)
+///     {
+///         ...
+///     }
+/// } someVariable ## WRAP_QUOTES(__LINE__);
+/// it allow you to make method functions inside other functions, not only in global space as now
 
 #define LUA_META_METHOD(CppType, method)\
     static int method##CppType(lua_State* L);\
     static AddMethod<CppType> add##method##to##CppType##Wrapper(#method, &method##CppType);\
     static int method##CppType(lua_State* L)
 
+/// @todo More good idea is store metatable name inside LuaWrapper<T>::metatableName_
 #define MT_NAME(CppType) #CppType "Metatable"
 
 #define LUA_CHECK_ARG(luaType, idx)\
@@ -47,12 +53,14 @@ public:
     void push(const char* s);
     void push(const char* s, size_t len);
     void pushvalue(int idx);
-    void pushnil();
+    void pushnil(); /// @todo add special struct Nil and make void push(Nil)
+    void pushglobaltable();
 
     template<typename CppType>
     void push(CppType* cppObj, const char* mtName);
     
     void pop(int n);
+    void remove(int idx);
     
     void rawseti(int idx, int n);
     
@@ -66,7 +74,9 @@ public:
     
     void getglobal(const char* name);
     void getfield(int idx, const char* key);
+    
     int gettop();    
+    void settop(int idx);
     
     const char* to(int idx, size_t* len);
     void to(int idx, const char** str, size_t* len);
@@ -75,7 +85,7 @@ public:
     template<typename CppType>
     void to(int idx, CppType** cppObj);
     
-    void remove(int idx);
+    void getinfo(const char *what, lua_Debug *ar);
     
 private:
     lua_State* l_;    
@@ -84,13 +94,13 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename CppType>
-class LuaWrapper
+class LuaWrapper /// @todo Rename to ClassMetatable
 {
 public:
     static LuaWrapper& instance();
 
     void addMethod(const char *name, lua_CFunction func);
-
+    /// @todo replace next 2 method with registerInTable
     void makeMetatable(lua_State* L, const char* mtName);
     void regLib(lua_State* L, const char* name);
     
@@ -225,6 +235,6 @@ int dtor(lua_State* L)
     }
 }
 
-#endif // _YUNIT_LUA_CLASS_WRAPPER_HEADER_
+#endif // _YUNIT_LUA_WRAPPER_HEADER_
 
 

@@ -65,6 +65,11 @@ void LuaState::pushnil()
     lua_pushnil(l_);
 }
 
+void LuaState::pushglobaltable()
+{
+    lua_pushvalue(l_, LUA_GLOBALSINDEX);
+}
+
 void LuaState::pop(int n)
 {
     lua_pop(l_, n);
@@ -125,6 +130,11 @@ int LuaState::gettop()
     return lua_gettop(l_);
 }
 
+void LuaState::settop(int idx)
+{
+    lua_settop(l_, idx);
+}
+
 void LuaState::to(int idx, const char** str, size_t* len)
 {
     *str = lua_tolstring(l_, idx, len);
@@ -144,3 +154,9 @@ void LuaState::remove(int idx)
 {
     lua_remove(l_, idx);
 }
+
+void LuaState::getinfo(const char *what, lua_Debug *ar)
+{
+    lua_getinfo(l_, what, ar);
+}
+

@@ -58,6 +58,8 @@ makeDefaultTestRunner = function()
     if testResultHandler then
         runner:addResultHandler(testResultHandler)
     end
+
+    runner:addLoadtHandler(testResultHandlers.TextLoadTestContainerHandler:new())
     
     local listOfUsedLtueWasNotSpecifiedInCommandLine = not next(usedLtueArray)
     
