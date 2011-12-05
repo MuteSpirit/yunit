@@ -72,15 +72,14 @@ else(MSVC)
 endif(MSVC)
 #
 # yunit
-
-add_library(yunit SHARED yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.cpp)
-
+#
+add_library(yunit SHARED yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.h trace.cpp)
 target_link_libraries(yunit ${LUA_LIBRARY})
 set_target_properties(yunit PROPERTIES 
                       PREFIX "")
 #
 # yunit.t
-
+#
 add_library(yunit.t SHARED cppunit.t.cpp trace.t.cpp)
 target_link_libraries(yunit.t yunit)
 set_target_properties(yunit.t PROPERTIES PREFIX "")

@@ -248,19 +248,25 @@ static int findfield (lua_State *L, int objidx, int level) {
 }
 
 
-static int pushglobalfuncname (lua_State *L, lua_Debug *ar) {
-  int top = lua_gettop(L);
-  lua_getinfo(L, "f", ar);  /* push function */
-  lua_pushglobaltable(L);
-  if (findfield(L, top + 1, 2)) {
-    lua_copy(L, -1, top + 1);  /* move name to proper place */
-    lua_pop(L, 2);  /* remove pushed values */
-    return 1;
-  }
-  else {
-    lua_settop(L, top);  /* remove function and global table */
-    return 0;
-  }
+static int pushglobalfuncname (lua_State *L, lua_Debug *ar)
+{
+    LuaState lua(L);
+    
+    int top = lua.gettop();
+    lua.getinfo("f", ar);  /* push function */
+    lua.pushglobaltable(); /* push table */
+    if (findfield(L, top + 1, 2)) /* push string if find */
+    {
+        /* save name and remove all other pushed values */
+        lua.remove(-2); /* remove global table */ 
+        lua.remove(-2); /* remove function */
+        return 1;
+    }
+    else
+    {
+        lua.settop(top);  /* remove function and global table */
+        return 0;
+    }
 }
 
 
