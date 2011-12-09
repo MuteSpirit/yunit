@@ -126,6 +126,82 @@ struct AddMethod
     AddMethod(const char *name, lua_CFunction func);
 };
 
+namespace Lua {
+
+const struct _Nil {} Nil;
+const struct _Value {} Value;
+const struct _Globaltable {} Globaltable;
+const struct _Function {} Function;
+const struct _Table {} Table;
+const struct _ {} ;
+
+
+class State
+{
+public:
+    State(lua_State* L);
+    operator lua_State*();
+
+    void close();
+
+    void push(int v);
+    void push(long v);
+    void push(unsigned int v);
+    void push(unsigned long v);
+    void push(double v);
+    void push(bool v);
+    void push(const char* s);
+    void push(const std::string& s);
+    void push(_Nil);
+    void push(_Value, int idx);
+    void push(_Globaltable);
+    void push(lua_CFunction fn, int numOfUpvalues = 0);
+    void push(void* lightuserdata);
+
+    // specialized for many base types
+    template<typename T>
+    T to(int);
+
+    void pop(int n);
+    void remove(int idx);
+
+    int top();
+
+    /// @todo Make proxy object for work with Lua tables
+    void* userdata(size_t size);
+    void table();
+
+    void settable(int idx);
+    void gettable(int idx);
+    void getfield(int idx, const char* key);
+    void setfield(int idx, const char* key);
+
+    void rawset(int idx);
+    void rawget(int idx);
+
+    void getmetatable(int idx);
+    void setmetatable(int idx);
+
+    void openpackage();
+    void opencoroutine();
+    void openbase();
+    void opentable();
+    void openio();
+    void openos();
+    void openstring();
+    void openbit32();
+    void openmath();
+    void opendebug();
+
+    int call(int numOfArgs, int numOfRetValues = LUA_MULTRET);
+    int dofile(const char* filename);
+
+private:
+    lua_State* l_;
+};
+
+} // namespace Lua
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Implementation
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -241,5 +317,3 @@ int dtor(lua_State* L)
 }
 
 #endif // _YUNIT_LUA_WRAPPER_HEADER_
-
-
