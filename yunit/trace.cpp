@@ -5,6 +5,7 @@
 #define YUNIT_DLL_EXPORTS
 #include "yunit.h"
 #include "lua_wrapper.h"
+#include "trace.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -116,21 +117,21 @@ LUA_META_METHOD(Trace, traceback)
             //    errorSource = errorLine = errorMessage = 0;
         }
         
-        if (errorSource && errorLine && errorMessage)
-        {
-            lua.push(errorSource);
-            lua.setfield(errorIdx, "source");
-
-            lua.push(atoi(errorLine));
-            lua.setfield(errorIdx, "line");
-
-            for (; ' ' == *errorMessage; ++errorMessage)
-                ;
-                
-            lua.push(errorMessage);
-            lua.setfield(errorIdx, "message");
-        }        
-        else
+//        if (errorSource && errorLine && errorMessage)
+//        {
+//            lua.push(errorSource);
+//            lua.setfield(errorIdx, "source");
+//
+//            lua.push(atoi(errorLine));
+//            lua.setfield(errorIdx, "line");
+//
+//            for (; ' ' == *errorMessage; ++errorMessage)
+//                ;
+//                
+//            lua.push(errorMessage);
+//            lua.setfield(errorIdx, "message");
+//        }        
+//        else
         {
             lua.push("unknown");
             lua.setfield(errorIdx, "source");
@@ -138,7 +139,7 @@ LUA_META_METHOD(Trace, traceback)
             lua.push(-1);
             lua.setfield(errorIdx, "line");
 
-            lua.push(message);
+            lua.push(msg);
             lua.setfield(errorIdx, "message");
         }
         
@@ -288,3 +289,11 @@ static void pushfuncname (lua_State *L, lua_Debug *ar)
     lua_pushfstring(L, "function <%s:%d>", ar->short_src, ar->linedefined);
 }
 
+namespace YUNIT_NS {
+
+LuaErrorMessage::ParseResult LuaErrorMessage::parse(const char * const s)
+{
+    return ParseResult();
+}
+
+} // namespace YUNIT_NS
