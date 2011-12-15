@@ -54,3 +54,20 @@ syntax: glob
 
 # bak files
 *.*~
+
+# cmake temporary files
+CMakeFiles/
+*/CMakeFiles
+CPack*.*
+CMakeCache.*
+CTest*
+cmake_install.cmake
+
+# NetBeans project dir
+nbproject/
+*/nbproject/
+
+# Mercurial intermediate files
+*.orig
+
+
