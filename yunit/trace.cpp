@@ -7,9 +7,9 @@
 #include "lua_wrapper.h"
 #include "trace.h"
 
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
+#include <cstring>
+#include <cstdlib>
+#include <cctype>
 
 #ifdef _WIN32
 #  include <windows.h>
@@ -74,77 +74,19 @@ LUA_META_METHOD(Trace, traceback)
         const char *message;
         size_t len;
         lua.to(arg + 1, &message, &len);
-                
-        char* msg = new char[len + 1];
-        strncpy(msg, message, len);
-        msg[len] = '\0';
 
-        char *errorSource = 0;
-        char *errorLine = 0;
-        char *errorMessage = 0;
+        YUNIT_NS::LuaErrorMessage::ParseResult parseRes = YUNIT_NS::LuaErrorMessage::parse(message);
         {
-            // @todo On Windows full path contain disk letter and : in the begin!!!
-
-            //const char* p = msg;
-            //// find regex patter ":%d"
-            //for (; p && *p; ++p)
-            //    if (':' == *p && (p + 1) && *(p + 1) && isdigit(*(p + 1)))
-            //        break;
-
-            //if (p && *p)
-            //{// we stay on ':' and before digit
-            //    errorSource = msg;
-            //    *p++ = '\0';
-            //    errorLine = p;
-
-            //    for (; p && *p && *p != ':'; ++p)
-            //        ;
-
-            //    if (p && *p)
-            //    {
-            //        *p++ = '\0';
-            //        errorMessage = p;
-            //    }
-            //}
-
-            //errorLine = ::strtok(NULL, tokensDelimiter);
-            //errorMessage = ::strtok(NULL, tokensDelimiter);
-
-            //const char* p = errorLine;
-            //for (; p && *p && isdigit(*p); ++p)
-            //    ;
-            //if (p && *p) // msg does not contain message in format "source:line: message"
-            //    errorSource = errorLine = errorMessage = 0;
-        }
-        
-//        if (errorSource && errorLine && errorMessage)
-//        {
-//            lua.push(errorSource);
-//            lua.setfield(errorIdx, "source");
-//
-//            lua.push(atoi(errorLine));
-//            lua.setfield(errorIdx, "line");
-//
-//            for (; ' ' == *errorMessage; ++errorMessage)
-//                ;
-//                
-//            lua.push(errorMessage);
-//            lua.setfield(errorIdx, "message");
-//        }        
-//        else
-        {
-            lua.push("unknown");
+            lua.push(parseRes.sourceBegin_, parseRes.sourceEnd_ - parseRes.sourceBegin_);
             lua.setfield(errorIdx, "source");
 
-            lua.push(-1);
+            lua.push(atoi(parseRes.lineBegin_));
             lua.setfield(errorIdx, "line");
 
-            lua.push(msg);
+            lua.push(parseRes.messageBegin_, parseRes.messageEnd_ - parseRes.messageBegin_);
             lua.setfield(errorIdx, "message");
         }
-        
-        delete [] msg;
-        
+       
         lua.setfield(tracebackIdx, "error");
     }
 
@@ -293,7 +235,56 @@ namespace YUNIT_NS {
 
 LuaErrorMessage::ParseResult LuaErrorMessage::parse(const char * const s)
 {
-    return ParseResult();
+    /// @todo it is better to write DFA or use regex (but i have no time :-( )
+
+    ParseResult res;
+    res.sourceBegin_ = s;
+    
+    // assume, that we try to match such regular expression (in Lua syntax):
+    // (.*):(%d+):%s*(.*)
+    
+    const char* p = s;
+    for (;; ++p)
+    {
+        if (!p || !*p)
+            return res;
+        else if (*p != ':')
+            continue;
+        else if (isdigit(*(p + 1)))
+        {
+            res.sourceEnd_ = p;
+            break;
+        }
+    }
+    
+    ++p;
+    res.lineBegin_ = p;
+    
+    for (;; ++p)
+    {
+        if (!p || !*p)
+            return res;
+        else if (*p == ':')
+        {
+            res.lineEnd_ = p;
+            break;
+        }
+        else if (!isdigit(*p))
+            return res;
+    }
+    
+    ++p;
+    for (; p && *p && *p == ' '; ++p)
+        ;
+    
+    res.messageBegin_ = p;
+    
+    for (; p && *p; ++p)
+        ;
+    
+    res.messageEnd_ = p;
+    
+    return res;
 }
 
 } // namespace YUNIT_NS

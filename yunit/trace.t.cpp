@@ -28,7 +28,7 @@ test(parse_error_message_with_windows_full_path)
     areEq(colonBeforeLine + 1, res.lineBegin_);
     areEq(colonAfterLine, res.lineEnd_);
     
-    areEq(colonAfterLine + 1, res.messageBegin_);
+    areEq(colonAfterLine + 1 + sizeof(' '), res.messageBegin_);
     areEq(toLuaErrorHandlerMessageEnd, res.messageEnd_);
 }
 
