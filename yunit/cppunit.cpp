@@ -11,9 +11,11 @@
 #ifdef _WIN32
 #  include <io.h>
 #  define ACCESS_FUNC _access
+#  include <windows.h>
 #else
 #  include <unistd.h> 
 #  define ACCESS_FUNC access
+#  include <dlfcn.h>
 #endif
 
 #include <math.h>
@@ -113,33 +115,29 @@ LUA_META_METHOD(Cppunit, loadTestContainer)
     
     TestCasesRegistry testRegistry;
     TestRegistry::set(&testRegistry);
-    
-    // push error handling function
-    lua.getglobal("debug");
-    lua.getfield(-1, "traceback");
-    lua.remove(-2);
-    //
-    // push function
-    lua.getglobal("package");
-    lua.getfield(-1, "loadlib");
-    lua.remove(-2);
-    //
-    // push arguments
-    lua.push(testContainerPath); // 1st
-    
-    const char* notLoadSpesificFunction = "";
-    lua.push(notLoadSpesificFunction); // 2nd
-    
-    int rc = lua_pcall(lua, 2, 1, -4);
-    if (0 != rc)
+
+#if defined(_WIN32)
+    HMODULE lib = LoadLibraryExA(testContainerPath, NULL, 0);
+    if (lib == NULL)
     {
         lua.push(false);
-        lua.pushvalue(-2); // push copy of error message
-        lua.remove(-3);    // remove original error message from stack
+        int error = GetLastError();
+        char buffer[128];
+        if (FormatMessageA(FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM,
+          NULL, error, 0, buffer, sizeof(buffer)/sizeof(char), NULL))
+            lua.push(buffer);
+        else
+            lua.pushfstring("system error %d\n", error);
         return 2;
     }
-    
-    lua.pop(1);  // remove return value of 'package.loadlib' function
+#else
+    if (NULL == dlopen(testContainerPath, RTLD_NOW | RTLD_GLOBAL))
+    {
+        lua.push(false);
+        lua.push(dlerror());
+        return 2;
+    }
+#endif // WIN32
 
     if (testRegistry.tests_.rbegin() == testRegistry.tests_.rend())
     {
