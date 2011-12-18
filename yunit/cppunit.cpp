@@ -48,7 +48,7 @@ extern "C"
 int YUNIT_API luaopen_yunit_cppunit(lua_State* L)
 {
     using namespace YUNIT_NS;
-    LuaState lua(L);
+    Lua::State lua(L);
 
     luaWrapper<TestCase>().makeMetatable(lua, MT_NAME(TestCase));
     luaWrapper<Cppunit>().regLib(lua, "yunit.cppunit");
@@ -59,9 +59,9 @@ LUA_META_METHOD(Cppunit, getTestContainerExtensions)
 {
     const char** ext = YUNIT_NS::getTestContainerExtensions();
 
-    LuaState lua(L);
+    Lua::State lua(L);
     
-    lua.newtable();
+    lua.push(Lua::Table());
 
     int i = 1;
     while (ext && *ext)
@@ -78,13 +78,13 @@ LUA_META_METHOD(Cppunit, loadTestContainer)
 {
     using namespace YUNIT_NS;
     
-    LuaState lua(L);
+    Lua::State lua(L);
     enum {argIdx = 1};
 
     if (!lua.isstring(argIdx))
     {
         lua.push(false);
-        lua_pushfstring(lua, "expected string as argument type, but was %s", lua.typeName(argIdx));
+        lua.pushf("expected string as argument type, but was %s", lua.typeName(argIdx));
         return 2;
     }
     
@@ -142,11 +142,11 @@ LUA_META_METHOD(Cppunit, loadTestContainer)
     if (testRegistry.tests_.rbegin() == testRegistry.tests_.rend())
     {
         lua.push(false);
-        lua_pushfstring(lua, "no one test case has been loaded from \"%s\"", testContainerPath);
+        lua.pushf("no one test case has been loaded from \"%s\"", testContainerPath);
         return 2;
     }
     
-	lua.newtable(); // return value
+        lua.push(Lua::Table()); // return value
 	
 	Chain<TestCase*>::ReverseIterator it = testRegistry.tests_.rbegin();
 	Chain<TestCase*>::ReverseIterator endIt = testRegistry.tests_.rend();
@@ -175,7 +175,7 @@ static int luaPushErrorObject(lua_State* L, const SourceLine& source, const char
 
 LUA_META_METHOD(TestCase, setUp)
 {
-    LuaState lua(L);
+    Lua::State lua(L);
 
     TestCase* tc; lua.to<TestCase>(1, &tc);
     return callTestCaseThunk(lua, tc, tc->setUpThunk());
@@ -183,7 +183,7 @@ LUA_META_METHOD(TestCase, setUp)
 
 LUA_META_METHOD(TestCase, test)
 {
-    LuaState lua(L);
+    Lua::State lua(L);
 
     TestCase* tc; lua.to<TestCase>(1, &tc);
     return callTestCaseThunk(lua, tc, tc->testThunk());
@@ -191,7 +191,7 @@ LUA_META_METHOD(TestCase, test)
 
 LUA_META_METHOD(TestCase, tearDown)
 {
-    LuaState lua(L);
+    Lua::State lua(L);
 
     TestCase* tc; lua.to<TestCase>(1, &tc);
     return callTestCaseThunk(lua, tc, tc->tearDownThunk());
@@ -199,7 +199,7 @@ LUA_META_METHOD(TestCase, tearDown)
 
 LUA_META_METHOD(TestCase, isIgnored)
 {
-    LuaState lua(L);
+    Lua::State lua(L);
     
     TestCase* tc; lua.to<TestCase>(1, &tc);
     lua.push(tc->isIgnored());
@@ -208,7 +208,7 @@ LUA_META_METHOD(TestCase, isIgnored)
 
 LUA_META_METHOD(TestCase, lineNumber)
 {
-    LuaState lua(L);
+    Lua::State lua(L);
 
     TestCase* tc; lua.to<TestCase>(1, &tc);
     lua.push(tc->source().lineNumber());
@@ -217,7 +217,7 @@ LUA_META_METHOD(TestCase, lineNumber)
 
 LUA_META_METHOD(TestCase, fileName)
 {
-    LuaState lua(L);
+    Lua::State lua(L);
 
     TestCase* tc; lua.to<TestCase>(1, &tc);
     lua.push(tc->source().fileName());
@@ -226,16 +226,16 @@ LUA_META_METHOD(TestCase, fileName)
 
 LUA_META_METHOD(TestCase, name)
 {
-    LuaState lua(L);
+    Lua::State lua(L);
 
     TestCase* tc; lua.to<TestCase>(1, &tc);
-    lua_pushfstring(lua, "%s::%s", tc->source().fileName(), tc->name());
+    lua.pushf("%s::%s", tc->source().fileName(), tc->name());
     return 1;
 }
 
 static int callTestCaseThunk(lua_State* L, TestCase* testCase, Thunk thunk)
 {
-    LuaState lua(L);
+    Lua::State lua(L);
     bool thereAreCppExceptions = false;
     int countReturnValues = 0;
 #ifdef _MSC_VER
@@ -266,7 +266,7 @@ static int callTestCaseThunk(lua_State* L, TestCase* testCase, Thunk thunk)
 /// \todo Return (un)success result status and ErrorObject
 static bool wereCatchedCppExceptions(lua_State* L, TestCase* testCase, Thunk thunk, int& countReturnValues)
 {
-    LuaState lua(L);
+    Lua::State lua(L);
     countReturnValues = 0;
     try
     {
@@ -307,9 +307,9 @@ static int luaPushErrorObject(lua_State* L,
                               const SourceLine& source,
                               const char* message)
 {
-    LuaState lua(L);
+    Lua::State lua(L);
 
-    lua.newtable(); // new Error Object 
+    lua.push(Lua::Table()); // new Error Object 
     
     lua.push(source.fileName());       // source file with error
     lua.setfield(-2, "source");

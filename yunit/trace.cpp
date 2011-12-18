@@ -55,7 +55,8 @@ static void pushfuncname (lua_State *L, lua_Debug *ar);
 
 LUA_META_METHOD(Trace, traceback)
 {
-    LuaState lua(L); /// @todo Add 'LuaState lua(L)' in macro as function argument
+    using namespace Lua;
+    State lua(L);
     
     int arg;
     lua_State *L1 = getthread(L, &arg);
@@ -63,13 +64,13 @@ LUA_META_METHOD(Trace, traceback)
     int numlevels = countlevels(L1);
     int mark = (numlevels > LEVELS1 + LEVELS2) ? LEVELS1 : 0;
 
-    lua.newtable(); // return value 'traceback'
-    int tracebackIdx = lua.gettop();
+    lua.push(Table()); // return value 'traceback'
+    int tracebackIdx = lua.top();
 
     // Make 'error' element of 'traceback'
     {
-        lua.newtable();
-        int errorIdx = lua.gettop();
+        lua.push(Table());
+        int errorIdx = lua.top();
 
         const char *message;
         size_t len;
@@ -94,8 +95,8 @@ LUA_META_METHOD(Trace, traceback)
     {
         lua_Debug debInfo;
 
-        lua.newtable();
-        int stackIdx = lua.gettop();
+        lua.push(Table());
+        int stackIdx = lua.top();
         
         unsigned int cStep = 0;
         
@@ -109,8 +110,8 @@ LUA_META_METHOD(Trace, traceback)
             {
                 lua_getinfo(L1, "Slnt", &debInfo);
 
-                lua.newtable();
-                int stepIdx = lua.gettop();
+                lua.push(Table());
+                int stepIdx = lua.top();
                 
                 if (debInfo.namewhat != '\0')
                 {
@@ -192,9 +193,9 @@ static int findfield (lua_State *L, int objidx, int level) {
 
 static int pushglobalfuncname (lua_State *L, lua_Debug *ar)
 {
-    LuaState lua(L);
+    Lua::State lua(L);
     
-    int top = lua.gettop();
+    int top = lua.top();
     lua.getinfo("f", ar);  /* push function */
     lua.pushglobaltable(); /* push table */
     if (findfield(L, top + 1, 2)) /* push string if find */
@@ -206,7 +207,7 @@ static int pushglobalfuncname (lua_State *L, lua_Debug *ar)
     }
     else
     {
-        lua.settop(top);  /* remove function and global table */
+        lua.top(top);  /* remove function and global table */
         return 0;
     }
 }
