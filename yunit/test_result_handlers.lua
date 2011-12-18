@@ -446,16 +446,17 @@ function TextLoadTestContainerHandler:onLoadError(info)
 end
 
 function TextLoadTestContainerHandler:onLoadEnd()
-    local msg = {}
     local numberOfNotLoaded = #self.notLoadedTestContainers_
-    
-    table.insert(msg, string.format('Could not load %d test container%s:', numberOfNotLoaded, 1 == numberOfNotLoaded and '' or 's'))
-    for _, info in pairs(self.notLoadedTestContainers_) do
-        local errMsg = info.message or 'LTUE not found'
-        table.insert(msg, '\t'..info.path..': '..errMsg)
+    if numberOfNotLoaded > 0 then
+        local msg = {}
+        table.insert(msg, string.format('Could not load %d test container%s:', numberOfNotLoaded, 1 == numberOfNotLoaded and '' or 's'))
+        for _, info in pairs(self.notLoadedTestContainers_) do
+            local errMsg = info.message or 'LTUE not found'
+            table.insert(msg, '\t'..info.path..': '..errMsg)
+        end
+        table.insert(msg, '')
+        self:outputMessage(table.concat(msg, '\n'))
     end
-    table.insert(msg, '')
-    self:outputMessage(table.concat(msg, '\n'))
 end
 
 

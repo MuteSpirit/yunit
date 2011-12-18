@@ -342,6 +342,14 @@ function errorObjectFixture.fix_failed_test_result_handler_not_passed_on_last_su
 	isFalse(fixFailed:passed())
 end
 
+function text_load_test_container_error_loading_zero_test_container()
+    local handler = testResultHandlers.TextLoadTestContainerHandler:new()
+    local message = ''
+    handler.outputMessage = function(self, msg) message = message..msg end;
+    handler:onLoadEnd()
+    areEq('', message)
+end
+
 function text_load_test_container_error_loading_one_test_container()
     local handler = testResultHandlers.TextLoadTestContainerHandler:new()
     local message = ''
@@ -357,7 +365,7 @@ function text_load_test_container_error_loading_one_test_container()
         message)
 end
 
-function text_load_test_container_error_loading_two_test_container()
+function text_load_test_container_error_loading_not_one_test_container()
     local handler = testResultHandlers.TextLoadTestContainerHandler:new()
 
     local message = ''
