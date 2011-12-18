@@ -30,33 +30,67 @@ extern "C" {
         lua.error("invalid argument №%d, " #luaType " expected, but was %s\r\n", (idx), lua.typeName(1));
         
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class LuaState
+namespace Lua {
+
+class State;
+    
+class Table
+{
+    friend class State;
+public:
+    Table(int narr = 0, int nrec = 0)
+    : narr_(narr)
+    , nrec_(nrec)
+    {
+    }
+private:
+    int narr_;
+    int nrec_;
+};
+
+class Value
+{
+    friend class State;
+public:
+    Value(int idx)
+    : idx_(idx)
+    {
+    }
+private:
+    int idx_;
+};
+
+enum _Nil { Nil };
+        
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class State
 {
 public:
-    LuaState(lua_State* L);
+    State(lua_State* L);
     
     operator lua_State*();
     
-    void newtable();
-    void settable(int idx);
-    void setfield(int idx, const char* key);
-    
-    void push(lua_Number value);
-    void push(lua_Integer value);
+    void push(int v);
+    void push(long v);
+    void push(unsigned v);
+    void push(unsigned long v);
+    void push(double v);
     void push(bool value);
     void push(const char* s);
+    void push(const std::string& s);
     void push(const char* s, size_t len);
-    void pushvalue(int idx);
-    void pushnil(); /// @todo add special struct Nil and make void push(Nil)
+    void pushf(const char* fmt, ...);
+    void push(Value v);
+    void push(Table t);
+    void push(_Nil);
+    
     void pushglobaltable();
 
     template<typename CppType>
     void push(CppType* cppObj, const char* mtName);
     
-    void pop(int n);
+    void pop(unsigned n);
     void remove(int idx);
-    
-    void rawseti(int idx, int n);
     
     const char* typeName(int idx);
     bool isstring(int idx);
@@ -68,9 +102,14 @@ public:
     
     void getglobal(const char* name);
     void getfield(int idx, const char* key);
+
+    void settable(int idx);
+    void setfield(int idx, const char* key);
+
+    void rawseti(int idx, int n);
     
-    int gettop();    
-    void settop(int idx);
+    int top();    
+    void top(int idx);
     
     const char* to(int idx, size_t* len);
     void to(int idx, const char** str, size_t* len);
@@ -85,6 +124,7 @@ private:
     lua_State* l_;    
 };
 
+} // namespace Lua
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename CppType>
@@ -185,8 +225,10 @@ AddMethod<CppType>::AddMethod(const char *name, lua_CFunction func)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace Lua {
+
 template<typename CppType>
-inline void LuaState::push(CppType* cppObj, const char* mtName)
+inline void State::push(CppType* cppObj, const char* mtName)
 {
     lua_State* L = l_;
     
@@ -197,7 +239,7 @@ inline void LuaState::push(CppType* cppObj, const char* mtName)
 }
 
 template<typename CppType>
-inline void LuaState::to(int idx, CppType** cppObj)
+inline void State::to(int idx, CppType** cppObj)
 {
     lua_State* L = l_;
     
@@ -228,5 +270,7 @@ int dtor(lua_State* L)
         *pp = NULL; // to avoid deleting object twice, if __gc metametod will be called more then once
     }
 }
+
+} // namespace Lua
 
 #endif // _YUNIT_LUA_WRAPPER_HEADER_
