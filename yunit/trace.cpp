@@ -131,7 +131,6 @@ LUA_META_METHOD(Trace, traceback)
         lua.setfield(tracebackIdx, "stack");
     }
  
-   
     return 1;
 }
 
