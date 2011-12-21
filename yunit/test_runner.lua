@@ -28,10 +28,10 @@ TestResultHandler =
 
 ------------------------------------------------------
 TestResultHandlerList = TestResultHandler:new{
-    testResultHandlers = {};
-
     new = function(self, o)
-        o = o or {testResultHandlers = {}};
+        o = o or {
+            testResultHandlers = {}
+        };
         setmetatable(o, self);
         self.__index = self;
         return o;
@@ -101,10 +101,10 @@ LoadTestContainerHandler =
 
 LoadTestContainerHandlerList = 
 {
-    handlers_ = {},
-
     new = function(self)
-        local o = {};
+        local o = {
+            handlers_ = {}
+        };
         setmetatable(o, self);
         self.__index = self;
         return o;
@@ -247,16 +247,10 @@ end
 ------------------------------------------------------
 TestRunner = 
 {
-    resultHandlers_ = TestResultHandlerList:new(),
-    loadHandlers_ = LoadTestContainerHandlerList:new(),
-    ltues_ = {},
-    fileExts_ = {},
-    dirs_ = {},
-    testcases_ = {},
-
     new = function(self, o)
         o = o or {
             resultHandlers_ = TestResultHandlerList:new(),
+            loadHandlers_ = LoadTestContainerHandlerList:new(),
             ltues_ = {},
             fileExts_ = {},
             dirs_ = {},
@@ -405,32 +399,6 @@ TestRunner =
         self.loadHandlers_:onLoadEnd()
 
         lfs.chdir(previousWorkingDir)
-        
-        --[[
-        do -- display info about used test containers
-            print('')
-            
-            local numOfNotLoaded = #loadTestsState.notLoadedTestContainers
-            if numOfNotLoaded > 0 then
-                print('Could not load ' .. numOfNotLoaded .. ' test containers:')
-                
-                for _, errData in ipairs(loadTestsState.notLoadedTestContainers) do
-                    print('"' .. errData.path .. '": \r\n\t' .. errData.msg)
-                end
-            end
-
-            local numOfLoaded = #loadTestsState.loadedTestContainers
-            print('There were ' .. numOfLoaded .. ' test containers loaded:')
-            for _, tcData in ipairs(loadTestsState.loadedTestContainers) do
-                local msg = '"' .. tcData.path .. '" (' .. tcData.testNum
-                if tcData.testNum == 0 or tcData.testNum > 1 then
-                    print(msg .. ' tests)')
-                else
-                    print(msg .. ' test)')
-                end
-            end
-        end
-        --]]
     end;
 }
 
