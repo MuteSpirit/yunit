@@ -5,9 +5,11 @@
 #ifndef _YUNIT_TRACE_HEADER_
 #define _YUNIT_TRACE_HEADER_
 
+#include "yunit.h"
+
 namespace YUNIT_NS {
 
-struct LuaErrorMessage
+struct YUNIT_API LuaErrorMessage
 {
     struct ParseResult
     {

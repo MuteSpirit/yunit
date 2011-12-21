@@ -117,17 +117,18 @@ LUA_META_METHOD(Cppunit, loadTestContainer)
     TestRegistry::set(&testRegistry);
 
 #if defined(_WIN32)
-    HMODULE lib = LoadLibraryExA(testContainerPath, NULL, 0);
-    if (lib == NULL)
+    if (NULL == ::LoadLibraryExA(testContainerPath, NULL, 0))
     {
         lua.push(false);
-        int error = GetLastError();
-        char buffer[128];
-        if (FormatMessageA(FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM,
-          NULL, error, 0, buffer, sizeof(buffer)/sizeof(char), NULL))
+
+        enum {bufferSize = 128};
+        char buffer[bufferSize];
+
+        const int error = ::GetLastError();
+        if (::FormatMessageA(FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM, NULL, error, 0, buffer, bufferSize, NULL))
             lua.push(buffer);
         else
-            lua.pushfstring("system error %d\n", error);
+            lua.pushf("system error %d\n", error);
         return 2;
     }
 #else
