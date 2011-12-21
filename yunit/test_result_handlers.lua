@@ -427,6 +427,7 @@ function TextLoadTestContainerHandler:new()
     local o = 
     {
         notLoadedTestContainers_ = {};
+        loadedTestContainers_ = {};
     }
     setmetatable(o, self)
     self.__index = self
@@ -445,16 +446,33 @@ function TextLoadTestContainerHandler:onLoadError(info)
     table.insert(self.notLoadedTestContainers_, info)
 end
 
+function TextLoadTestContainerHandler:onLoadSuccess(info) -- usual 'info' is {path = testContainerPath, numOfTests = #tests}
+    table.insert(self.loadedTestContainers_, info)
+end
+
 function TextLoadTestContainerHandler:onLoadEnd()
+    local msg = {}
+
     local numberOfNotLoaded = #self.notLoadedTestContainers_
     if numberOfNotLoaded > 0 then
-        local msg = {}
         table.insert(msg, string.format('Could not load %d test container%s:', numberOfNotLoaded, 1 == numberOfNotLoaded and '' or 's'))
         for _, info in pairs(self.notLoadedTestContainers_) do
             local errMsg = info.message or 'LTUE not found'
             table.insert(msg, '\t'..info.path..': '..errMsg)
         end
         table.insert(msg, '')
+    end
+
+    local numberOfLoaded = #self.loadedTestContainers_
+    if numberOfLoaded > 0 then
+        table.insert(msg, string.format('There %s %d test container%s loaded:', 1 == numberOfLoaded and 'was' or 'were', numberOfLoaded, 1 == numberOfLoaded and '' or 's'))
+        for _, info in pairs(self.loadedTestContainers_) do
+            table.insert(msg, string.format('\t%s (%d test%s)', info.path, info.numOfTests, 1 == info.numOfTests and '' or 's'))
+        end
+        table.insert(msg, '')
+    end
+
+    if next(msg) then
         self:outputMessage(table.concat(msg, '\n'))
     end
 end
