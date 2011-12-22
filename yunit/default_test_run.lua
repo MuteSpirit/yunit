@@ -44,8 +44,8 @@ function run(testContainerPath)
 
     if not fixFailed:passed() then
         print(fixFailed:message())
-        io.stdout():flush()
-        io.stderr():flush()
+        io.stdout:flush()
+        io.stderr:flush()
         os.exit(-1)
     end
 end

@@ -35,7 +35,7 @@ LUA_META_METHOD(Trace, trace)
     {
         const char* msg = lua_tostring(L, msgArgInd);
 #if defined(_WIN32)
-        OutputDebugStringA(msg);
+        ::OutputDebugStringA(msg);
 #else
         syslog(LOG_USER, "%s", msg); 
 #endif

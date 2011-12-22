@@ -4,14 +4,10 @@ setmetatable(_M, _Mmt)
 local _G = _M
 
 local testRunner = require "yunit.test_runner"
+local ytrace = require "yunit.trace"
 
 ------------------------------------------------------
-TextTestProgressHandler = testRunner.TestResultHandler:new{
-        tableWithSuccesses = {},
-        tableWithIgnores = {},
-        tableWithErrors = {},
-        tableWithFailures = {},
-    };
+TextTestProgressHandler = testRunner.TestResultHandler:new()
 ------------------------------------------------------
 
 function TextTestProgressHandler:new()
@@ -77,7 +73,8 @@ function TextTestProgressHandler:totalResultsStr()
 end
 
 function TextTestProgressHandler:outputMessage(message)
-    io.write(message);
+    io.stdout:write(message)
+    ytrace.trace(message)
 end
 
 function TextTestProgressHandler:onTestSuccessfull(testCaseName)
@@ -435,7 +432,8 @@ function TextLoadTestContainerHandler:new()
 end
 
 function TextLoadTestContainerHandler:outputMessage(message)
-    io.write(message)
+    io.stdout:write(message)
+    ytrace.trace(message)
 end
 
 function TextLoadTestContainerHandler:onLtueNotFound(info)
