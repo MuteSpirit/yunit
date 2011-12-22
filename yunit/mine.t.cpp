@@ -3,25 +3,45 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "cppunit.h"
+#include "mine.h"
 
-using namespace YUNIT_NS;
+namespace YUNIT_NS {
+
+struct MockDamageAgent : public DamageAgent
+{
+    void boom()
+    {
+        occured_ = true;
+    }
+
+    MockDamageAgent()
+    : occured_(false)
+    {}
+
+    bool occured_;
+};
 
 test(mine_usecase)
 {
-    struct MockTerminator : public Terminator
-    {
-        void boom()
-        {
-            occured_ = true;
-        }
-        bool occured_;
-    }
-    terminator;
-    
-    terminator.occured_ = false;
-    
+    MockDamageAgent terminator;
     Mine mine(&terminator);
-    mine.boomAfterSuchSeconds(0);
+
+    mine.setTimer(Seconds(1));
+    sleep(Seconds(1));
 
     isTrue(terminator.occured_);
 }
+
+test(mine_neutralize)
+{
+    MockDamageAgent terminator;
+    Mine mine(&terminator);
+
+    mine.setTimer(Seconds(1));
+    mine.neutralize();
+    sleep(Seconds(1));
+
+    isFalse(terminator.occured_);
+}
+
+} // namespace YUNIT_NS

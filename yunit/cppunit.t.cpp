@@ -103,21 +103,6 @@
 /// \def noSehThrow(expression)
 /// \brief Check that NO ANY SEH (Structed Exception Handling) exception WILL BE THROWN during expression execution
 
-/// \fn bool protectTestThunkInvoke(Thunk thunk, char* msgBuf, const unsigned int msgBufSize)
-/// \param[in] thunk Thunk, whitch function invoke() will be called
-/// \param[out] msgBuf Buffer for error message
-/// \param[in] msgBufSize Awailable size of buffer
-/// \return true, if call of invoke() function not throw exception, else return false
-
-/// \fn int callTestCaseThunk(lua_State *L, Thunk (*getThunkFunc)(YUNIT_NS::TestCase*))
-/// \brief There is TestCase object on the top of Lua stack. This function call protectTestThunkInvoke
-/// for that Thunk, whitch return function 'getThunkFunc'.
-/// \return 0, or call lua_error in case of unsuccessful protectTestThunkInvoke
-
-/// \fn int luaRegistryTestCases(lua_State *L)
-/// \brief Return collection of objects with TestCase interface ("name_", setUp, test, tearDown).
-/// Names of TestCases contains TestSuite and TestCase name, separated by '::'
-
 #include <sstream>
 #include <fstream>
 

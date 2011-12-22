@@ -1,30 +1,45 @@
-#ifdef _MSC_VER
-#  pragma once
-#endif
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // mine.h
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef _MSC_VER
+#  pragma once
+#endif
+
+#ifndef _YUNIT_MINE_HEADER_
+#define _YUNIT_MINE_HEADER_
+
+#include "yunit.h"
 
 namespace YUNIT_NS {
 
-//struct Mine {};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct YUNIT_API Seconds
+{
+    Seconds(unsigned int num);
+    unsigned int num_;
+};
 
-//extern "C"
-//int YUNIT_API luaopen_yunit_mine(lua_State* L)
-//{
-//    using namespace YUNIT_NS;
-//    LuaState lua(L);
-//
-//    luaWrapper<Mine>().regLib(lua, "yunit.mine");
-//    return 1;
-//}
+void YUNIT_API sleep(Seconds seconds);
 
-//static unsigned int mineTimeout = 0;
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class DamageAgent
+{
+public:
+    virtual void boom() = 0;
+};
 
-//LUA_META_METHOD(Mine, start)
-//{
-//    enum Args {timeoutInSecIdx = 1};
-//    
-//}
+class YUNIT_API Mine
+{
+public:
+    Mine(DamageAgent* damageAgent);
+
+    void setTimer(Seconds seconds);
+    void neutralize();
+
+private:
+    DamageAgent* damageAgent_;
+};
 
 } // namespace YUNIT_NS
+
+#endif // _YUNIT_MINE_HEADER_
