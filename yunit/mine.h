@@ -15,8 +15,8 @@ namespace YUNIT_NS {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct YUNIT_API Seconds
 {
-    Seconds(unsigned int num);
-    unsigned int num_;
+    Seconds(unsigned long num);
+    unsigned long num_;
 };
 
 void YUNIT_API sleep(Seconds seconds);
@@ -28,16 +28,20 @@ public:
     virtual void boom() = 0;
 };
 
+
+class MineImpl;
+
 class YUNIT_API Mine
 {
 public:
     Mine(DamageAgent* damageAgent);
+    ~Mine();
 
     void setTimer(Seconds seconds);
     void neutralize();
 
 private:
-    DamageAgent* damageAgent_;
+    MineImpl* impl_;
 };
 
 } // namespace YUNIT_NS

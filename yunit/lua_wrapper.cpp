@@ -81,12 +81,23 @@ void State::push(const char* s, size_t len)
 
 void State::pushf(const char* fmt, ...)
 {
-  va_list argp;
-  va_start(argp, fmt);
-  luaL_where(l_, 1);
-  lua_pushvfstring(l_, fmt, argp);
-  va_end(argp);
-  lua_concat(l_, 2);
+    va_list argp;
+    va_start(argp, fmt);
+    luaL_where(l_, 1);
+    lua_pushvfstring(l_, fmt, argp);
+    va_end(argp);
+    lua_concat(l_, 2);
+}
+
+int State::error(const char* fmt, ...)
+{
+    va_list argp;
+    va_start(argp, fmt);
+    luaL_where(l_, 1);
+    lua_pushvfstring(l_, fmt, argp);
+    va_end(argp);
+    lua_concat(l_, 2);
+    return lua_error(l_);
 }
 
 void State::push(Value v)
@@ -117,7 +128,7 @@ void State::pushglobaltable()
 
 void State::pop(unsigned int n)
 {
-    lua_pop(l_, n);
+    lua_pop(l_, static_cast<int>(n)); // lua require signed int type of 'n'
 }
 
 void State::rawseti(int idx, int n)
