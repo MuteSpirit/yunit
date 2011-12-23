@@ -123,6 +123,8 @@ public:
     
     void getinfo(const char *what, lua_Debug *ar);
     
+    int error(const char* fmt, ...);
+
 private:
     lua_State* l_;    
 };

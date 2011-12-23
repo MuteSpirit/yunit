@@ -44,4 +44,5 @@ test(mine_neutralize)
     isFalse(terminator.occured_);
 }
 
+
 } // namespace YUNIT_NS
