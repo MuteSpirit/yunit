@@ -66,7 +66,7 @@ endif(WIN32)
 # Enable C++ exceptions
 #
 if(MSVC)
-    add_definitions(/EHsc)
+    add_definitions(/EHsc /D_CRT_SECURE_NO_WARNINGS)
 else(MSVC)
     add_definitions(-fexceptions -std=c++0x)
 endif(MSVC)
