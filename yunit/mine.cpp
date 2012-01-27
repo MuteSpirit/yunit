@@ -13,106 +13,20 @@
 
 
 #ifdef _WIN32
-
 #define UNICODE
-#include <windows.h>
-
-#ifndef _WINBASE_
-#include <specstrings.h>
-#define DECLSPEC_IMPORT __declspec(dllimport)
-#define WINBASEAPI extern "C" DECLSPEC_IMPORT
-#define VOID void
-#define WINAPI __stdcall
- 
-typedef unsigned long DWORD, *PDWORD, *LPDWORD;
-
-#define INFINITE            0xFFFFFFFF  // Infinite timeout
-
-typedef void *PVOID;
-typedef void *LPVOID;
-typedef PVOID HANDLE;
-typedef int BOOL;
-
-#define INVALID_HANDLE_VALUE ((HANDLE)(LONG_PTR)-1)
-
-typedef struct _SECURITY_ATTRIBUTES {
-    DWORD nLength;
-    LPVOID lpSecurityDescriptor;
-    BOOL bInheritHandle;
-} SECURITY_ATTRIBUTES, *PSECURITY_ATTRIBUTES, *LPSECURITY_ATTRIBUTES;
-
-#define CONST const
-typedef wchar_t WCHAR;
-typedef __nullterminated CONST WCHAR *LPCWSTR, *PCWSTR;
-
-#ifndef NULL
-#ifdef __cplusplus
-#define NULL    0
-#else
-#define NULL    ((void *)0)
-#endif
-#endif
-
-#ifndef FALSE
-#define FALSE               0
-#endif
-
-#ifndef TRUE
-#define TRUE                1
-#endif
-
-
-WINBASEAPI
-VOID
-WINAPI
-Sleep(
-    __in DWORD dwMilliseconds
-    );
-
-WINBASEAPI
-BOOL
-WINAPI
-CloseHandle(
-    __in HANDLE hObject
-    );
-
-WINBASEAPI
-__out_opt
-HANDLE
-WINAPI
-CreateEventW(
-    __in_opt LPSECURITY_ATTRIBUTES lpEventAttributes,
-    __in     BOOL bManualReset,
-    __in     BOOL bInitialState,
-    __in_opt LPCWSTR lpName
-    );
-#define CreateEvent  CreateEventW
-
-WINBASEAPI
-DWORD
-WINAPI
-WaitForSingleObject(
-    __in HANDLE hHandle,
-    __in DWORD dwMilliseconds
-    );
-
-WINBASEAPI
-BOOL
-WINAPI
-SetEvent(
-    __in HANDLE hEvent
-    );
-
-#endif  //  _WINBASE_
-
 #include <process.h>
-
+#include <windows.h>
 #else
 #include <unistd.h>
+#include <pthread.h>
 #endif
 
 namespace YUNIT_NS {
 
+class UndefinedApiBehaviour 
+{
+};
+ 
 #ifdef _WIN32
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define MineImplWin32 MineImpl
@@ -135,19 +49,27 @@ private:
     HANDLE orderReceivedEvent_;
 };
 
-class UndefinedWinApiBehaviour 
-{
-};
 #else 
 
-#define MineImplStub MineImpl
+#define MineImplPthreads MineImpl
 
-class MineImplStub
+class MineImplPthreads
 {
-    MineImplStub(DamageAgent*) {}
+public:
+    MineImplPthreads(DamageAgent* damageAgent);
+    ~MineImplPthreads();
 
-    void setTimer(Seconds) {}
-    void neutralize() {}
+    void setTimer(Seconds seconds);
+    void neutralize();
+
+    static void* mineThread(void* param);
+
+private:
+    DamageAgent* damageAgent_;
+    pthread_t thread_;
+    unsigned long timeToBoom_;
+    pthread_mutex_t orderReceived_;
+    pthread_cond_t orderReceivedCv_;
 };
 
 #endif // #ifdef _WIN32
@@ -169,7 +91,7 @@ void sleep(Seconds seconds)
 #if defined(_WIN32)
     ::Sleep(1000 * seconds.num_);
 #else
-    sleep(seconds.num_);
+    ::sleep(seconds.num_);
 #endif
 }
 
@@ -179,7 +101,7 @@ void MineImplWin32::mineThread(void* param)
 {
     MineImplWin32* mineImpl = reinterpret_cast<MineImplWin32*>(param);
 
-    for (;;) // don't use while(1) to avoid compiler warning "expression is constant"
+    for (;;) // not use while(1) to avoid compiler warning "expression is constant"
     {
         int waitRes = ::WaitForSingleObject(mineImpl->orderReceivedEvent_, mineImpl->timeToBoom_);
 
@@ -226,6 +148,75 @@ void MineImplWin32::neutralize()
         timeToBoom_ = INFINITE;
         ::SetEvent(orderReceivedEvent_);
     }
+}
+
+#else
+
+MineImplPthreads::MineImplPthreads(DamageAgent* damageAgent)
+: damageAgent_(damageAgent)
+, timeToBoom_(-1)
+{
+    pthread_mutex_init(&orderReceived_, NULL);
+    pthread_cond_init(&orderReceivedCv_, NULL);
+  
+    if (pthread_create(&thread_, NULL, mineThread, this))
+        throw UndefinedApiBehaviour;
+}
+
+MineImplPthreads::~MineImplPthreads()
+{
+    pthread_mutex_destroy(&orderReceived_);
+    pthread_cond_destroy(&orderReceivedCv_);
+}
+
+void MineImplPthreads::setTimer(Seconds seconds)
+{
+    pthread_mutex_lock(&orderReceived_);
+    timeToBoom_ = seconds.num_;
+    pthread_cond_signal(&orderReceivedCv_);
+    pthread_mutex_unlock(&orderReceived_);
+}
+
+void MineImplPthreads::neutralize()
+{
+    pthread_mutex_lock(&orderReceived_);
+    if (-1 != timeToBoom_)
+    {
+        timeToBoom_ = -1;
+        pthread_cond_signal(&orderReceivedCv_);
+    }
+    pthread_mutex_unlock(&orderReceived_);
+}
+
+void* MineImplPthreads::mineThread(void* param)
+{
+    MineImpl* mineImpl = reinterpret_cast<MineImpl*>(param);
+    timespec abstime;
+    int rc;
+    
+    pthread_mutex_lock(&mineImpl->orderReceived_);
+    for (;;) // not use while(1) to avoid compiler warning "expression is constant"
+    {
+        if (-1 == mineImpl->timeToBoom_)
+        {
+            // infinitely wait order
+            rc = pthread_cond_wait(mineImpl->orderReceivedCv_, mineImpl->orderReceived_);
+        }
+        else
+        {
+            abstime.tv_sec = time(NULL) + mineImpl->timeToBoom_;
+            abstime.tv_nsec = 0;
+            rc = pthread_cond_timedwait(mineImpl->orderReceivedCv_, mineImpl->orderReceived_, &abstime);
+            if (ETIMEDOUT == rc)
+                break;
+            else if (rc)
+                throw UndefinedApiBehaviour;
+        }
+    }
+    pthread_mutex_unlock(&mineImpl->orderReceived_);
+
+    mineImpl->damageAgent_->boom();
+    pthread_exit(NULL);
 }
 
 #endif // #ifdef _WIN32
