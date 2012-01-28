@@ -38,7 +38,7 @@ public:
     ~MineImplWin32();
 
     void setTimer(Seconds seconds);
-    void neutralize();
+    void turnoff();
 
     static void mineThread(void* param);
 
@@ -60,7 +60,7 @@ public:
     ~MineImplPthreads();
 
     void setTimer(Seconds seconds);
-    void neutralize();
+    void turnoff();
 
     static void* mineThread(void* param);
 
@@ -141,7 +141,7 @@ void MineImplWin32::setTimer(Seconds seconds)
     }
 }
 
-void MineImplWin32::neutralize()
+void MineImplWin32::turnoff()
 {
     if (INFINITE != timeToBoom_)
     {
@@ -177,7 +177,7 @@ void MineImplPthreads::setTimer(Seconds seconds)
     pthread_mutex_unlock(&orderReceived_);
 }
 
-void MineImplPthreads::neutralize()
+void MineImplPthreads::turnoff()
 {
     pthread_mutex_lock(&orderReceived_);
     if (-1 != timeToBoom_)
@@ -237,9 +237,9 @@ void Mine::setTimer(Seconds seconds)
     impl_->setTimer(seconds);
 }
 
-void Mine::neutralize()
+void Mine::turnoff()
 {
-    impl_->neutralize();
+    impl_->turnoff();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -282,7 +282,7 @@ LUA_META_METHOD(Mine, setTimer)
 
 LUA_META_METHOD(Mine, turnoff)
 {
-    mine.neutralize();
+    mine.turnoff();
     return 0;
 }
 

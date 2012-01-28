@@ -38,7 +38,7 @@ public:
     ~Mine();
 
     void setTimer(Seconds seconds);
-    void neutralize();
+    void turnoff();
 
 private:
     MineImpl* impl_;
