@@ -160,7 +160,7 @@ MineImplPthreads::MineImplPthreads(DamageAgent* damageAgent)
     pthread_cond_init(&orderReceivedCv_, NULL);
   
     if (pthread_create(&thread_, NULL, mineThread, this))
-        throw UndefinedApiBehaviour;
+        throw UndefinedApiBehaviour();
 }
 
 MineImplPthreads::~MineImplPthreads()
@@ -200,17 +200,17 @@ void* MineImplPthreads::mineThread(void* param)
         if (-1 == mineImpl->timeToBoom_)
         {
             // infinitely wait order
-            rc = pthread_cond_wait(mineImpl->orderReceivedCv_, mineImpl->orderReceived_);
+            rc = pthread_cond_wait(&mineImpl->orderReceivedCv_, &mineImpl->orderReceived_);
         }
         else
         {
             abstime.tv_sec = time(NULL) + mineImpl->timeToBoom_;
             abstime.tv_nsec = 0;
-            rc = pthread_cond_timedwait(mineImpl->orderReceivedCv_, mineImpl->orderReceived_, &abstime);
+            rc = pthread_cond_timedwait(&mineImpl->orderReceivedCv_, &mineImpl->orderReceived_, &abstime);
             if (ETIMEDOUT == rc)
                 break;
             else if (rc)
-                throw UndefinedApiBehaviour;
+                throw UndefinedApiBehaviour();
         }
     }
     pthread_mutex_unlock(&mineImpl->orderReceived_);
@@ -263,7 +263,7 @@ LUA_META_METHOD(Mine, sleep)
     if (!lua.isinteger(timeoutInSecIdx))
         lua.error("integer expected as argument, but was %s", lua.typeName(timeoutInSecIdx));
 
-    sleep(Seconds(lua_tounsigned(lua, timeoutInSecIdx)));
+    sleep(Seconds(lua_tointeger(lua, timeoutInSecIdx)));
     return 0;
 }
 
@@ -276,7 +276,7 @@ LUA_META_METHOD(Mine, setTimer)
     if (!lua.isinteger(timeoutInSecIdx))
         lua.error("integer expected as argument, but was %s", lua.typeName(timeoutInSecIdx));
 
-    mine.setTimer(Seconds(lua_tounsigned(lua, timeoutInSecIdx)));
+    mine.setTimer(Seconds(lua_tointeger(lua, timeoutInSecIdx)));
     return 0;
 }
 

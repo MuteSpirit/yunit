@@ -61,6 +61,8 @@ else(WIN32)
 	find_program(LUA_EXE
 					NAMES lua5.2 lua lua5.1 
     )
+# use Ptreads library
+    find_package (Threads)
 endif(WIN32)
 #
 # Enable C++ exceptions
@@ -74,7 +76,11 @@ endif(MSVC)
 # yunit
 #
 add_library(yunit SHARED yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.h trace.cpp mine.h mine.cpp)
-target_link_libraries(yunit ${LUA_LIBRARY})
+if(WIN32)
+    target_link_libraries(yunit ${LUA_LIBRARY})
+else(WIN32)
+    target_link_libraries(yunit ${LUA_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
+endif(WIN32)
 set_target_properties(yunit PROPERTIES 
                       PREFIX "")
 #
