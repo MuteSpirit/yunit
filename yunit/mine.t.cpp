@@ -38,7 +38,7 @@ test(mine_neutralize)
     Mine mine(&terminator);
 
     mine.setTimer(Seconds(1));
-    mine.neutralize();
+    mine.turnoff();
     sleep(Seconds(1));
 
     isFalse(terminator.occured_);

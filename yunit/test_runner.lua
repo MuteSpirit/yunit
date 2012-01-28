@@ -5,6 +5,7 @@ local _G = _M
 
 local fs = require "yunit.filesystem"
 local ytrace = require "yunit.trace"
+local mine = require "yunit.mine"
 
 TestResultHandler = 
 {
@@ -193,6 +194,9 @@ function runTestCase(testcase, testResultHandler)
     
     testResultHandler:onTestBegin(testName)
 
+    local oneTestExecutionTimeLimitInSec = 7
+    mine.setTimer(oneTestExecutionTimeLimitInSec)
+    
     if isTestIgnored then
         testResultHandler:onTestIgnore(testName, errorObjectDefault)    
     else
@@ -240,6 +244,8 @@ function runTestCase(testcase, testResultHandler)
             end
         end
     end
+    
+    mine.turnoff()
 
     testResultHandler:onTestEnd(testName);
 end
