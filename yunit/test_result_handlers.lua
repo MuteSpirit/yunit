@@ -24,11 +24,11 @@ function TextTestProgressHandler:new()
 end
 
 function TextTestProgressHandler:sciteErrorLine(errorObject)
-    return errorObject.source .. ":" .. tostring(errorObject.line) .. ": " .. tostring(errorObject.message)
+    return tostring(errorObject.source) .. ":" .. tostring(errorObject.line) .. ": " .. tostring(errorObject.message)
 end
 
 function TextTestProgressHandler:msvcErrorLine(errorObject)
-    return errorObject.source .. "(" .. tostring(errorObject.line) .. ") : " .. errorObject.message
+    return tostring(errorObject.source) .. "(" .. tostring(errorObject.line) .. ") : " .. tostring(errorObject.message)
 end
 
 TextTestProgressHandler.editorSpecifiedErrorLine = TextTestProgressHandler.msvcErrorLine;
@@ -189,9 +189,9 @@ function TextTestProgressHandler:totalIgnoreStr()
 end
 
 
-------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------
 SciteTextTestProgressHandler = TextTestProgressHandler:new()
-------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------
 
 SciteTextTestProgressHandler.editorSpecifiedErrorLine = TextTestProgressHandler.sciteErrorLine
 
@@ -415,6 +415,13 @@ function EstimatedTime:onTestsEnd()
     self.testsHasEndAt_ = os.time()
     local estimatedTime = os.difftime(self.testsHasEndAt_, self.testsHasBeganAt_)
     self:outputMessage('\nTest time = ' .. tostring(estimatedTime) .. ' sec\n')
+end
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+NetbeansTextTestProgressHandler = TextTestProgressHandler:new()
+--------------------------------------------------------------------------------------------------------------------------------------------
+function NetbeansTextTestProgressHandler:editorSpecifiedErrorLine(errorObject)
+    return tostring(errorObject.source) .. ":" .. tostring(errorObject.line) .. ":0: " .. tostring(errorObject.message)
 end
 
 ------------------------------------------------------
