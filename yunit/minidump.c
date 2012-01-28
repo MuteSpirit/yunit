@@ -12,6 +12,7 @@ extern "C" {
 }
 #endif
 
+#ifdef _WIN32
 #include <windows.h>
 #include <dbghelp.h>
 
@@ -218,3 +219,5 @@ int MINIDUMP_API luaopen_minidump(lua_State *L)
     luaL_register(L, "minidump", minidumpLib);
 	return 0;
 }
+
+#endif // #ifdef _WIN32
