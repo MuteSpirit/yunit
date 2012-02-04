@@ -26,7 +26,7 @@ namespace YUNIT_NS {
 class UndefinedApiBehaviour 
 {
 };
- 
+
 #ifdef _WIN32
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define MineImplWin32 MineImpl
@@ -45,8 +45,9 @@ public:
 private:
     DamageAgent* damageAgent_;
     HANDLE thread_;
-    unsigned long timeToBoom_;
+    unsigned long timeToBoomInSec_;
     HANDLE orderReceivedEvent_;
+    HANDLE stopMineThreadEvent_;
 };
 
 #else 
@@ -67,7 +68,7 @@ public:
 private:
     DamageAgent* damageAgent_;
     pthread_t thread_;
-    unsigned long timeToBoom_;
+    unsigned long timeToBoomInSec_;
     pthread_mutex_t orderReceived_;
     pthread_cond_t orderReceivedCv_;
 };
@@ -99,53 +100,65 @@ void sleep(Seconds seconds)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MineImplWin32::mineThread(void* param)
 {
-    MineImplWin32* mineImpl = reinterpret_cast<MineImplWin32*>(param);
+    MineImpl* mineImpl = reinterpret_cast<MineImpl*>(param);
+    
+    enum {numOfEvents = 2, stopEventIdx = 0, orderEventIdx = 1};
+    HANDLE events[numOfEvents] = {mineImpl->stopMineThreadEvent_, mineImpl->orderReceivedEvent_};
 
     for (;;) // not use while(1) to avoid compiler warning "expression is constant"
     {
-        int waitRes = ::WaitForSingleObject(mineImpl->orderReceivedEvent_, mineImpl->timeToBoom_);
+        int waitRes = ::WaitForMultipleObjects(numOfEvents, events, FALSE, 1000 * mineImpl->timeToBoomInSec_);
 
-        if (WAIT_TIMEOUT == waitRes)
-            break;
+        if (WAIT_OBJECT_0 + stopEventIdx == waitRes)
+            return;
+        if (WAIT_OBJECT_0 + orderEventIdx == waitRes)
+            continue; // timeToBoomInSec_ has been changed, start to wait again
+        else if (WAIT_TIMEOUT == waitRes)
+        {
+            mineImpl->damageAgent_->boom(); // as normal this action must kill current process
+            return;
+        }
         else if (WAIT_FAILED == waitRes || WAIT_ABANDONED == waitRes)
-            throw UndefinedWinApiBehaviour();
+            throw UndefinedApiBehaviour();
     }
-
-    mineImpl->damageAgent_->boom();
 }
 
 MineImplWin32::MineImplWin32(DamageAgent* damageAgent)
 : damageAgent_(damageAgent)
 , thread_(INVALID_HANDLE_VALUE)
 , orderReceivedEvent_(::CreateEvent(0, FALSE, FALSE, 0))
-, timeToBoom_(INFINITE)
+, stopMineThreadEvent_(::CreateEvent(0, FALSE, FALSE, 0))
+, timeToBoomInSec_(INFINITE)
 {
     thread_ = reinterpret_cast<HANDLE>(_beginthread(mineThread, 0, this));
     if (0 == thread_)
-        throw UndefinedWinApiBehaviour();
+        throw UndefinedApiBehaviour();
 }
 
 MineImplWin32::~MineImplWin32()
 {
-    timeToBoom_ = 0;
-    ::SetEvent(orderReceivedEvent_);
+    ::SetEvent(stopMineThreadEvent_);
+    ::WaitForSingleObject(thread_, INFINITE);
     ::CloseHandle(thread_);
+
+    ::CloseHandle(stopMineThreadEvent_);
+    ::CloseHandle(orderReceivedEvent_);
 }
 
 void MineImplWin32::setTimer(Seconds seconds)
 {
-    if (INFINITE == timeToBoom_)
+    if (INFINITE == timeToBoomInSec_)
     {
-        timeToBoom_ = seconds.num_;
+        timeToBoomInSec_ = seconds.num_;
         ::SetEvent(orderReceivedEvent_);
     }
 }
 
 void MineImplWin32::turnoff()
 {
-    if (INFINITE != timeToBoom_)
+    if (INFINITE != timeToBoomInSec_)
     {
-        timeToBoom_ = INFINITE;
+        timeToBoomInSec_ = INFINITE;
         ::SetEvent(orderReceivedEvent_);
     }
 }
@@ -154,7 +167,7 @@ void MineImplWin32::turnoff()
 
 MineImplPthreads::MineImplPthreads(DamageAgent* damageAgent)
 : damageAgent_(damageAgent)
-, timeToBoom_(-1)
+, timeToBoomInSec_(-1)
 {
     pthread_mutex_init(&orderReceived_, NULL);
     pthread_cond_init(&orderReceivedCv_, NULL);
@@ -172,7 +185,7 @@ MineImplPthreads::~MineImplPthreads()
 void MineImplPthreads::setTimer(Seconds seconds)
 {
     pthread_mutex_lock(&orderReceived_);
-    timeToBoom_ = seconds.num_;
+    timeToBoomInSec_ = seconds.num_;
     pthread_cond_signal(&orderReceivedCv_);
     pthread_mutex_unlock(&orderReceived_);
 }
@@ -180,9 +193,9 @@ void MineImplPthreads::setTimer(Seconds seconds)
 void MineImplPthreads::turnoff()
 {
     pthread_mutex_lock(&orderReceived_);
-    if (-1 != timeToBoom_)
+    if (-1 != timeToBoomInSec_)
     {
-        timeToBoom_ = -1;
+        timeToBoomInSec_ = -1;
         pthread_cond_signal(&orderReceivedCv_);
     }
     pthread_mutex_unlock(&orderReceived_);
@@ -197,14 +210,14 @@ void* MineImplPthreads::mineThread(void* param)
     pthread_mutex_lock(&mineImpl->orderReceived_);
     for (;;) // not use while(1) to avoid compiler warning "expression is constant"
     {
-        if (-1 == mineImpl->timeToBoom_)
+        if (-1 == mineImpl->timeToBoomInSec_)
         {
             // infinitely wait order
             rc = pthread_cond_wait(&mineImpl->orderReceivedCv_, &mineImpl->orderReceived_);
         }
         else
         {
-            abstime.tv_sec = time(NULL) + mineImpl->timeToBoom_;
+            abstime.tv_sec = time(NULL) + mineImpl->timeToBoomInSec_;
             abstime.tv_nsec = 0;
             rc = pthread_cond_timedwait(&mineImpl->orderReceivedCv_, &mineImpl->orderReceived_, &abstime);
             if (ETIMEDOUT == rc)
