@@ -13,12 +13,13 @@
 
 
 #ifdef _WIN32
-#define UNICODE
-#include <process.h>
-#include <windows.h>
+//#  define UNICODE /// @todo Restore define and add wchar_t -> char convertion
+#  include <process.h>
+#  include <windows.h>
+#  include <tlhelp32.h>
 #else
-#include <unistd.h>
-#include <pthread.h>
+#  include <unistd.h>
+#  include <pthread.h>
 #endif
 
 namespace YUNIT_NS {
@@ -297,6 +298,72 @@ LUA_META_METHOD(Mine, turnoff)
 {
     mine.turnoff();
     return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// @todo Move it into separate module
+struct Aux;
+
+extern "C"
+int YUNIT_API luaopen_yunit_aux(lua_State* L)
+{
+    Lua::State lua(L);
+    luaWrapper<Aux>().regLib(lua, "yunit.aux");
+    return 1;
+}
+
+LUA_META_METHOD(Aux, pid)
+{
+    Lua::State lua(L);
+    lua.push(::GetCurrentProcessId());
+    return 1;
+}
+
+LUA_META_METHOD(Aux, allProccesses)
+{
+    Lua::State lua(L);
+
+    const DWORD currentProcessFlag = 0;
+    HANDLE procSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, currentProcessFlag);
+    if (INVALID_HANDLE_VALUE == procSnapshot)
+        return lua.error("undefined WinAPI behaviour: CreateToolhelp32Snapshot return INVALID_HANDLE_VALUE");
+
+    PROCESSENTRY32 procInfo;
+    procInfo.dwSize = sizeof(procInfo);
+    
+    if (FALSE == ::Process32First(procSnapshot, &procInfo))
+    {
+        ::CloseHandle(procSnapshot);
+        return lua.error("undefined WinAPI behaviour: Process32First return FALSE");;
+    }
+    else
+    {
+        lua.push(Lua::Table());
+        const int procsTableIdx = lua.top();
+        int procInfoIdx;
+        do
+        {
+            lua.push(Lua::Table());     /* stack: procInfo */
+            procInfoIdx = lua.top();
+            
+            lua.push(procInfo.th32ParentProcessID);
+            lua.setfield(procInfoIdx, "ppid");
+
+            lua.push(procInfo.szExeFile);
+            lua.setfield(procInfoIdx, "exe");
+
+            lua.push(procInfo.th32ProcessID);   /* stack: procInfo, pid */
+            lua.push(Lua::Value(procInfoIdx));  /* stack: procInfo, pid, procInfo */
+            lua.settable(procsTableIdx);        /* stack: procInfo */
+
+            lua.pop(1);                         /* stack: */
+        }
+        while(::Process32Next(procSnapshot, &procInfo));
+    }
+
+    ::CloseHandle(procSnapshot);
+
+    return 1;
 }
 
 } // namespace YUNIT_NS
