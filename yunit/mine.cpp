@@ -7,7 +7,6 @@
 */
 
 #define YUNIT_DLL_EXPORTS
-#include "yunit.h"
 #include "mine.h"
 #include "lua_wrapper.h"
 

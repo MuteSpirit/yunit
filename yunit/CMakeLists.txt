@@ -75,7 +75,7 @@ endif(MSVC)
 #
 # yunit
 #
-add_library(yunit SHARED yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.h trace.cpp mine.h mine.cpp)
+add_library(yunit SHARED yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.h trace.cpp mine.h mine.cpp aux.h aux.cpp)
 if(WIN32)
     target_link_libraries(yunit ${LUA_LIBRARY})
 else(WIN32)
@@ -134,8 +134,8 @@ endif(WIN32)
 set(SET_LUA_PATH -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;${CMAKE_CURRENT_SOURCE_DIR}/../?/init.lua;]]..package.path")
 set(SET_LUA_CPATH -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath")
 
-add_test(all_cppunit_tests ${LUA_EXE} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l ${WORK_IN} -l yunit -e "use{'yunit.cppunit', 'yunit.luaunit'}" -e "runFrom{[[${SHARED_LIB_OUT_DIR}]], [[${CMAKE_CURRENT_SOURCE_DIR}]]}")
-
+add_test(all_cppunit_tests ${LUA_EXE} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l yunit -e "use{'yunit.cppunit', 'yunit.luaunit'}" -e "runFrom{[[${SHARED_LIB_OUT_DIR}]], [[${CMAKE_CURRENT_SOURCE_DIR}]]}")
+# -l ${WORK_IN}
 #
 # Installation rules
 if(WIN32)

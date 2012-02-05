@@ -3,9 +3,8 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define YUNIT_DLL_EXPORTS
-#include "yunit.h"
-#include "lua_wrapper.h"
 #include "trace.h"
+#include "lua_wrapper.h"
 
 #include <cstring>
 #include <cstdlib>
