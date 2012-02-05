@@ -75,7 +75,7 @@ endif(MSVC)
 #
 # yunit
 #
-add_library(yunit SHARED yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.h trace.cpp mine.h mine.cpp)
+add_library(yunit SHARED yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.h trace.cpp mine.h mine.cpp aux.h aux.cpp)
 if(WIN32)
     target_link_libraries(yunit ${LUA_LIBRARY})
 else(WIN32)
