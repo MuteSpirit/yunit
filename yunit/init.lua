@@ -9,8 +9,12 @@ local curProcParentPid = proccesses[aux.pid()].ppid
 local proc = proccesses[curProcParentPid]
 while proc 
 do
-    if string.find(proc.exe, 'devenv.exe') then
+    local exe = string.lower(proc.exe)
+    if string.find(exe, 'devenv.exe') then
         require "yunit.work_in_vs"
+        break;
+    elseif string.find(exe, 'scite') or string.find(exe, 'sc1') then
+        require "yunit.work_in_scite"
         break;
     end
 

@@ -259,7 +259,6 @@ TestRunner =
             loadHandlers_ = LoadTestContainerHandlerList:new(),
             ltues_ = {},
             fileExts_ = {},
-            dirs_ = {},
             testcases_ = {},
         }
         setmetatable(o, self)
@@ -293,13 +292,6 @@ TestRunner =
                 error('Could not load Language Test Unit Engine "' .. ltueName .. '": ' .. errMsg)
             end
         end
-    end;
-    
-    lookTestsAt = function(self, dirPath)
-        if not dirPath then
-            error('invalid argument, directory path expected, but was ' .. type(dirPath))
-        end
-        table.insert(self.dirs_, dirPath)
     end;
     
     findLtueForTestContainer = function(self, path)
@@ -367,43 +359,39 @@ TestRunner =
         end
     end;
 
-    runTestsOf = function(self, testContainerPath)
+    runTestContainer = function(self, testContainerPath)
         local previousWorkingDir = lfs.currentdir()
-
         self.resultHandlers_:onTestsBegin()
+
         self:runTestsOfTestContainer(testContainerPath)
+
         self.resultHandlers_:onTestsEnd()
         self.loadHandlers_:onLoadEnd()
-
         lfs.chdir(previousWorkingDir)
     end;
-    
-    runAll = function(self)
+
+    runTestContainersFromDir = function(self, dirPath)
+        local previousWorkingDir = lfs.currentdir()
+        self.resultHandlers_:onTestsBegin()
+
         local function filterTestContainer(path, state)
             return nil ~= self:findLtueForTestContainer(path)
         end
         local function loadAndRunTests(testContainerPath, state)
             self:runTestsOfTestContainer(testContainerPath)
         end
-
-        local previousWorkingDir = lfs.currentdir()
-
-        self.resultHandlers_:onTestsBegin()
         
-        for _, dirPath in ipairs(self.dirs_) do
-            fs.applyOnFiles(dirPath, 
-                    {
-                        filter = fs.multiFilter,
-                        handler = loadAndRunTests,
-                        recursive = true,
-                        state = { filters = {fs.fileFilter, filterTestContainer},},
-                    }
-                )
-        end
+        fs.applyOnFiles(dirPath, 
+            {
+                filter = fs.multiFilter,
+                handler = loadAndRunTests,
+                recursive = true,
+                state = { filters = {fs.fileFilter, filterTestContainer},},
+            }
+        )
         
         self.resultHandlers_:onTestsEnd()
         self.loadHandlers_:onLoadEnd()
-
         lfs.chdir(previousWorkingDir)
     end;
 }
