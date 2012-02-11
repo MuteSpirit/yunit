@@ -204,9 +204,7 @@ end]]
     runner:loadLtue('yunit.luaunit')
     isNotNil(next(runner.ltues_))
     isNotNil(next(runner.fileExts_))
-    runner:lookTestsAt(self.tmpDir_)
-    areNotEq(0, #runner.dirs_)
-    runner:runAll()
+    runner:runTestContainersFromDir(self.tmpDir_)
     isTrue(fixFailed:passed())
 end
 
