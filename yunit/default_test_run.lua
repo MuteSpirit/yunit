@@ -56,14 +56,14 @@ function run(inArg)
             local path = arg
 
             if not fs.isExist(path) then
-                error('receive path to unexist file/directory')
+                error('receive path to unexist file/directory: "' .. path .. '"')
                 return
-            elseif fs.isFile(path) then
-                runner:runTestContainer(path)
             elseif fs.isDir(path) then
                 runner:runTestContainersFromDir(path)
+            elseif fs.isFile(path) then
+                runner:runTestContainer(path)
             else
-                error('receive path to unknown file system object type (not file and not directory)')
+                error('receive path to unknown file system object type (not file and not directory): "' .. path .. '"')
                 return
             end
         elseif 'table' == type(arg) then
@@ -76,7 +76,9 @@ function run(inArg)
         end
     end
 
+    runner:onTestsBegin()
     handleArg(inArg)
+    runner:onTestsEnd()
 
     if not fixFailed:passed() then
         print(fixFailed:message())
