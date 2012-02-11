@@ -17,21 +17,12 @@ function TextTestProgressHandler:new()
         tableWithIgnores = {},
         tableWithErrors = {},
         tableWithFailures = {},
+        editorSpecifiedErrorLine = nil, -- must be set in derived classes
     };
     setmetatable(o, self);
     self.__index = self;
     return o;
 end
-
-function TextTestProgressHandler:sciteErrorLine(errorObject)
-    return '\t' .. tostring(errorObject.source) .. ":" .. tostring(errorObject.line) .. ": " .. tostring(errorObject.message)
-end
-
-function TextTestProgressHandler:msvcErrorLine(errorObject)
-    return '\t' .. tostring(errorObject.source) .. "(" .. tostring(errorObject.line) .. ") : " .. tostring(errorObject.message)
-end
-
-TextTestProgressHandler.editorSpecifiedErrorLine = TextTestProgressHandler.msvcErrorLine;
 
 function TextTestProgressHandler:resetCounters()
     self.tableWithSuccesses = {}
@@ -190,10 +181,21 @@ end
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------
+MsvcTextTestProgressHandler = TextTestProgressHandler:new()
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+function MsvcTextTestProgressHandler:editorSpecifiedErrorLine(errorObject)
+    return '\t' .. tostring(errorObject.source) .. "(" .. tostring(errorObject.line) .. ") : " .. tostring(errorObject.message)
+end
+
+--------------------------------------------------------------------------------------------------------------------------------------------
 SciteTextTestProgressHandler = TextTestProgressHandler:new()
 --------------------------------------------------------------------------------------------------------------------------------------------
 
-SciteTextTestProgressHandler.editorSpecifiedErrorLine = TextTestProgressHandler.sciteErrorLine
+function SciteTextTestProgressHandler:editorSpecifiedErrorLine(errorObject)
+    return '\t' .. tostring(errorObject.source) .. ":" .. tostring(errorObject.line) .. ": " .. tostring(errorObject.message)
+end
+
 
 local defaultXmlReportPath = 'report.xml'
 

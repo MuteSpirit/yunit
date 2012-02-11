@@ -39,8 +39,4 @@ function fileContentAsLines(path)
     return lines;
 end
 
-function pr(msg)
-    print('Call from aux:' .. msg .. '\r\n')
-end
-
 return _M
