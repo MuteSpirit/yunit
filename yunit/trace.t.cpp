@@ -53,3 +53,4 @@ test(parse_error_message_with_linux_full_path)
     areEq(colonAfterLine + 1 + sizeof(' '), res.messageBegin_);
     areEq(toLuaErrorHandlerMessageEnd, res.messageEnd_);
 }
+
