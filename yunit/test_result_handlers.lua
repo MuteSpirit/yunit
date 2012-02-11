@@ -24,11 +24,11 @@ function TextTestProgressHandler:new()
 end
 
 function TextTestProgressHandler:sciteErrorLine(errorObject)
-    return tostring(errorObject.source) .. ":" .. tostring(errorObject.line) .. ": " .. tostring(errorObject.message)
+    return '\t' .. tostring(errorObject.source) .. ":" .. tostring(errorObject.line) .. ": " .. tostring(errorObject.message)
 end
 
 function TextTestProgressHandler:msvcErrorLine(errorObject)
-    return tostring(errorObject.source) .. "(" .. tostring(errorObject.line) .. ") : " .. tostring(errorObject.message)
+    return '\t' .. tostring(errorObject.source) .. "(" .. tostring(errorObject.line) .. ") : " .. tostring(errorObject.message)
 end
 
 TextTestProgressHandler.editorSpecifiedErrorLine = TextTestProgressHandler.msvcErrorLine;
@@ -135,12 +135,12 @@ function TextTestProgressHandler:addFailedTestsMessageLines(res, tests)
         end
         
         table.insert(res, errorObject.source .. '::' .. testName .. funcName)
-        table.insert(res, '\t' .. self:editorSpecifiedErrorLine(errorObject))
+        table.insert(res, self:editorSpecifiedErrorLine(errorObject))
 
         if errorObject.traceback then
             for _, step in ipairs(errorObject.traceback) do
                 local sourcePathWithoutFirstSymbol = string.sub(step.source, 2)
-                table.insert(res, '\t' .. self:editorSpecifiedErrorLine{source = sourcePathWithoutFirstSymbol, line = step.line, message = step.funcname})
+                table.insert(res, self:editorSpecifiedErrorLine{source = sourcePathWithoutFirstSymbol, line = step.line, message = step.funcname})
             end
         end
         
@@ -421,7 +421,7 @@ end
 NetbeansTextTestProgressHandler = TextTestProgressHandler:new()
 --------------------------------------------------------------------------------------------------------------------------------------------
 function NetbeansTextTestProgressHandler:editorSpecifiedErrorLine(errorObject)
-    return tostring(errorObject.source) .. ":" .. tostring(errorObject.line) .. ":0: " .. tostring(errorObject.message)
+    return '\t' .. tostring(errorObject.source) .. ':' .. tostring(errorObject.line) .. ":0: error: " .. tostring(errorObject.message)
 end
 
 ------------------------------------------------------

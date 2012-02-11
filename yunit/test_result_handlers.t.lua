@@ -102,7 +102,7 @@ end
 function errorObjectFixture.testSciteErrorFormatterString(self)
 	local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
   
-	local desiredString = self.fakeErrorObject.source .. ":" .. tostring(self.fakeErrorObject.line) .. ": " .. self.fakeErrorObject.message
+	local desiredString = '\t' .. self.fakeErrorObject.source .. ":" .. tostring(self.fakeErrorObject.line) .. ": " .. self.fakeErrorObject.message
 	areEq(desiredString, ttpl:sciteErrorLine(self.fakeErrorObject))
 end
 
@@ -115,10 +115,10 @@ function errorObjectFixture.testErrorString(self)
 	funcName = ' (' ..  self.fakeErrorObject.func .. ')'
 	local desiredString = '----Errors----\n'
 	                   .. self.fakeErrorObject.source .. '::' .. self.fakeTestCaseName .. "2" .. funcName .. '\n'
-	                   .. '\t' .. ttpl:sciteErrorLine(self.fakeErrorObject)
+	                   .. ttpl:sciteErrorLine(self.fakeErrorObject)
 	                   .. "\n------------------------------------------------------------------------------------------------------\n"
 	                   .. self.fakeErrorObject.source .. '::' .. self.fakeTestCaseName .. "1" .. funcName .. '\n'
-	                   .. '\t' .. ttpl:sciteErrorLine(self.fakeErrorObject)
+	                   .. ttpl:sciteErrorLine(self.fakeErrorObject)
 	                   .. "\n------------------------------------------------------------------------------------------------------\n"
 	areEq(desiredString, ttpl:totalErrorStr())
 end
@@ -133,10 +133,10 @@ function errorObjectFixture.testFailureString(self)
 	funcName = ' (' ..  self.fakeErrorObject.func .. ')'
 	local desiredString = '----Failures----\n'
 	                   .. self.fakeErrorObject.source .. '::' .. self.fakeTestCaseName .. "2" .. funcName .. '\n'
-	                   .. '\t' .. ttpl:sciteErrorLine(self.fakeErrorObject)
+	                   .. ttpl:sciteErrorLine(self.fakeErrorObject)
 	                   .. "\n------------------------------------------------------------------------------------------------------\n"
 	                   .. self.fakeErrorObject.source .. '::' .. self.fakeTestCaseName .. "1" .. funcName .. '\n'
-	                   .. '\t' .. ttpl:sciteErrorLine(self.fakeErrorObject)
+	                   .. ttpl:sciteErrorLine(self.fakeErrorObject)
 	                   .. "\n------------------------------------------------------------------------------------------------------\n"
 	
 	areEq(desiredString, ttpl:totalFailureStr())
