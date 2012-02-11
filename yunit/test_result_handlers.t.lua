@@ -1,5 +1,3 @@
---- \class TextTestProgressHandler
---- \brief Derived from TestResultHandler. Output messages to standat output.
 local luaUnit = require "yunit.luaunit"
 local testResultHandlers = require "yunit.test_result_handlers"
 
@@ -96,14 +94,14 @@ sciteTextTestProgressListenerFixture =
 };
 
 function testTextTestProgressListenerCreation()
-	isNotNil(testResultHandlers.TextTestProgressHandler:new());
+	isNotNil(testResultHandlers.MsvcTextTestProgressHandler:new());
 end
 
 function errorObjectFixture.testSciteErrorFormatterString(self)
 	local ttpl = testResultHandlers.SciteTextTestProgressHandler:new();
   
 	local desiredString = '\t' .. self.fakeErrorObject.source .. ":" .. tostring(self.fakeErrorObject.line) .. ": " .. self.fakeErrorObject.message
-	areEq(desiredString, ttpl:sciteErrorLine(self.fakeErrorObject))
+	areEq(desiredString, ttpl:editorSpecifiedErrorLine(self.fakeErrorObject))
 end
 
 function errorObjectFixture.testErrorString(self)
@@ -115,10 +113,10 @@ function errorObjectFixture.testErrorString(self)
 	funcName = ' (' ..  self.fakeErrorObject.func .. ')'
 	local desiredString = '----Errors----\n'
 	                   .. self.fakeErrorObject.source .. '::' .. self.fakeTestCaseName .. "2" .. funcName .. '\n'
-	                   .. ttpl:sciteErrorLine(self.fakeErrorObject)
+	                   .. ttpl:editorSpecifiedErrorLine(self.fakeErrorObject)
 	                   .. "\n------------------------------------------------------------------------------------------------------\n"
 	                   .. self.fakeErrorObject.source .. '::' .. self.fakeTestCaseName .. "1" .. funcName .. '\n'
-	                   .. ttpl:sciteErrorLine(self.fakeErrorObject)
+	                   .. ttpl:editorSpecifiedErrorLine(self.fakeErrorObject)
 	                   .. "\n------------------------------------------------------------------------------------------------------\n"
 	areEq(desiredString, ttpl:totalErrorStr())
 end
@@ -133,10 +131,10 @@ function errorObjectFixture.testFailureString(self)
 	funcName = ' (' ..  self.fakeErrorObject.func .. ')'
 	local desiredString = '----Failures----\n'
 	                   .. self.fakeErrorObject.source .. '::' .. self.fakeTestCaseName .. "2" .. funcName .. '\n'
-	                   .. ttpl:sciteErrorLine(self.fakeErrorObject)
+	                   .. ttpl:editorSpecifiedErrorLine(self.fakeErrorObject)
 	                   .. "\n------------------------------------------------------------------------------------------------------\n"
 	                   .. self.fakeErrorObject.source .. '::' .. self.fakeTestCaseName .. "1" .. funcName .. '\n'
-	                   .. ttpl:sciteErrorLine(self.fakeErrorObject)
+	                   .. ttpl:editorSpecifiedErrorLine(self.fakeErrorObject)
 	                   .. "\n------------------------------------------------------------------------------------------------------\n"
 	
 	areEq(desiredString, ttpl:totalFailureStr())
@@ -150,8 +148,8 @@ function errorObjectFixture.testIgnoreString(self)
 	ttpl:onTestIgnore(self.fakeTestCaseName .. '1', self.fakeErrorObject)
 	
 	local desiredString = '----Ignored----\n'
-	                    .. ttpl:sciteErrorLine(self.fakeErrorObject) .. self.fakeTestCaseName .. "2\n"
-	                    .. ttpl:sciteErrorLine(self.fakeErrorObject) .. self.fakeTestCaseName .. "1\n" 
+	                    .. ttpl:editorSpecifiedErrorLine(self.fakeErrorObject) .. self.fakeTestCaseName .. "2\n"
+	                    .. ttpl:editorSpecifiedErrorLine(self.fakeErrorObject) .. self.fakeTestCaseName .. "1\n" 
 	                    
 	areEq(desiredString, ttpl:totalIgnoreStr())
 end
@@ -229,7 +227,7 @@ function errorObjectFixture.filledEndTestsTest(self)
 end
 
 function sciteTextTestProgressListenerFixture.derivationTextTestListenerTest()
-	local ttpl = testResultHandlers.TextTestProgressHandler:new();
+	local ttpl = testResultHandlers.MsvcTextTestProgressHandler:new();
 	isNil(ttpl.XmlTestResultHandler)
 	isNotNil(ttpl.outputMessage)
 	local sttpl = testResultHandlers.SciteTextTestProgressHandler:new();
