@@ -302,8 +302,20 @@ TestRunner =
         end
         return nil
     end;
+
+
+    onTestsBegin = function(self)
+        self.previousWorkingDir_ = lfs.currentdir()
+        self.resultHandlers_:onTestsBegin()
+    end;
     
-    runTestsOfTestContainer = function(self, path)
+    onTestsEnd = function(self)
+        self.resultHandlers_:onTestsEnd()
+        self.loadHandlers_:onLoadEnd()
+        lfs.chdir(self.previousWorkingDir_)
+    end;
+    
+    runTestContainer = function(self, path)
         path = fs.absPath(path)
         self.loadHandlers_:onLoadBegin{path = path}
 
@@ -358,27 +370,13 @@ TestRunner =
             runTestCase(test, self.resultHandlers_)
         end
     end;
-
-    runTestContainer = function(self, testContainerPath)
-        local previousWorkingDir = lfs.currentdir()
-        self.resultHandlers_:onTestsBegin()
-
-        self:runTestsOfTestContainer(testContainerPath)
-
-        self.resultHandlers_:onTestsEnd()
-        self.loadHandlers_:onLoadEnd()
-        lfs.chdir(previousWorkingDir)
-    end;
-
+    
     runTestContainersFromDir = function(self, dirPath)
-        local previousWorkingDir = lfs.currentdir()
-        self.resultHandlers_:onTestsBegin()
-
         local function filterTestContainer(path, state)
             return nil ~= self:findLtueForTestContainer(path)
         end
         local function loadAndRunTests(testContainerPath, state)
-            self:runTestsOfTestContainer(testContainerPath)
+            self:runTestContainer(testContainerPath)
         end
         
         fs.applyOnFiles(dirPath, 
@@ -389,10 +387,6 @@ TestRunner =
                 state = { filters = {fs.fileFilter, filterTestContainer},},
             }
         )
-        
-        self.resultHandlers_:onTestsEnd()
-        self.loadHandlers_:onLoadEnd()
-        lfs.chdir(previousWorkingDir)
     end;
 }
 
