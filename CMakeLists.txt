@@ -55,3 +55,26 @@ ELSE(WIN32 AND NOT UNIX)
 ENDIF(WIN32 AND NOT UNIX)
     
 INCLUDE(CPack)
+
+INCLUDE(ExternalProject)
+
+ExternalProject_Add(
+    Lua-5.1.4
+    URL http://www.lua.org/ftp/lua-5.1.4.tar.gz
+    PREFIX external_deps
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND "make linux"
+    BUILD_IN_SOURCE 1
+    INSTALL_COMMAND ""
+)
+
+ExternalProject_Add(
+    Lua-5.2.0
+    URL http://www.lua.org/ftp/lua-5.2.0.tar.gz
+    PREFIX external_deps
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND "make linux"
+    BUILD_IN_SOURCE 1
+    INSTALL_COMMAND ""
+)
+
