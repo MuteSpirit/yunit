@@ -58,22 +58,32 @@ INCLUDE(CPack)
 
 INCLUDE(ExternalProject)
 
+
+IF(UNIX)
+    set(LUA_BUILD_COMMAND make linux)
+ELSE(UNIX)
+    set(LUA_BUILD_COMMAND make generic)
+ENDIF(UNIX)
+
+set(LUA_51_BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lua_5.1)
+set(LUA_52_BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lua_5.2)
+
 ExternalProject_Add(
     Lua-5.1.4
-    URL http://www.lua.org/ftp/lua-5.1.4.tar.gz
-    PREFIX external_deps
+    URL "http://www.lua.org/ftp/lua-5.1.4.tar.gz"
     CONFIGURE_COMMAND ""
-    BUILD_COMMAND "make linux"
+    SOURCE_DIR ${LUA_51_BINARY_DIR}
+    BUILD_COMMAND ${LUA_BUILD_COMMAND}
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ""
 )
 
 ExternalProject_Add(
     Lua-5.2.0
-    URL http://www.lua.org/ftp/lua-5.2.0.tar.gz
-    PREFIX external_deps
+    URL "http://www.lua.org/ftp/lua-5.2.0.tar.gz"
     CONFIGURE_COMMAND ""
-    BUILD_COMMAND "make linux"
+    SOURCE_DIR ${LUA_52_BINARY_DIR}
+    BUILD_COMMAND ${LUA_BUILD_COMMAND}
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ""
 )
