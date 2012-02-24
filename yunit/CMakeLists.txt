@@ -19,7 +19,7 @@ endif(MSVC)
 #
 # yunit
 #
-set(YUNIT_FILES yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.h trace.cpp mine.h mine.cpp aux.h aux.cpp)
+set(YUNIT_FILES yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.h trace.cpp mine.h mine.cpp auxlib.h auxlib.cpp)
 if(WIN32)
     set(YUNIT_COMMON_LIBS )
 else(WIN32)
