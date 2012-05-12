@@ -12,8 +12,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/../_lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
 link_directories("${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
-
-add_subdirectory(yunit)
 #
 # Package info
 #
@@ -60,31 +58,38 @@ INCLUDE(ExternalProject)
 
 
 IF(UNIX)
-    set(LUA_BUILD_COMMAND make linux)
+    set(LUA_BUILD_COMMAND make -j 2 linux)
 ELSE(UNIX)
-    set(LUA_BUILD_COMMAND make generic)
+    set(LUA_BUILD_COMMAND make -j 2 generic)
 ENDIF(UNIX)
 
-set(LUA_51_BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lua_5.1)
-set(LUA_52_BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lua_5.2)
+set(LUA_51_BINARY_DIR ${PROJECT_BINARY_DIR}/lua/5.1)
+set(LUA_52_BINARY_DIR ${PROJECT_BINARY_DIR}/lua/5.2)
 
 ExternalProject_Add(
-    Lua-5.1.4
-    URL "http://www.lua.org/ftp/lua-5.1.4.tar.gz"
-    CONFIGURE_COMMAND ""
+    lua5.1
+    URL ${CMAKE_CURRENT_SOURCE_DIR}/lua/5.1
+#    CONFIGURE_COMMAND ""
     SOURCE_DIR ${LUA_51_BINARY_DIR}
-    BUILD_COMMAND ${LUA_BUILD_COMMAND}
+#    BUILD_COMMAND ${LUA_BUILD_COMMAND}
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ""
 )
 
 ExternalProject_Add(
-    Lua-5.2.0
-    URL "http://www.lua.org/ftp/lua-5.2.0.tar.gz"
-    CONFIGURE_COMMAND ""
+    lua5.2
+    URL ${CMAKE_CURRENT_SOURCE_DIR}/lua/5.2
+#    CONFIGURE_COMMAND ""
     SOURCE_DIR ${LUA_52_BINARY_DIR}
-    BUILD_COMMAND ${LUA_BUILD_COMMAND}
+#    BUILD_COMMAND ${LUA_BUILD_COMMAND}
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ""
 )
 
+ExternalProject_Add(
+    yunit
+    URL ${CMAKE_CURRENT_SOURCE_DIR}/yunit
+    SOURCE_DIR yunit
+    BUILD_IN_SOURCE 1
+#    INSTALL_COMMAND ""
+)
