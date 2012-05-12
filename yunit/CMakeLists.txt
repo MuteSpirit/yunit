@@ -1,3 +1,7 @@
+project(yunit)
+cmake_minimum_required(VERSION 2.6)
+cmake_policy(VERSION 2.6)
+
 # We need to link Lua as dynamic library(ies)
 # If we link lua statically, then lua command interpreter and yunit DLL will have 
 # own copy of lua core copy. So when Lua of yunit.cppunit will allocate new TestCase objects and return
@@ -45,13 +49,14 @@ set(SET_LUA_PATH -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;${CMAKE
 # using Lua 5.1
 #####################################################################################################################################
 set(LUA_VERSION 5.1)
+set(LUA_51_BINARY_DIR ${PROJECT_BINARY_DIR}/../lua/${LUA_VERSION}/src)
 
-    find_library(LUA_51_LIBRARY     NAMES lua       PATHS ../lua_${LUA_VERSION}/src)
-    find_path(LUA_51_INCLUDE_DIR    lua.h           PATHS ../lua_${LUA_VERSION}/src)
+    find_library(LUA_51_LIBRARY     NAMES lua       PATHS ${LUA_51_BINARY_DIR})
+    find_path(LUA_51_INCLUDE_DIR    lua.h           PATHS ${LUA_51_BINARY_DIR})
 if(WIN32)
-    find_program(LUA_51_EXEC        NAMES lua.exe   PATHS ../lua_${LUA_VERSION}/src)
+    find_program(LUA_51_EXEC        NAMES lua.exe   PATHS ${LUA_51_BINARY_DIR})
 else(WIN32)
-    find_program(LUA_51_EXEC        NAMES lua       PATHS ../lua_${LUA_VERSION}/src)
+    find_program(LUA_51_EXEC        NAMES lua       PATHS ${LUA_51_BINARY_DIR})
 endif(WIN32)
     include_directories(${LUA_51_INCLUDE_DIR})
 #
@@ -131,13 +136,14 @@ install(DIRECTORY .
 # using Lua 5.2
 #####################################################################################################################################
 set(LUA_VERSION 5.2)
-
-    find_library(LUA_52_LIBRARY     NAMES lua     PATHS ../lua_${LUA_VERSION}/src)
-    find_path(LUA_52_INCLUDE_DIR    lua.h         PATHS ../lua_${LUA_VERSION}/src)
+set(LUA_52_BINARY_DIR ${PROJECT_BINARY_DIR}/../lua/${LUA_VERSION}/src)
+message(${LUA_52_BINARY_DIR})
+    find_library(LUA_52_LIBRARY     NAMES lua     PATHS ${LUA_52_BINARY_DIR})
+    find_path(LUA_52_INCLUDE_DIR    lua.h         PATHS ${LUA_52_BINARY_DIR})
 if(WIN32)
-    find_program(LUA_52_EXEC        NAMES lua.exe PATHS ../lua_${LUA_VERSION}/src)
+    find_program(LUA_52_EXEC        NAMES lua.exe PATHS ${LUA_52_BINARY_DIR})
 else(WIN32)
-    find_program(LUA_52_EXEC        NAMES lua     PATHS ../lua_${LUA_VERSION}/src)
+    find_program(LUA_52_EXEC        NAMES lua     PATHS ${LUA_52_BINARY_DIR})
 endif(WIN32)
     include_directories(${LUA_52_INCLUDE_DIR})
 #
