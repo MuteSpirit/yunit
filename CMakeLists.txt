@@ -54,42 +54,51 @@ ENDIF(WIN32 AND NOT UNIX)
     
 INCLUDE(CPack)
 
-INCLUDE(ExternalProject)
+set(LUA_VERSIONS 5.1 5.2)
+foreach(LUA_VERSION ${LUA_VERSIONS})
+    add_subdirectory(lua_${LUA_VERSION})
+endforeach(LUA_VERSION)    
+
+add_subdirectory(yunit)
 
 
-IF(UNIX)
-    set(LUA_BUILD_COMMAND make -j 2 linux)
-ELSE(UNIX)
-    set(LUA_BUILD_COMMAND make -j 2 generic)
-ENDIF(UNIX)
+#INCLUDE(ExternalProject)
 
-set(LUA_51_BINARY_DIR ${PROJECT_BINARY_DIR}/lua/5.1)
-set(LUA_52_BINARY_DIR ${PROJECT_BINARY_DIR}/lua/5.2)
 
-ExternalProject_Add(
-    lua5.1
-    URL ${CMAKE_CURRENT_SOURCE_DIR}/lua/5.1
-#    CONFIGURE_COMMAND ""
-    SOURCE_DIR ${LUA_51_BINARY_DIR}
-#    BUILD_COMMAND ${LUA_BUILD_COMMAND}
-    BUILD_IN_SOURCE 1
-    INSTALL_COMMAND ""
-)
+#IF(UNIX)
+#    set(LUA_BUILD_COMMAND make -j 2 linux)
+#ELSE(UNIX)
+#    set(LUA_BUILD_COMMAND make -j 2 generic)
+#ENDIF(UNIX)
 
-ExternalProject_Add(
-    lua5.2
-    URL ${CMAKE_CURRENT_SOURCE_DIR}/lua/5.2
-#    CONFIGURE_COMMAND ""
-    SOURCE_DIR ${LUA_52_BINARY_DIR}
-#    BUILD_COMMAND ${LUA_BUILD_COMMAND}
-    BUILD_IN_SOURCE 1
-    INSTALL_COMMAND ""
-)
+#set(LUA_51_BINARY_DIR ${PROJECT_BINARY_DIR}/lua/5.1)
+#set(LUA_52_BINARY_DIR ${PROJECT_BINARY_DIR}/lua/5.2)
 
-ExternalProject_Add(
-    yunit
-    URL ${CMAKE_CURRENT_SOURCE_DIR}/yunit
-    SOURCE_DIR yunit
-    BUILD_IN_SOURCE 1
+#ExternalProject_Add(
+#    lua5.1
+#    URL ${CMAKE_CURRENT_SOURCE_DIR}/lua/5.1
+##    CONFIGURE_COMMAND ""
+#    SOURCE_DIR ${LUA_51_BINARY_DIR}
+##    BUILD_COMMAND ${LUA_BUILD_COMMAND}
+#    BUILD_IN_SOURCE 1
 #    INSTALL_COMMAND ""
-)
+#)
+#
+#ExternalProject_Add(
+#    lua5.2
+#    URL ${CMAKE_CURRENT_SOURCE_DIR}/lua/5.2
+##    CONFIGURE_COMMAND ""
+#    SOURCE_DIR ${LUA_52_BINARY_DIR}
+##    BUILD_COMMAND ${LUA_BUILD_COMMAND}
+#    BUILD_IN_SOURCE 1
+#    INSTALL_COMMAND ""
+#)
+#
+#ExternalProject_Add(
+#    yunit
+#    URL ${CMAKE_CURRENT_SOURCE_DIR}/yunit
+#    SOURCE_DIR yunit
+#    BUILD_IN_SOURCE 1
+##    INSTALL_COMMAND ""
+#)
+#

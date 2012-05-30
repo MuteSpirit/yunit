@@ -71,7 +71,10 @@ class State
 public:
     State(lua_State* L);
     
-    operator lua_State*();
+    operator lua_State*()
+    {
+        return l_;
+    }
     
     void push(int v);
     void push(long v);
@@ -82,7 +85,7 @@ public:
     void push(const char* s);
     void push(const std::string& s);
     void push(const char* s, size_t len);
-    void pushf(const char* fmt, ...);
+    void pushf(const char* fmt, ...); /// @todo Сделать push(String) и переделать функции по добавлению строки в набор конструкторов
     void push(Value v);
     void push(Table t);
     void push(_Nil);
@@ -118,9 +121,15 @@ public:
     void to(int idx, const char** str, size_t* len);
     void to(int idx, const char** str);
 
+
     template<typename CppType>
-    void to(int idx, CppType** cppObj);
+    void to(int idx, CppType** cppObj); /// @todo It is not place for that function
     
+    enum {topIdx = -1};
+
+    template<typename T>
+    T to(int idx = topIdx);
+
     void getinfo(const char *what, lua_Debug *ar);
     
     int error(const char* fmt, ...);
@@ -128,6 +137,8 @@ public:
 private:
     lua_State* l_;    
 };
+
+template<> unsigned long State::to<unsigned long>(int idx);
 
 } // namespace Lua
 

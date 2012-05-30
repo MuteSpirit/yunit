@@ -12,11 +12,6 @@ State::State(lua_State* L)
 {
 }
 
-State::operator lua_State*()
-{
-    return l_;
-}
-
 void State::settable(int idx)
 {
     lua_settable(l_, idx);
@@ -214,6 +209,18 @@ void State::remove(int idx)
 void State::getinfo(const char *what, lua_Debug *ar)
 {
     lua_getinfo(l_, what, ar);
+}
+
+template<> 
+unsigned long State::to<unsigned long>(int idx)
+{
+#if LUA_VERSION_NUM == 501
+    return lua_tointeger(l_, idx);
+#elif LUA_VERSION_NUM == 502
+    return lua_tounsigned(l_, idx);
+#else
+#  error Unsupported Lua version
+#endif
 }
 
 } // namespace Lua
