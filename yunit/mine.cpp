@@ -275,7 +275,7 @@ LUA_META_METHOD(Mine, sleep)
     if (!lua.isinteger(timeoutInSecIdx))
         lua.error("integer expected as argument, but was %s", lua.typeName(timeoutInSecIdx));
 
-    sleep(Seconds(lua_tointeger(lua, timeoutInSecIdx)));
+    sleep(Seconds(lua.to<unsigned long>(timeoutInSecIdx)));
     return 0;
 }
 
@@ -288,7 +288,7 @@ LUA_META_METHOD(Mine, setTimer)
     if (!lua.isinteger(timeoutInSecIdx))
         lua.error("integer expected as argument, but was %s", lua.typeName(timeoutInSecIdx));
 
-    mine.setTimer(Seconds(lua_tointeger(lua, timeoutInSecIdx)));
+    mine.setTimer(Seconds(lua.to<unsigned long>(timeoutInSecIdx)));
     return 0;
 }
 
