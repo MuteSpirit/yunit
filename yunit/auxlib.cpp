@@ -21,7 +21,7 @@ namespace YUNIT_NS {
 struct Aux {};
 
 extern "C"
-int YUNIT_API luaopen_yunit_aux(lua_State* L)
+int YUNIT_API LUA_SUBMODULE(aux)(lua_State* L)
 {
     Lua::State lua(L);
     luaWrapper<Aux>().regLib(lua, "yunit.aux");
@@ -74,8 +74,6 @@ LUA_META_METHOD(Aux, allProccesses)
     return 1;
 }
 
-#else // defined(_WIN32)
-
 LUA_META_METHOD(Aux, pid)
 {
     Lua::State lua(L);
@@ -86,6 +84,8 @@ LUA_META_METHOD(Aux, pid)
 #endif
     return 1;
 }
+
+#else // defined(_WIN32)
 
 LUA_META_METHOD(Aux, exePath)
 {

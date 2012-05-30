@@ -259,7 +259,7 @@ static ProcessKiller processKiller;
 static Mine mine(&processKiller);
 
 extern "C"
-int YUNIT_API luaopen_yunit_mine(lua_State* L)
+int YUNIT_API LUA_SUBMODULE(mine)(lua_State* L)
 {
     Lua::State lua(L);
     luaWrapper<Mine>().regLib(lua, "yunit.mine");

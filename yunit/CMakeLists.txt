@@ -46,10 +46,14 @@ function(yunitProject LUA_VERSION)
     target_link_libraries(${YUNIT_LIB_TARGET_NAME} ${YUNIT_COMMON_LIBS} ${LUA_LIB_OUT_NAME})
     
     # we have to set property COMPILE_FLAGS /I, because each of yunit projects, compiled with concrete Lua library version, so if we use command 'include_directories', then each yunit project will have paths of every Lua include directory in it's AdditionalIncludeDirectories and will use wrong lua.h file
+    #
+    # we set CONFIG_HEADER to use macro LUA_SUBMODULE from yunit_lua_${LUA_VERSION}.h
+    # 
+    # @todo Add autogeneration of yuni_lua_??.h files
     set_target_properties(${YUNIT_LIB_TARGET_NAME}
                             PROPERTIES 
                                 PREFIX ""
-                                COMPILE_FLAGS /I"${LUA_${LUA_VERSION}_INCLUDE_DIR}"
+                                COMPILE_FLAGS "/I\"${LUA_${LUA_VERSION}_INCLUDE_DIR}\" /D\"CONFIG_HEADER=${YUNIT_LIB_TARGET_NAME}.h\""
                                 LIBRARY_OUTPUT_NAME ${YUNIT_LIB_TARGET_NAME}
     )
     #

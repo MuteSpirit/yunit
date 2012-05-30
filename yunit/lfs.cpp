@@ -811,7 +811,7 @@ static const struct luaL_Reg fslib[] = {
 #ifdef __cplusplus
 extern "C"
 #endif
-int YUNIT_API luaopen_yunit_lfs (lua_State *L) {
+int YUNIT_API LUA_SUBMODULE(lfs) (lua_State *L) {
     dir_create_meta (L);
     lock_create_meta (L);
 

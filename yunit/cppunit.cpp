@@ -45,7 +45,7 @@ struct Cppunit {};
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 extern "C"
-int YUNIT_API luaopen_yunit_cppunit(lua_State* L)
+int YUNIT_API LUA_SUBMODULE(cppunit)(lua_State* L)
 {
     using namespace YUNIT_NS;
     Lua::State lua(L);
