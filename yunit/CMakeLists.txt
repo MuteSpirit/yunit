@@ -19,7 +19,8 @@ endif(MSVC)
 #
 # yunit
 # 
-set(YUNIT_FILES yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.h trace.cpp mine.h mine.cpp auxlib.h auxlib.cpp)
+set(YUNIT_CONFIG_FILE_TEMPLATE yunit_lua_config.h.in)
+set(YUNIT_FILES yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.h trace.cpp mine.h mine.cpp auxlib.h auxlib.cpp ${YUNIT_CONFIG_FILE_TEMPLATE})
 if(WIN32)
     set(YUNIT_COMMON_LIBS )
 else(WIN32)
@@ -40,8 +41,14 @@ function(yunitProject LUA_VERSION)
     set(LUA_INT_TARGET_NAME lua_int_${LUA_VERSION})
 
     find_path(LUA_${LUA_VERSION}_INCLUDE_DIR NAMES lua.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../lua_${LUA_VERSION}/src)
+    #
+    # autogeneration of yuni_lua_??.h config file
+    set(YUNIT_CONFIG_FILE_HEADER ${YUNIT_LIB_TARGET_NAME}.h)
+    file(READ ${YUNIT_CONFIG_FILE_TEMPLATE} YUNIT_LUA_CONFIG_HEADER_TEXT)
+    string(REGEX REPLACE "OUTPUT_NAME" "${YUNIT_LIB_TARGET_NAME}" YUNIT_LUA_CONFIG_HEADER_TEXT ${YUNIT_LUA_CONFIG_HEADER_TEXT})
+    file(WRITE ${YUNIT_CONFIG_FILE_HEADER} ${YUNIT_LUA_CONFIG_HEADER_TEXT})
     
-    add_library(${YUNIT_LIB_TARGET_NAME} SHARED ${YUNIT_FILES})
+    add_library(${YUNIT_LIB_TARGET_NAME} SHARED ${YUNIT_FILES} ${YUNIT_CONFIG_FILE_HEADER})
     add_dependencies(${YUNIT_LIB_TARGET_NAME} ${LUA_LIB_TARGET_NAME})
     target_link_libraries(${YUNIT_LIB_TARGET_NAME} ${YUNIT_COMMON_LIBS} ${LUA_LIB_OUT_NAME})
     
@@ -49,11 +56,10 @@ function(yunitProject LUA_VERSION)
     #
     # we set CONFIG_HEADER to use macro LUA_SUBMODULE from yunit_lua_${LUA_VERSION}.h
     # 
-    # @todo Add autogeneration of yuni_lua_??.h files
     set_target_properties(${YUNIT_LIB_TARGET_NAME}
                             PROPERTIES 
                                 PREFIX ""
-                                COMPILE_FLAGS "/I\"${LUA_${LUA_VERSION}_INCLUDE_DIR}\" /D\"CONFIG_HEADER=${YUNIT_LIB_TARGET_NAME}.h\""
+                                COMPILE_FLAGS "/I\"${LUA_${LUA_VERSION}_INCLUDE_DIR}\" /D\"CONFIG_HEADER=${YUNIT_CONFIG_FILE_HEADER}\""
                                 LIBRARY_OUTPUT_NAME ${YUNIT_LIB_TARGET_NAME}
     )
     #
