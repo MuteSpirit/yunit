@@ -1,9 +1,9 @@
-set(LUA_VERSION 5.1)
-set(LUA_LIB_FILES lapi.c lauxlib.c lbaselib.c lcode.c ldblib.c ldebug.c ldo.c ldump.c lfunc.c lgc.c linit.c liolib.c llex.c lmathlib.c lmem.c loadlib.c lobject.c lopcodes.c loslib.c lparser.c lstate.c lstring.c lstrlib.c ltable.c ltablib.c ltm.c lundump.c lvm.c lzio.c print.c)
+set(LUA_VERSION 52)
+set(LUA_LIB_FILES lapi.c lauxlib.c lbaselib.c lbitlib.c lcode.c lcorolib.c lctype.c ldblib.c ldebug.c ldo.c ldump.c lfunc.c lgc.c linit.c liolib.c llex.c lmathlib.c lmem.c loadlib.c lobject.c lopcodes.c loslib.c lparser.c lstate.c lstring.c lstrlib.c ltable.c ltablib.c ltm.c lundump.c lvm.c lzio.c)
 set(LUA_FILES lua.c)
+
 #
 # lua library
-# 
 set(LUA_LIB_TARGET_NAME lua_lib_${LUA_VERSION})
 set(LUA_LIB_OUT_NAME lua${LUA_VERSION})
 
