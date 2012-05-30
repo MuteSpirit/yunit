@@ -10,7 +10,7 @@ if(NOT WIN32)
 endif(NOT WIN32)
 #
 # Enable C++ exceptions
-#
+# 
 if(MSVC)
     add_definitions(/EHsc /D_CRT_SECURE_NO_WARNINGS)
 else(MSVC)
@@ -18,7 +18,7 @@ else(MSVC)
 endif(MSVC)
 #
 # yunit
-#
+# 
 set(YUNIT_FILES yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.h trace.cpp mine.h mine.cpp auxlib.h auxlib.cpp)
 if(WIN32)
     set(YUNIT_COMMON_LIBS )
@@ -27,19 +27,8 @@ else(WIN32)
 endif(WIN32)
 #
 # yunit.t
-
+# 
 set(YUNIT_T_FILES cppunit.t.cpp trace.t.cpp lua_wrapper.t.cpp mine.t.cpp)
-#
-# Tests
-
-if(WIN32)
-    set(SHARED_LIB_EXT "dll")
-    set(SHARED_LIB_OUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-else(WIN32)
-    set(SHARED_LIB_EXT "so")
-    set(SHARED_LIB_OUT_DIR "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
-endif(WIN32)
-set(SET_LUA_PATH -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;${CMAKE_CURRENT_SOURCE_DIR}/../?/init.lua;]]..package.path")
 
 #####################################################################################################################################
 # function to add yunit project, linking concrete version of Lua library
@@ -48,80 +37,67 @@ function(yunitProject LUA_VERSION)
     set(YUNIT_LIB_TARGET_NAME yunit_lua_${LUA_VERSION})
     set(LUA_LIB_TARGET_NAME lua_lib_${LUA_VERSION})
     set(LUA_LIB_OUT_NAME lua${LUA_VERSION})
-    
-    find_path(LUA_${LUA_VERSION}_INCLUDE_DIR        NAMES lua.h                PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../lua_${LUA_VERSION}/src)
-### @todo Попытаться как-то получать из настроект TARGET-а проекта сборки интерпретатора lua, его выходную директорию
-    if(WIN32)
-        find_program(LUA_${LUA_VERSION}_EXEC        NAMES lua${LUA_VERSION}.exe   PATHS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-    else(WIN32)
-        find_program(LUA_${LUA_VERSION}_EXEC        NAMES lua${LUA_VERSION}       PATHS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-    endif(WIN32)
+    set(LUA_INT_TARGET_NAME lua_int_${LUA_VERSION})
 
+    find_path(LUA_${LUA_VERSION}_INCLUDE_DIR        NAMES lua.h                PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../lua_${LUA_VERSION}/src)
+
+    
     add_library(${YUNIT_LIB_TARGET_NAME} SHARED ${YUNIT_FILES})
     add_dependencies(${YUNIT_LIB_TARGET_NAME} ${LUA_LIB_TARGET_NAME})
-    
     target_link_libraries(${YUNIT_LIB_TARGET_NAME} ${YUNIT_COMMON_LIBS} ${LUA_LIB_OUT_NAME})
-
-#    set_property(TARGET ${YUNIT_LIB_TARGET_NAME}
-#                 #APPEND 
-#                 PROPERTY INCLUDE_DIRECTORIES "E:/_works/w_yunit/yunit/lua_5.2/src")
-
+    
+    # we have to set property COMPILE_FLAGS /I, because each of yunit projects, compiled with concrete Lua library version, so if we use command 'include_directories', then each yunit project will have paths of every Lua include directory in it's AdditionalIncludeDirectories and will use wrong lua.h file
     set_target_properties(${YUNIT_LIB_TARGET_NAME}
                             PROPERTIES 
                                 PREFIX ""
-                                COMPILE_FLAGS "/I\"${LUA_${LUA_VERSION}_INCLUDE_DIR}\" /I\"%(AdditionalIncludeDirectories)\""
+                                COMPILE_FLAGS /I"${LUA_${LUA_VERSION}_INCLUDE_DIR}"
                                 LIBRARY_OUTPUT_NAME ${YUNIT_LIB_TARGET_NAME}
     )
-
-    message("!!!")
-    message(${LUA_${LUA_VERSION}_INCLUDE_DIR})
-    message("!!!")
-
-    if(WIN32)
-        # we copy target files (*.dll, *.pdb) outside $(Configuration) directory, because on WIN32 value of 
-        # ${CMAKE_CFG_INTDIR} is equal to '$(Configuration)' and not substituted by real name (Debug, Release, etc).
-        # So we cannot use value ${CMAKE_CFG_INTDIR} in test and install commands
-        add_custom_command(TARGET ${YUNIT_LIB_TARGET_NAME}
-                           POST_BUILD
-                           COMMAND copy /b /y $(TargetPath) $(TargetDir)\\..
-                           COMMAND copy /b /y $(TargetDir)\\$(TargetName).pdb $(TargetDir)\\..
-        )
-    endif(WIN32)
-    
     #
     # yunit.t
+    # 
     set(YUNIT_T_TARGET_NAME yunit_t_lua_${LUA_VERSION})
     set(YUNIT_T_OUT_NAME yunit_lua_${LUA_VERSION}.t)
     
     add_library(${YUNIT_T_TARGET_NAME} SHARED ${YUNIT_T_FILES})
     target_link_libraries(${YUNIT_T_TARGET_NAME} ${YUNIT_LIB_TARGET_NAME})
+    add_dependencies(${YUNIT_T_TARGET_NAME} ${YUNIT_LIB_TARGET_NAME} ${LUA_INT_TARGET_NAME})
+    
     set_target_properties(${YUNIT_T_TARGET_NAME}
                             PROPERTIES
                                 PREFIX ""
+                                COMPILE_FLAGS /I"${LUA_${LUA_VERSION}_INCLUDE_DIR}"
                                 LIBRARY_OUTPUT_NAME ${YUNIT_T_OUT_NAME}
                                 LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lua_${LUA_VERSION}
     )
-    set_property(TARGET ${YUNIT_T_TARGET_NAME}
-                 APPEND
-                 PROPERTY INCLUDE_DIRECTORIES ${LUA_${LUA_VERSION}_INCLUDE_DIR})
-
-    add_dependencies(${YUNIT_T_TARGET_NAME} ${YUNIT_LIB_TARGET_NAME})
-
+    #
+    # Tests
+    # 
+    if(WIN32)
+        set(SHARED_LIB_EXT "dll")
+        set(SHARED_LIB_OUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    else(WIN32)
+        set(SHARED_LIB_EXT "so")
+        set(SHARED_LIB_OUT_DIR "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+    endif(WIN32)
+    
+    # using customized package.path and package.cpath to used only binaries from working directory and not from system
+    set(SET_LUA_PATH -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;${CMAKE_CURRENT_SOURCE_DIR}/../?/init.lua;]]..package.path")
     
     set(SET_LUA_CPATH -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath")
-
-    add_test(all_cppunit_lua_${LUA_VERSION}_tests ${LUA_51_EXEC} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l yunit -e "use{'yunit.cppunit', 'yunit.luaunit'}" -e "run{[[${SHARED_LIB_OUT_DIR}/lua_${LUA_VERSION}]], [[${CMAKE_CURRENT_SOURCE_DIR}]]}")
-
-    if(WIN32)
-        # we copy target files (*.dll, *.pdb) outside $(Configuration) directory, because on WIN32 value of 
-        # ${CMAKE_CFG_INTDIR} is equal to '$(Configuration)' and not substituted by real name (Debug, Release, etc).
-        # So we cannot use value ${CMAKE_CFG_INTDIR} in test and install commands
-        add_custom_command(TARGET ${YUNIT_T_TARGET_NAME}
-                           POST_BUILD
-                           COMMAND copy /b /y $(TargetPath) $(TargetDir)\\..
-                           COMMAND copy /b /y $(TargetDir)\\$(TargetName).pdb $(TargetDir)\\..
-        )
-    endif(WIN32)
+ 
+    # use Lua interpretator utility, linked with the same version Lua library
+    get_target_property(LUA_${LUA_VERSION}_EXEC_DIR ${LUA_INT_TARGET_NAME} RUNTIME_OUTPUT_DIRECTORY)
+    get_target_property(LUA_${LUA_VERSION}_EXEC_FILENAME ${LUA_INT_TARGET_NAME} OUTPUT_NAME)
+    set(LUA_${LUA_VERSION}_EXEC ${LUA_${LUA_VERSION}_EXEC_DIR}/${LUA_${LUA_VERSION}_EXEC_FILENAME})
+    
+    get_target_property(YUNIT_T_TARGET_PATH ${YUNIT_T_TARGET_NAME} LOCATION)
+    
+    # we haven't to use <CONFIGURATION> directory in path to Lua interpreter executable file, because CTest will try to find in config subdirectory itself
+    
+    #add_test(cpp_tests ${LUA_${LUA_VERSION}_EXEC} -l yunit -e "use{'yunit.cppunit'}" -e "run[[${YUNIT_T_TARGET_PATH}]]")
+    
+#    add_test(all_cppunit_lua_${LUA_VERSION}_tests ${LUA_51_EXEC} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l yunit -e "use{'yunit.cppunit', 'yunit.luaunit'}" -e "run{[[${SHARED_LIB_OUT_DIR}/lua_${LUA_VERSION}]], [[${CMAKE_CURRENT_SOURCE_DIR}]]}")
 
 #    #
 #    # Installation rules:
@@ -158,7 +134,6 @@ function(yunitProject LUA_VERSION)
 #                PATTERN "*.t.lua" EXCLUDE)
 endfunction(yunitProject)
 
-set(LUA_VERSIONS 5.1 5.2)
-foreach(LUA_VERSION ${LUA_VERSIONS})
+foreach(LUA_VERSION 5.1 5.2)
     yunitProject(${LUA_VERSION})
 endforeach(LUA_VERSION)    
