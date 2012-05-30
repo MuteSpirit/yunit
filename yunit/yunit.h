@@ -5,6 +5,7 @@
 #  pragma once
 #endif
 
+/// @todo Replace all starage guards with #pragma once, because it avoid thinking about it names
 #ifndef _YUNIT_TEST_HEADER_
 #define _YUNIT_TEST_HEADER_
 
@@ -34,6 +35,12 @@
 #       define YUNIT_API YUNIT_HELPER_DLL_IMPORT
 #   endif
 #   define YUNIT_LOCAL YUNIT_HELPER_DLL_LOCAL
+#endif
+
+#ifdef CONFIG_HEADER
+#  define TOSTR_(name) #name 
+#  define TOSTR(name) TOSTR_(name)
+#  include TOSTR(CONFIG_HEADER)
 #endif
 
 #ifndef TS_T

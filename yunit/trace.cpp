@@ -20,7 +20,7 @@
 struct Trace {};
 
 extern "C"
-int YUNIT_API luaopen_yunit_trace(lua_State *L)
+int YUNIT_API LUA_SUBMODULE(trace)(lua_State *L)
 {
     luaWrapper<Trace>().regLib(L, "yunit.trace");
 	return 1;
