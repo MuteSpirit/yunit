@@ -54,7 +54,7 @@ ENDIF(WIN32 AND NOT UNIX)
     
 INCLUDE(CPack)
 
-foreach(LUA_VERSION 5.1 5.2)
+foreach(LUA_VERSION 51 52)
     add_subdirectory(lua_${LUA_VERSION})
 endforeach(LUA_VERSION)    
 

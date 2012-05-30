@@ -36,11 +36,10 @@ set(YUNIT_T_FILES cppunit.t.cpp trace.t.cpp lua_wrapper.t.cpp mine.t.cpp)
 function(yunitProject LUA_VERSION)
     set(YUNIT_LIB_TARGET_NAME yunit_lua_${LUA_VERSION})
     set(LUA_LIB_TARGET_NAME lua_lib_${LUA_VERSION})
-    set(LUA_LIB_OUT_NAME lua${LUA_VERSION})
+    set(LUA_LIB_OUT_NAME lua${LUA_VERSION}) # @todo брать прямо из настроек проекта
     set(LUA_INT_TARGET_NAME lua_int_${LUA_VERSION})
 
-    find_path(LUA_${LUA_VERSION}_INCLUDE_DIR        NAMES lua.h                PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../lua_${LUA_VERSION}/src)
-
+    find_path(LUA_${LUA_VERSION}_INCLUDE_DIR NAMES lua.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../lua_${LUA_VERSION}/src)
     
     add_library(${YUNIT_LIB_TARGET_NAME} SHARED ${YUNIT_FILES})
     add_dependencies(${YUNIT_LIB_TARGET_NAME} ${LUA_LIB_TARGET_NAME})
@@ -134,6 +133,6 @@ function(yunitProject LUA_VERSION)
 #                PATTERN "*.t.lua" EXCLUDE)
 endfunction(yunitProject)
 
-foreach(LUA_VERSION 5.1 5.2)
+foreach(LUA_VERSION 51 52)
     yunitProject(${LUA_VERSION})
 endforeach(LUA_VERSION)    
