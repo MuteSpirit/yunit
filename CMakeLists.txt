@@ -54,6 +54,10 @@ ENDIF(WIN32 AND NOT UNIX)
     
 INCLUDE(CPack)
 
+if(WIN32)
+    set(COPY_TARGET_FILES copy /b /y $(TargetDir)\\$(TargetName).* $(TargetDir)\\..)
+endif(WIN32)
+    
 foreach(LUA_VERSION 51 52)
     add_subdirectory(lua_${LUA_VERSION})
 endforeach(LUA_VERSION)    

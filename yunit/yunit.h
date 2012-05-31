@@ -40,6 +40,7 @@
 #ifdef CONFIG_HEADER
 #  define TOSTR_(name) #name 
 #  define TOSTR(name) TOSTR_(name)
+
 #  include TOSTR(CONFIG_HEADER)
 #endif
 
