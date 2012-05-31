@@ -40,3 +40,7 @@ else(WIN32)
     target_link_libraries(${LUA_INT_TARGET_NAME} ${LUA_LIB_OUT_NAME} m)
 endif(WIN32)
 add_dependencies(${LUA_INT_TARGET_NAME} ${LUA_LIB_TARGET_NAME})
+
+add_custom_command(TARGET ${LUA_INT_TARGET_NAME}
+                   POST_BUILD
+                   COMMAND ${COPY_TARGET_FILES})

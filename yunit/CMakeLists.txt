@@ -60,7 +60,7 @@ function(yunitProject LUA_VERSION)
                             PROPERTIES 
                                 PREFIX ""
                                 COMPILE_FLAGS "/I\"${LUA_${LUA_VERSION}_INCLUDE_DIR}\" /D\"CONFIG_HEADER=${YUNIT_CONFIG_FILE_HEADER}\""
-                                LIBRARY_OUTPUT_NAME ${YUNIT_LIB_TARGET_NAME}
+                                OUTPUT_NAME ${YUNIT_LIB_TARGET_NAME}
     )
     #
     # yunit.t
@@ -76,12 +76,31 @@ function(yunitProject LUA_VERSION)
                             PROPERTIES
                                 PREFIX ""
                                 COMPILE_FLAGS /I"${LUA_${LUA_VERSION}_INCLUDE_DIR}"
-                                LIBRARY_OUTPUT_NAME ${YUNIT_T_OUT_NAME}
+                                OUTPUT_NAME ${YUNIT_T_OUT_NAME}
                                 LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lua_${LUA_VERSION}
     )
     #
     # Tests
     # 
+    if(WIN32)
+        # we copy target files (*.dll, *.pdb) outside $(Configuration) directory, because on WIN32 value of 
+        # ${CMAKE_CFG_INTDIR} is equal to '$(Configuration)' and not substituted by real name (Debug, Release, etc).
+        #
+        # !!! So we cannot use ${CMAKE_CFG_INTDIR} in tests and install commands !!!
+
+        # add_custom_command(TARGET ${LUA_INT_TARGET_NAME}
+                           # POST_BUILD
+                           # COMMAND ${COPY_TARGET_FILES})
+                           
+        add_custom_command(TARGET ${YUNIT_LIB_TARGET_NAME}
+                           POST_BUILD
+                           COMMAND ${COPY_TARGET_FILES})
+                           
+        add_custom_command(TARGET ${YUNIT_T_TARGET_NAME} 
+                           POST_BUILD
+                           COMMAND ${COPY_TARGET_FILES})
+    endif(WIN32)
+
     if(WIN32)
         set(SHARED_LIB_EXT "dll")
         set(SHARED_LIB_OUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
@@ -100,11 +119,12 @@ function(yunitProject LUA_VERSION)
     get_target_property(LUA_${LUA_VERSION}_EXEC_FILENAME ${LUA_INT_TARGET_NAME} OUTPUT_NAME)
     set(LUA_${LUA_VERSION}_EXEC ${LUA_${LUA_VERSION}_EXEC_DIR}/${LUA_${LUA_VERSION}_EXEC_FILENAME})
     
-    get_target_property(YUNIT_T_TARGET_PATH ${YUNIT_T_TARGET_NAME} LOCATION)
+    get_target_property(YUNIT_T_TARGET_DIR ${YUNIT_T_TARGET_NAME} RUNTIME_OUTPUT_DIRECTORY)
+#    get_target_property(YUNIT_T_TARGET_OUTPUT_NAME ${YUNIT_T_TARGET_NAME} RUNTIME_OUTPUT_NAME)
+    set(YUNIT_T_TARGET_PATH ${YUNIT_T_TARGET_DIR}/${YUNIT_T_OUT_NAME}.${SHARED_LIB_EXT})
     
-    # we haven't to use <CONFIGURATION> directory in path to Lua interpreter executable file, because CTest will try to find in config subdirectory itself
-    
-    #add_test(cpp_tests ${LUA_${LUA_VERSION}_EXEC} -l yunit -e "use{'yunit.cppunit'}" -e "run[[${YUNIT_T_TARGET_PATH}]]")
+    message(${LUA_${LUA_VERSION}_EXEC} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l yunit -e "use{'yunit.cppunit'}" -e "run[[${YUNIT_T_TARGET_PATH}]]")
+    add_test(yunit_lua_${LUA_VERSION}_cpp_tests ${LUA_${LUA_VERSION}_EXEC} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l yunit -e "use{'yunit.cppunit'}" -e "run[[${YUNIT_T_TARGET_PATH}]]")
     
 #    add_test(all_cppunit_lua_${LUA_VERSION}_tests ${LUA_51_EXEC} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l yunit -e "use{'yunit.cppunit', 'yunit.luaunit'}" -e "run{[[${SHARED_LIB_OUT_DIR}/lua_${LUA_VERSION}]], [[${CMAKE_CURRENT_SOURCE_DIR}]]}")
 
