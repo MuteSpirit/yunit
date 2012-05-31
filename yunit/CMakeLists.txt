@@ -75,7 +75,7 @@ function(yunitProject LUA_VERSION)
     set_target_properties(${YUNIT_T_TARGET_NAME}
                             PROPERTIES
                                 PREFIX ""
-                                COMPILE_FLAGS /I"${LUA_${LUA_VERSION}_INCLUDE_DIR}"
+                                COMPILE_FLAGS "/I\"${LUA_${LUA_VERSION}_INCLUDE_DIR}\" /D\"OUTPUT_NAME=${YUNIT_T_OUT_NAME}\""
                                 OUTPUT_NAME ${YUNIT_T_OUT_NAME}
                                 LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lua_${LUA_VERSION}
     )
@@ -87,10 +87,6 @@ function(yunitProject LUA_VERSION)
         # ${CMAKE_CFG_INTDIR} is equal to '$(Configuration)' and not substituted by real name (Debug, Release, etc).
         #
         # !!! So we cannot use ${CMAKE_CFG_INTDIR} in tests and install commands !!!
-
-        # add_custom_command(TARGET ${LUA_INT_TARGET_NAME}
-                           # POST_BUILD
-                           # COMMAND ${COPY_TARGET_FILES})
                            
         add_custom_command(TARGET ${YUNIT_LIB_TARGET_NAME}
                            POST_BUILD
@@ -120,10 +116,8 @@ function(yunitProject LUA_VERSION)
     set(LUA_${LUA_VERSION}_EXEC ${LUA_${LUA_VERSION}_EXEC_DIR}/${LUA_${LUA_VERSION}_EXEC_FILENAME})
     
     get_target_property(YUNIT_T_TARGET_DIR ${YUNIT_T_TARGET_NAME} RUNTIME_OUTPUT_DIRECTORY)
-#    get_target_property(YUNIT_T_TARGET_OUTPUT_NAME ${YUNIT_T_TARGET_NAME} RUNTIME_OUTPUT_NAME)
     set(YUNIT_T_TARGET_PATH ${YUNIT_T_TARGET_DIR}/${YUNIT_T_OUT_NAME}.${SHARED_LIB_EXT})
-    
-    message(${LUA_${LUA_VERSION}_EXEC} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l yunit -e "use{'yunit.cppunit'}" -e "run[[${YUNIT_T_TARGET_PATH}]]")
+
     add_test(yunit_lua_${LUA_VERSION}_cpp_tests ${LUA_${LUA_VERSION}_EXEC} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l yunit -e "use{'yunit.cppunit'}" -e "run[[${YUNIT_T_TARGET_PATH}]]")
     
 #    add_test(all_cppunit_lua_${LUA_VERSION}_tests ${LUA_51_EXEC} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l yunit -e "use{'yunit.cppunit', 'yunit.luaunit'}" -e "run{[[${SHARED_LIB_OUT_DIR}/lua_${LUA_VERSION}]], [[${CMAKE_CURRENT_SOURCE_DIR}]]}")
