@@ -37,10 +37,14 @@
 #   define YUNIT_LOCAL YUNIT_HELPER_DLL_LOCAL
 #endif
 
-#ifdef CONFIG_HEADER
-#  define TOSTR_(name) #name 
-#  define TOSTR(name) TOSTR_(name)
+#define TOSTR_(name) #name 
+#define TOSTR(name) TOSTR_(name)
 
+#define TOWSTR_(name) L ## #name
+#define TOWSTR(name) TOWSTR_(name)
+
+
+#ifdef CONFIG_HEADER
 #  include TOSTR(CONFIG_HEADER)
 #endif
 
