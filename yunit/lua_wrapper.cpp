@@ -1,8 +1,10 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // lua_wrapper.cpp
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define YUNIT_DLL_EXPORTS
 #include "lua_wrapper.h"
-
+#include <cassert>
+#include <limits>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Lua {
@@ -84,15 +86,14 @@ void State::pushf(const char* fmt, ...)
     lua_concat(l_, 2);
 }
 
-int State::error(const char* fmt, ...)
+void State::push(lua_CFunction func)
 {
-    va_list argp;
-    va_start(argp, fmt);
-    luaL_where(l_, 1);
-    lua_pushvfstring(l_, fmt, argp);
-    va_end(argp);
-    lua_concat(l_, 2);
-    return lua_error(l_);
+    lua_pushcfunction(l_, func);
+}
+
+void State::push(void *ptr)
+{
+    lua_pushlightuserdata(l_, ptr);
 }
 
 void State::push(Value v)
@@ -171,6 +172,11 @@ void State::getglobal(const char* name)
     lua_getglobal(l_, name);
 }
 
+void State::setglobal(const char* name)
+{
+    lua_setglobal(l_, name);
+}
+
 void State::getfield(int idx, const char* key)
 {
     lua_getfield(l_, idx, key);
@@ -211,16 +217,150 @@ void State::getinfo(const char *what, lua_Debug *ar)
     lua_getinfo(l_, what, ar);
 }
 
-template<> 
-unsigned long State::to<unsigned long>(int idx)
+
+void State::insert(int idx)
 {
-#if LUA_VERSION_NUM == 501
-    return lua_tointeger(l_, idx);
-#elif LUA_VERSION_NUM == 502
-    return lua_tounsigned(l_, idx);
-#else
-#  error Unsupported Lua version
-#endif
+    lua_insert(l_, idx);
+}
+
+int State::error(const char* fmt, ...)
+{
+    va_list argp;
+    va_start(argp, fmt);
+    luaL_where(l_, 1);
+    lua_pushvfstring(l_, fmt, argp);
+    va_end(argp);
+    lua_concat(l_, 2);
+    return lua_error(l_);
+}
+
+int State::dostring(const char *luaCode)
+{
+    int rc = luaL_loadstring(l_, luaCode);
+    if (0 == rc)
+        rc = call();
+
+    return rc;
+}
+
+int State::dostring(String luaCode)
+{
+    int rc = luaL_loadbuffer(l_, luaCode.s_, luaCode.size_, luaCode.s_);
+    if (0 == rc)
+        rc = call();
+
+    return rc;
+}
+
+static int db_errorfb(lua_State *L);
+
+int State::call(unsigned int numberOfArgs, int numberOfReturnValues)
+{
+    // stack has such content on function call moment: ..., function, arg1, ..., argN
+    
+    assert(numberOfArgs <= std::numeric_limits<int>::max());
+    int numOfArgs = static_cast<int>(numberOfArgs);
+
+    assert(top() >= numOfArgs + 1);
+    //
+    // locating error handle function before calling function value
+    push(db_errorfb);
+    insert(top() - numOfArgs + 1);
+
+    const int errHandleFuncIdx = top() - numOfArgs + 1;
+    int rc = lua_pcall(l_, numOfArgs, numberOfReturnValues, errHandleFuncIdx);
+
+    remove(errHandleFuncIdx);
+    return rc;
+}
+
+// source code of db_errorfb and dependent function is copies from Lua 5.2 sources
+
+#define LEVELS1	12	/* size of the first part of the stack */
+#define LEVELS2	10	/* size of the second part of the stack */
+static lua_State *getthread (lua_State *L, int *arg);
+
+static int db_errorfb (lua_State *L) {
+  int level;
+  int firstpart = 1;  /* still before eventual `...' */
+  int arg;
+  lua_State *L1 = getthread(L, &arg);
+  lua_Debug ar;
+  if (lua_isnumber(L, arg+2)) {
+    level = (int)lua_tointeger(L, arg+2);
+    lua_pop(L, 1);
+  }
+  else
+    level = (L == L1) ? 1 : 0;  /* level 0 may be this own function */
+  if (lua_gettop(L) == arg)
+    lua_pushliteral(L, "");
+  else if (!lua_isstring(L, arg+1)) return 1;  /* message is not a string */
+  else lua_pushliteral(L, "\n");
+  lua_pushliteral(L, "stack traceback:");
+  while (lua_getstack(L1, level++, &ar)) {
+    if (level > LEVELS1 && firstpart) {
+      /* no more than `LEVELS2' more levels? */
+      if (!lua_getstack(L1, level+LEVELS2, &ar))
+        level--;  /* keep going */
+      else {
+        lua_pushliteral(L, "\n\t...");  /* too many levels */
+        while (lua_getstack(L1, level+LEVELS2, &ar))  /* find last levels */
+          level++;
+      }
+      firstpart = 0;
+      continue;
+    }
+    lua_pushliteral(L, "\n\t");
+    lua_getinfo(L1, "Snl", &ar);
+    lua_pushfstring(L, "%s:", ar.short_src);
+    if (ar.currentline > 0)
+      lua_pushfstring(L, "%d:", ar.currentline);
+    if (*ar.namewhat != '\0')  /* is there a name? */
+        lua_pushfstring(L, " in function " LUA_QS, ar.name);
+    else {
+      if (*ar.what == 'm')  /* main? */
+        lua_pushfstring(L, " in main chunk");
+      else if (*ar.what == 'C' || *ar.what == 't')
+        lua_pushliteral(L, " ?");  /* C function or tail call */
+      else
+        lua_pushfstring(L, " in function <%s:%d>",
+                           ar.short_src, ar.linedefined);
+    }
+    lua_concat(L, lua_gettop(L) - arg);
+  }
+  lua_concat(L, lua_gettop(L) - arg);
+  return 1;
+}
+
+static lua_State *getthread (lua_State *L, int *arg) {
+  if (lua_isthread(L, 1)) {
+    *arg = 1;
+    return lua_tothread(L, 1);
+  }
+  else {
+    *arg = 0;
+    return L;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+StateGuard::StateGuard()
+: Parent(luaL_newstate())
+{
+}
+
+StateGuard::~StateGuard()
+{
+    close();
+}
+
+void StateGuard::close()
+{
+    if (nullptr != l_)
+    {
+        lua_close(l_);
+        l_ = nullptr;
+    }
 }
 
 } // namespace Lua

@@ -21,6 +21,7 @@ endif(MSVC)
 # 
 set(YUNIT_CONFIG_FILE_TEMPLATE yunit_lua_config.h.in)
 set(YUNIT_FILES yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.h trace.cpp mine.h mine.cpp auxlib.h auxlib.cpp ${YUNIT_CONFIG_FILE_TEMPLATE})
+# set(YUNIT_FILES yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.h trace.cpp auxlib.h auxlib.cpp ${YUNIT_CONFIG_FILE_TEMPLATE})
 if(WIN32)
     set(YUNIT_COMMON_LIBS )
 else(WIN32)
@@ -30,6 +31,7 @@ endif(WIN32)
 # yunit.t
 # 
 set(YUNIT_T_FILES cppunit.t.cpp trace.t.cpp lua_wrapper.t.cpp mine.t.cpp)
+# set(YUNIT_T_FILES cppunit.t.cpp trace.t.cpp lua_wrapper.t.cpp)
 
 #####################################################################################################################################
 # function to add yunit project, linking concrete version of Lua library
@@ -47,6 +49,8 @@ function(yunitProject LUA_VERSION)
     file(READ ${YUNIT_CONFIG_FILE_TEMPLATE} YUNIT_LUA_CONFIG_HEADER_TEXT)
     string(REGEX REPLACE "OUTPUT_NAME" "${YUNIT_LIB_TARGET_NAME}" YUNIT_LUA_CONFIG_HEADER_TEXT ${YUNIT_LUA_CONFIG_HEADER_TEXT})
     file(WRITE ${YUNIT_CONFIG_FILE_HEADER} ${YUNIT_LUA_CONFIG_HEADER_TEXT})
+    
+    # we build yunit library as DLL, because it may be used by test container, linked with different (and maybe incompatible version of Lua)
     
     add_library(${YUNIT_LIB_TARGET_NAME} SHARED ${YUNIT_FILES} ${YUNIT_CONFIG_FILE_HEADER})
     add_dependencies(${YUNIT_LIB_TARGET_NAME} ${LUA_LIB_TARGET_NAME})
@@ -157,6 +161,7 @@ function(yunitProject LUA_VERSION)
 #                PATTERN "*.t.lua" EXCLUDE)
 endfunction(yunitProject)
 
+# we cannot use points in yunit shared library output file name, because it will not allow use it in Lua "require" command argument. So Lua version is 51 or 52 and no 5.1 and 5.2
 foreach(LUA_VERSION 51 52)
     yunitProject(${LUA_VERSION})
 endforeach(LUA_VERSION)    
