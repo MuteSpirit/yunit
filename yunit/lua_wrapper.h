@@ -14,6 +14,7 @@ extern "C" {
 #include "lauxlib.h"
 }
 
+#include "yunit.h"
 #include <vector>
 #include <string>
 
@@ -37,7 +38,7 @@ namespace Lua {
 
 class State;
     
-class Table
+class YUNIT_API Table
 {
     friend class State;
 public:
@@ -51,7 +52,7 @@ private:
     int nrec_;
 };
 
-class Value
+class YUNIT_API Value
 {
     friend class State;
 public:
@@ -63,10 +64,25 @@ private:
     int idx_;
 };
 
+
+class YUNIT_API String
+{
+public:
+    String(const char *s = nullptr, size_t size = 0)
+    : s_(s)
+    , size_(size)
+    {}
+
+public:
+    const char *s_;
+    size_t size_;
+};
+
+
 enum _Nil { Nil };
         
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class State
+class YUNIT_API State
 {
 public:
     State(lua_State* L);
@@ -86,6 +102,8 @@ public:
     void push(const std::string& s);
     void push(const char* s, size_t len);
     void pushf(const char* fmt, ...); /// @todo Сделать push(String) и переделать функции по добавлению строки в набор конструкторов
+    void push(lua_CFunction func);
+    void push(void *ptr);
     void push(Value v);
     void push(Table t);
     void push(_Nil);
@@ -107,10 +125,12 @@ public:
     bool isnil(int idx);
     
     void getglobal(const char* name);
+    void setglobal(const char* name);
+
     void getfield(int idx, const char* key);
+    void setfield(int idx, const char* key);
 
     void settable(int idx);
-    void setfield(int idx, const char* key);
 
     void rawseti(int idx, int n);
     
@@ -131,23 +151,113 @@ public:
     T to(int idx = topIdx);
 
     void getinfo(const char *what, lua_Debug *ar);
-    
+
+    void insert(int idx);
+
     int error(const char* fmt, ...);
 
-private:
+    int dostring(const char *luaCode);
+    int dostring(String luaCode);
+
+    enum {multiRetValues = -1};
+    int call(unsigned int numberOfArgs = 0, int numberOfReturnValues = multiRetValues);
+
+protected:
     lua_State* l_;    
 };
 
 template<> unsigned long State::to<unsigned long>(int idx);
+template<> const char*   State::to<const char*>(int idx);
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class YUNIT_API StateGuard : public State
+{
+    typedef State Parent;
+public:
+    StateGuard();   // create a new lua_State
+    ~StateGuard();  // close it's lua_State, if it is not closed previously
+
+    void close();   // close it's lua_State
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class CppClassWrapperForLuaImpl;
+//
+// делаем локализованную "корзинку" для складывания метаметодов => не будет конфликта имен на глобальном уровне, 
+// например, между разными библиотеками.
+// метаметоды будут добавлены на этапе выполнения => объявления этих методов в классе не нужны.
+// нужно только определение метода создания метатаблицы класса. Нужен какой-то уникальный указатель, 
+// созданный на этапе компиляции, чтобы сохранить с таким ключом метатаблицу класса в реестре Lua
+//
+// used pattern: "Template Method"
+/// @todo Добавить еще property, чтобы можно было делать так: "obj.var_ = value"
+
+class CppClassWrapperForLua
+{
+public:
+    void addMethod(lua_CFunction method);
+    void makeClassMetatable(State &lua);
+
+protected:
+    lua_CFunction getMethod(const char *name);
+
+    virtual void setClassMetatableContent(State &lua, const int classMtIdx) = 0;
+
+private:
+    CppClassWrapperForLuaImpl *impl_;
+};
+
+class MineWrapperForLua : public CppClassWrapperForLua
+{
+protected:
+    inline virtual void setClassMetatableContent(State &lua, const int classMtIdx);
+};
+
+inline void MineWrapperForLua::setClassMetatableContent(State &lua, const int classMtIdx)
+{
+    lua.push(getMethod("Mine__gc"));
+    lua.setfield(classMtIdx, "Mine__gc");
+}
+
+#define LUA_CLASS(className) \
+    inline void add##className##Methods(Lua::State& lua);\
+    inline void expose##className(Lua::State& lua)\
+    {\
+        lua.push(static_cast<void*>(expose##className));\
+        lua.push(Table());\
+        const int classMetatableIdx = lua.top();\
+        add##className##Methods(lua, classMetatableIdx);\
+        lua.settable(classMetatableIdx);\
+    }\
+    inline void add##className##Methods(Lua::State& lua, const int classMetatableIdx)
+
+#define LUA_REGISTER(className) expose##className
+
+#define ADD_CONSTRUCTOR(className) \
+    int className ## _ ## className(lua_State *);\
+    lua.push(className ## _ ## className);\
+    lua.setglobal(#className);\
+    (void)classMetatableIdx; // avoid compiler warning about unused variable
+
+#define ADD_DESTRUCTOR(className) \
+    int className ## __gc(lua_State *);\
+    lua.push(className ## __gc);\
+    lua.setfield(classMetatableIdx, "__gc");
+
+#define ADD_METHOD(className, methodName) \
+    int className ## _ ## methodName(lua_State *);\
+    lua.push(className ## _ ## methodName);\
+    lua.setfield(classMetatableIdx, TOSTR(className ## _ ## methodName));
 
 } // namespace Lua
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename CppType>
-class LuaWrapper /// @todo Rename to ClassMetatable
+class ClassMetatable
 {
 public:
-    static LuaWrapper& instance();
+    static ClassMetatable& instance();
 
     void addMethod(const char *name, lua_CFunction func);
     /// @todo replace next 2 method with registerInTable
@@ -155,14 +265,14 @@ public:
     void regLib(lua_State* L, const char* name);
     
 private:
-    LuaWrapper();
+    ClassMetatable();
     
     typedef std::vector<luaL_Reg> Methods;
     Methods methods_;
 };
 
 template<typename CppType>
-LuaWrapper<CppType>& luaWrapper();
+ClassMetatable<CppType>& luaWrapper();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename CppType>
@@ -176,19 +286,19 @@ struct AddMethod
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template<typename CppType>
-inline LuaWrapper<CppType>::LuaWrapper()
+inline ClassMetatable<CppType>::ClassMetatable()
 {
 }
 
 template<typename CppType>
-inline LuaWrapper<CppType>& LuaWrapper<CppType>::instance()
+inline ClassMetatable<CppType>& ClassMetatable<CppType>::instance()
 {
-    static LuaWrapper<CppType> wrapper;
+    static ClassMetatable<CppType> wrapper;
     return wrapper;
 }
 
 template<typename CppType>
-inline void LuaWrapper<CppType>::addMethod(const char *name, lua_CFunction func)
+inline void ClassMetatable<CppType>::addMethod(const char *name, lua_CFunction func)
 {
     methods_.resize(methods_.size() + 1);
     methods_.back().name = name;
@@ -196,7 +306,7 @@ inline void LuaWrapper<CppType>::addMethod(const char *name, lua_CFunction func)
 }
 
 template<typename CppType>
-inline void LuaWrapper<CppType>::makeMetatable(lua_State* L, const char* mtName)
+inline void ClassMetatable<CppType>::makeMetatable(lua_State* L, const char* mtName)
 {
     luaL_newmetatable(L, mtName);
     
@@ -214,7 +324,7 @@ inline void LuaWrapper<CppType>::makeMetatable(lua_State* L, const char* mtName)
 }
 
 template<typename CppType>
-inline void LuaWrapper<CppType>::regLib(lua_State* L, const char* name)
+inline void ClassMetatable<CppType>::regLib(lua_State* L, const char* name)
 {
     // we have to avoid usage luaL_register and luaL_setfuncs, because we want
     // to support Lua 5.1 and Lua 5.2
@@ -229,15 +339,15 @@ inline void LuaWrapper<CppType>::regLib(lua_State* L, const char* name)
 }
 
 template<typename CppType>
-LuaWrapper<CppType>& luaWrapper()
+ClassMetatable<CppType>& luaWrapper()
 {
-    return LuaWrapper<CppType>::instance();
+    return ClassMetatable<CppType>::instance();
 }
 
 template<typename CppType>
 AddMethod<CppType>::AddMethod(const char *name, lua_CFunction func)
 {
-    LuaWrapper<CppType>::instance().addMethod(name, func);
+    ClassMetatable<CppType>::instance().addMethod(name, func);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -248,6 +358,8 @@ inline void State::push(CppType* cppObj, const char* mtName)
 {
     lua_State* L = l_;
     
+    // Lua userdata will keep only C++ object pointer, not whole object, because object memory allocation is
+    // responsibility of client code
     CppType** res = (CppType**)lua_newuserdata(L, sizeof(CppType*));
     luaL_getmetatable(L, mtName);
 	lua_setmetatable(L, -2);
@@ -285,6 +397,27 @@ int dtor(lua_State* L)
         delete *pp;
         *pp = NULL; // to avoid deleting object twice, if __gc metametod will be called more then once
     }
+}
+
+/// @todo Disadvantage of State's template methods is it's definition location in header file
+/// So, we cannot incapsulate native Lua API from client
+
+template<> 
+inline unsigned long State::to<unsigned long>(int idx)
+{
+#if LUA_VERSION_NUM == 501
+    return lua_tointeger(l_, idx);
+#elif LUA_VERSION_NUM == 502
+    return lua_tounsigned(l_, idx);
+#else
+#  error Unsupported Lua version
+#endif
+}
+
+template<>
+inline const char* State::to<const char*>(int idx)
+{
+    return lua_tostring(l_, idx);
 }
 
 } // namespace Lua

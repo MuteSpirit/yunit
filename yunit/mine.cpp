@@ -39,7 +39,7 @@ public:
     void setTimer(Seconds seconds);
     void turnoff();
 
-    static void mineThread(void* param);
+    static unsigned int __stdcall mineThread(void* param);
 
 private:
     DamageAgent* damageAgent_;
@@ -77,7 +77,7 @@ private:
 class ProcessKiller : public DamageAgent
 {
 public:
-    void boom() { abort(); }
+    void boom() { abort(); } /// @todo Replace abort() with something else, because abort ignore UnhandleExceptionFilter function
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,29 +97,35 @@ void sleep(Seconds seconds)
 
 #ifdef _WIN32
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void MineImplWin32::mineThread(void* param)
+unsigned int __stdcall MineImplWin32::mineThread(void* param)
 {
     MineImpl* mineImpl = reinterpret_cast<MineImpl*>(param);
     
-    enum {numOfEvents = 2, stopEventIdx = 0, orderEventIdx = 1};
+    enum {numOfEvents = 2};
+    enum {stopEventIdx = 0, orderEventIdx = 1};
     HANDLE events[numOfEvents] = {mineImpl->stopMineThreadEvent_, mineImpl->orderReceivedEvent_};
 
+    int timeout;
     for (;;) // not use while(1) to avoid compiler warning "expression is constant"
     {
-        int waitRes = ::WaitForMultipleObjects(numOfEvents, events, FALSE, 1000 * mineImpl->timeToBoomInSec_);
+        timeout = (INFINITE == mineImpl->timeToBoomInSec_) ? INFINITE : 1000 * mineImpl->timeToBoomInSec_;
+        
+        int waitRes = ::WaitForMultipleObjects(numOfEvents, events, FALSE, timeout);
 
         if (WAIT_OBJECT_0 + stopEventIdx == waitRes)
-            return;
+            break;
         if (WAIT_OBJECT_0 + orderEventIdx == waitRes)
             continue; // timeToBoomInSec_ has been changed, start to wait again
         else if (WAIT_TIMEOUT == waitRes)
         {
             mineImpl->damageAgent_->boom(); // as normal this action must kill current process
-            return;
+            break;
         }
         else if (WAIT_FAILED == waitRes || WAIT_ABANDONED == waitRes)
             throw UndefinedApiBehaviour();
     }
+
+    return 0;
 }
 
 MineImplWin32::MineImplWin32(DamageAgent* damageAgent)
@@ -129,7 +135,7 @@ MineImplWin32::MineImplWin32(DamageAgent* damageAgent)
 , stopMineThreadEvent_(::CreateEvent(0, FALSE, FALSE, 0))
 , timeToBoomInSec_(INFINITE)
 {
-    thread_ = reinterpret_cast<HANDLE>(_beginthread(mineThread, 0, this));
+    thread_ = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0, mineThread, this, 0, NULL));
     if (0 == thread_)
         throw UndefinedApiBehaviour();
 }
@@ -162,7 +168,7 @@ void MineImplWin32::turnoff()
     }
 }
 
-#else
+#else // if not defined _WIN32
 
 MineImplPthreads::MineImplPthreads(DamageAgent* damageAgent)
 : damageAgent_(damageAgent)
@@ -255,15 +261,37 @@ void Mine::turnoff()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static ProcessKiller processKiller;
-static Mine mine(&processKiller);
+//static ProcessKiller processKiller;
+//static Mine mine(&processKiller);
 
 extern "C"
 int YUNIT_API LUA_SUBMODULE(mine)(lua_State* L)
 {
     Lua::State lua(L);
-    luaWrapper<Mine>().regLib(lua, "yunit.mine");
+    luaWrapper<Mine>().makeMetatable(lua, MT_NAME(Mine));
+    lua.push(true);
     return 1;
+}
+
+LUA_META_METHOD(Mine, Mine) /// @todo Replace with more short construction, for example, LUA_CONSTRUCTOR(Mine)
+{
+    static ProcessKiller procKiller;
+
+    Lua::State lua(L);  /// @todo Accept Lua::State as function argument, don't create it inside function
+    lua.push(new Mine(&procKiller), MT_NAME(Mine));
+    return 1;
+}
+
+LUA_META_METHOD(Mine, __gc) /// @todo Replace with more short construction, for example, LUA_DESTRUCTOR(Mine)
+{
+    Lua::State lua(L);
+
+    enum Args {selfIdx = 1};
+    Mine *mine = nullptr;
+    lua.to(selfIdx, &mine);
+    delete mine;
+
+    return 0;
 }
 
 LUA_META_METHOD(Mine, sleep)
@@ -283,18 +311,27 @@ LUA_META_METHOD(Mine, setTimer)
 {
     Lua::State lua(L);
 
-    enum Args {timeoutInSecIdx = 1};
+    enum Args {selfIdx = 1, timeoutInSecIdx};
 
-    if (!lua.isinteger(timeoutInSecIdx))
+    if (!lua.isinteger(timeoutInSecIdx)) /// @todo Replace is some macro as CHECK_ARG_TYPE
         lua.error("integer expected as argument, but was %s", lua.typeName(timeoutInSecIdx));
 
-    mine.setTimer(Seconds(lua.to<unsigned long>(timeoutInSecIdx)));
+    Mine *mine = nullptr;
+    lua.to(selfIdx, &mine);
+    mine->setTimer(Seconds(lua.to<unsigned long>(timeoutInSecIdx)));
+
     return 0;
 }
 
 LUA_META_METHOD(Mine, turnoff)
 {
-    mine.turnoff();
+    Lua::State lua(L);
+
+    enum Args {selfIdx = 1};
+    Mine *mine = nullptr;
+    lua.to(selfIdx, &mine);
+    mine->turnoff();
+
     return 0;
 }
 
