@@ -363,4 +363,18 @@ void StateGuard::close()
     }
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CppClassWrapperForLua::addMethod(const char *name, lua_CFunction method)
+{
+}
+
+void CppClassWrapperForLua::makeClassMetatable(State &lua)
+{
+}
+
+lua_CFunction CppClassWrapperForLua::getMethod(const char *name)
+{
+    return nullptr;
+}
+
 } // namespace Lua

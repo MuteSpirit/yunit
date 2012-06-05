@@ -5,21 +5,36 @@
 #include "cppunit.h"
 #include "lua_wrapper.h"
 
-using namespace Lua;
+namespace Lua {
 
 LUA_CLASS(Object)
 {
     ADD_CONSTRUCTOR(Object);
-    ADD_METHOD(Object, name);
     ADD_DESTRUCTOR(Object);
+
+    ADD_METHOD(Object, name);
+}
+
+LUA_CONSTRUCTOR(Object)
+{
+    return 0;
+}
+
+LUA_DESTRUCTOR(Object)
+{
+    return 0;
+}
+
+LUA_METHOD(Object, name)
+{
+    return 0;
 }
 
 test(exposing_cpp_object_into_lua)
 {
     StateGuard lua;
 
-//    lua.getglobal();
-//    LUA_REGISTER(Object)(lua);
+    LUA_REGISTER(Object)(lua);
 
     if(lua.dostring(
         "errmsg = 'create Object" "\r\n"
@@ -35,3 +50,5 @@ test(exposing_cpp_object_into_lua)
     lua.getglobal("errmsg");
     areEq("ok", lua.to<const char*>());
 }
+
+} // namespace Lua

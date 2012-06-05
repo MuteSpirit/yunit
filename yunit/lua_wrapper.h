@@ -193,10 +193,10 @@ class CppClassWrapperForLuaImpl;
 // used pattern: "Template Method"
 /// @todo Добавить еще property, чтобы можно было делать так: "obj.var_ = value"
 
-class CppClassWrapperForLua
+class YUNIT_API CppClassWrapperForLua
 {
 public:
-    void addMethod(lua_CFunction method);
+    void addMethod(const char *name, lua_CFunction method);
     void makeClassMetatable(State &lua);
 
 protected:
@@ -208,47 +208,88 @@ private:
     CppClassWrapperForLuaImpl *impl_;
 };
 
-class MineWrapperForLua : public CppClassWrapperForLua
-{
-protected:
-    inline virtual void setClassMetatableContent(State &lua, const int classMtIdx);
-};
-
-inline void MineWrapperForLua::setClassMetatableContent(State &lua, const int classMtIdx)
-{
-    lua.push(getMethod("Mine__gc"));
-    lua.setfield(classMtIdx, "Mine__gc");
-}
+/// @brief Declaration new wrapper for C++ class into Lua.
+/// Usage example:
+///     LUA_CLASS(Object)
+///     {
+///         ADD_CONSTRUCTOR(Object);
+///         ADD_DESTRUCTOR(Object);
+///
+///         ADD_METHOD(Object, name);
+///     }
 
 #define LUA_CLASS(className) \
-    inline void add##className##Methods(Lua::State& lua);\
-    inline void expose##className(Lua::State& lua)\
+    class LUA_WRAPPER_NAME(className) : public CppClassWrapperForLua\
     {\
-        lua.push(static_cast<void*>(expose##className));\
-        lua.push(Table());\
-        const int classMetatableIdx = lua.top();\
-        add##className##Methods(lua, classMetatableIdx);\
-        lua.settable(classMetatableIdx);\
-    }\
-    inline void add##className##Methods(Lua::State& lua, const int classMetatableIdx)
+    public:\
+        static LUA_WRAPPER_NAME(className) *instance()\
+        {\
+            static LUA_WRAPPER_NAME(className) instance;\
+            return &instance;\
+        }\
+    protected:\
+        inline virtual void setClassMetatableContent(State &lua, const int classMtIdx);\
+    };\
+    \
+    inline void className ## WrapperForLua::setClassMetatableContent(State &lua, const int classMtIdx)\
 
-#define LUA_REGISTER(className) expose##className
+#define LUA_WRAPPER_NAME(className) className ## WrapperForLua
+
 
 #define ADD_CONSTRUCTOR(className) \
-    int className ## _ ## className(lua_State *);\
-    lua.push(className ## _ ## className);\
+    lua.push(getMethod(TOSTR(LUA_WRAPPER_CTOR_NAME(className))));\
     lua.setglobal(#className);\
-    (void)classMetatableIdx; // avoid compiler warning about unused variable
+    (void)classMtIdx; // avoid compiler warning about unused variable
 
+#define LUA_WRAPPER_CTOR_NAME(className) className ## _ ## className
+
+
+/// @details Don't use symbol tilda (~) in 'className' parameter
 #define ADD_DESTRUCTOR(className) \
-    int className ## __gc(lua_State *);\
-    lua.push(className ## __gc);\
-    lua.setfield(classMetatableIdx, "__gc");
+    lua.push(getMethod(TOSTR(LUA_WRAPPER_DTOR_NAME(className))));\
+    lua.setfield(classMtIdx, "__gc");
+
+#define LUA_WRAPPER_DTOR_NAME(className) className ## _ ## __gc
+
 
 #define ADD_METHOD(className, methodName) \
-    int className ## _ ## methodName(lua_State *);\
-    lua.push(className ## _ ## methodName);\
-    lua.setfield(classMetatableIdx, TOSTR(className ## _ ## methodName));
+    lua.push(getMethod(TOSTR(LUA_WRAPPER_METHOD_NAME(className, methodName))));\
+    lua.setfield(classMtIdx, #methodName);
+
+#define LUA_WRAPPER_METHOD_NAME(className, methodName) className ## _ ## methodName
+
+
+/// @brief Use this macro to avoid using specific class in lua_State, for example,
+///     StateGuard lua;
+///     LUA_REGISTER(CppClass)(lua);
+#define LUA_REGISTER(className) LUA_WRAPPER_NAME(className)::instance()->makeClassMetatable
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<typename LuaWrapperClass>
+struct AddWrapperMethod
+{
+    AddWrapperMethod(const char *name, lua_CFunction func)
+    {
+        LuaWrapperClass::instance()->addMethod(name, func);
+    }
+};
+
+
+/// Constructor/destructor/method definition of C++ class wrapper into Lua
+#define LUA_CONSTRUCTOR(className) \
+    static int LUA_WRAPPER_CTOR_NAME(className)(lua_State *);\
+    static AddWrapperMethod<LUA_WRAPPER_NAME(className)> addConstructorTo ## className ## Wrapper(TOSTR(LUA_WRAPPER_CTOR_NAME(className)), LUA_WRAPPER_CTOR_NAME(className));\
+    static int LUA_WRAPPER_CTOR_NAME(className)(lua_State *)
+
+#define LUA_DESTRUCTOR(className) \
+    static int LUA_WRAPPER_DTOR_NAME(className)(lua_State *);\
+    static AddWrapperMethod<LUA_WRAPPER_NAME(className)> addDestructorTo ## className ## Wrapper(TOSTR(LUA_WRAPPER_DTOR_NAME(className)), LUA_WRAPPER_DTOR_NAME(className));\
+    static int LUA_WRAPPER_DTOR_NAME(className)(lua_State *)
+    
+#define LUA_METHOD(className, methodName) \
+    static int LUA_WRAPPER_METHOD_NAME(className, methodName)(lua_State *);\
+    static AddWrapperMethod<LUA_WRAPPER_NAME(className)> addMethod ## methodName ## To ## className ## Wrapper(TOSTR(LUA_WRAPPER_METHOD_NAME(className, methodName)), LUA_WRAPPER_METHOD_NAME(className, methodName));\
+    static int LUA_WRAPPER_METHOD_NAME(className, methodName)(lua_State *)
 
 } // namespace Lua
 
