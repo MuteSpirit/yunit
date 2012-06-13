@@ -277,19 +277,31 @@ struct AddWrapperMethod
 
 /// Constructor/destructor/method definition of C++ class wrapper into Lua
 #define LUA_CONSTRUCTOR(className) \
-    static int LUA_WRAPPER_CTOR_NAME(className)(lua_State *);\
+    static inline int LUA_WRAPPER_CTOR_NAME(className)##_Impl(Lua::State&);\
+    static int LUA_WRAPPER_CTOR_NAME(className)(lua_State *L)\
+    {\
+        return LUA_WRAPPER_CTOR_NAME(className)##_Impl(Lua::State(L));\
+    }\
     static AddWrapperMethod<LUA_WRAPPER_NAME(className)> addConstructorTo ## className ## Wrapper(TOSTR(LUA_WRAPPER_CTOR_NAME(className)), LUA_WRAPPER_CTOR_NAME(className));\
-    static int LUA_WRAPPER_CTOR_NAME(className)(lua_State *)
+    static inline int LUA_WRAPPER_CTOR_NAME(className)##_Impl(Lua::State &lua)
 
 #define LUA_DESTRUCTOR(className) \
-    static int LUA_WRAPPER_DTOR_NAME(className)(lua_State *);\
+    static inline int LUA_WRAPPER_DTOR_NAME(className)##_Impl(Lua::State&);\
+    static int LUA_WRAPPER_DTOR_NAME(className)(lua_State *L)\
+    {\
+        return LUA_WRAPPER_DTOR_NAME(className)##_Impl(Lua::State(L));\
+    }\
     static AddWrapperMethod<LUA_WRAPPER_NAME(className)> addDestructorTo ## className ## Wrapper(TOSTR(LUA_WRAPPER_DTOR_NAME(className)), LUA_WRAPPER_DTOR_NAME(className));\
-    static int LUA_WRAPPER_DTOR_NAME(className)(lua_State *)
+    static inline int LUA_WRAPPER_DTOR_NAME(className)##_Impl(Lua::State &lua)
     
 #define LUA_METHOD(className, methodName) \
-    static int LUA_WRAPPER_METHOD_NAME(className, methodName)(lua_State *);\
+    static inline int LUA_WRAPPER_METHOD_NAME(className, methodName)##_Impl(Lua::State&);\
+    static int LUA_WRAPPER_METHOD_NAME(className, methodName)(lua_State *L)\
+    {\
+        return LUA_WRAPPER_METHOD_NAME(className, methodName)##_Impl(Lua::State(L));\
+    }\
     static AddWrapperMethod<LUA_WRAPPER_NAME(className)> addMethod ## methodName ## To ## className ## Wrapper(TOSTR(LUA_WRAPPER_METHOD_NAME(className, methodName)), LUA_WRAPPER_METHOD_NAME(className, methodName));\
-    static int LUA_WRAPPER_METHOD_NAME(className, methodName)(lua_State *)
+    static inline int LUA_WRAPPER_METHOD_NAME(className, methodName)##_Impl(Lua::State &lua)
 
 } // namespace Lua
 
