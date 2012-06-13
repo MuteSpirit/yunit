@@ -25,9 +25,17 @@ LUA_DESTRUCTOR(Object)
     return 0;
 }
 
+struct Object
+{
+    const char *name_;
+};
+
 LUA_METHOD(Object, name)
 {
-    return 0;
+    //enum Args {selfIdx = 1};
+    //lua.push(lua.to<Object*>(selfIdx)->name_);
+    lua.push("not implement yet");
+    return 1;
 }
 
 test(exposing_cpp_object_into_lua)
