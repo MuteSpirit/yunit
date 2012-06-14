@@ -15,6 +15,13 @@ LUA_CLASS(Object)
     ADD_METHOD(Object, name);
 }
 
+struct Object
+{
+    const char *name_;
+};
+
+DEFINE_LUA_TO(Object);
+
 LUA_CONSTRUCTOR(Object)
 {
     enum Args {nameIdx = 1};
@@ -26,15 +33,12 @@ LUA_CONSTRUCTOR(Object)
 
 LUA_DESTRUCTOR(Object)
 {
+    enum Args {selfIdx = 1};
+    Object *objPtr = lua.to<Object*>(selfIdx);
+    lua_gc(lua, selfIdx);
+    delete objPtr;
     return 0;
 }
-
-struct Object
-{
-    const char *name_;
-};
-
-DEFINE_LUA_TO(Object);
 
 LUA_METHOD(Object, name)
 {
@@ -50,7 +54,7 @@ test(exposing_cpp_object_into_lua)
     LUA_REGISTER(Object)(lua);
 
     if(lua.dostring(
-        "errmsg = 'create Object" "\r\n"
+        "errmsg = 'create Object'" "\r\n"
         "local obj = Object('objName')" "\r\n"
         "if not obj then return; end" "\r\n"
 

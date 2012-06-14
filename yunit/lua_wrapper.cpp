@@ -5,18 +5,46 @@
 #include "lua_wrapper.h"
 #include <cassert>
 #include <limits>
+#include <map>
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Lua {
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class CppClassWrapperForLuaImpl
+{
+public:
+    inline void addMethod(const char *name, lua_CFunction method);
+    inline lua_CFunction getMethod(const char *name);
+
+private:
+    std::map<std::string, lua_CFunction> methods_;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 State::State(lua_State* L)
 : l_(L)
 {
 }
 
+void State::gettable(int idx)
+{
+    lua_gettable(l_, idx);
+}
+
 void State::settable(int idx)
 {
     lua_settable(l_, idx);
+}
+
+void State::getmetatable(int idx)
+{
+    if (0 == lua_getmetatable(l_, idx))
+        push(Nil);
+}
+
+void State::setmetatable(int idx)
+{
+    lua_setmetatable(l_, idx);
 }
 
 void State::setfield(int idx, const char* key)
@@ -109,6 +137,11 @@ void State::push(_Nil)
 void State::push(Table t)
 {
     lua_createtable(l_, t.narr_, t.nrec_);
+}
+
+void State::push(Userdata u)
+{
+    lua_newuserdata(l_, u.size_);
 }
 
 void State::pushglobaltable()
@@ -366,15 +399,74 @@ void StateGuard::close()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void CppClassWrapperForLua::addMethod(const char *name, lua_CFunction method)
 {
+    impl_->addMethod(name, method);
 }
 
 void CppClassWrapperForLua::makeClassMetatable(State &lua)
 {
+    lua.push(Table());
+    const int classMetatableIdx = lua.top();
+    setClassMetatableContent(lua, classMetatableIdx);
+    lua.remove(classMetatableIdx);
 }
 
 lua_CFunction CppClassWrapperForLua::getMethod(const char *name)
 {
-    return nullptr;
+    return impl_->getMethod(name);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+inline void CppClassWrapperForLuaImpl::addMethod(const char *name, lua_CFunction method)
+{
+    methods_[name] = method;
+}
+
+inline lua_CFunction CppClassWrapperForLuaImpl::getMethod(const char *name)
+{
+    auto it = methods_.find(name);
+    assert(it != methods_.end());   // if you want to use method, you must define it previously
+    return it->second;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void YUNIT_API lua_push(State &lua, void *cppObjPtr, void *classMetatableKey)
+{
+    lua.push(Userdata(sizeof(void**)));
+    *reinterpret_cast<void**>(lua.to<void*>(State::topIdx)) = cppObjPtr;
+    const int objectIdx = lua.top();
+
+    lua.push(Table());
+    const int propertyTableIdx = lua.top();
+
+    /* register property table into registry */
+    lua.push(cppObjPtr);                /* stack: cppObjPtr */
+    lua.push(Value(propertyTableIdx));  /* stack: cppObjPtr, propertyTable */
+    lua.settable(LUA_REGISTRYINDEX);    /* registry[cppObjPtr] = propertyTable */
+
+    /* remove property table from stack */
+    lua.remove(propertyTableIdx);
+
+    /* get class metatable from registry */
+    lua.push(classMetatableKey);        /* stack: classMetatableKey */
+    lua.gettable(LUA_REGISTRYINDEX);    /* stack: classMetatable */
+    assert(lua.isnil()); // you forgot to call concrete LUA_REGISTER(...) function for this object
+    const int classMetatableIdx = lua.top();
+    
+    /* object.__metatable = classMt */
+    lua.push(Value(classMetatableIdx));
+    lua.setmetatable(objectIdx);
+
+    /* remove class metatable from stack */
+    lua.remove(classMetatableIdx);
+}
+
+void YUNIT_API lua_gc(State &lua, const int cppObjIdx)
+{
+    void *cppObjPtr = *reinterpret_cast<void**>(lua.to<void*>(cppObjIdx));
+
+    lua.push(cppObjPtr);
+    lua.push(Nil);
+    lua.settable(LUA_REGISTRYINDEX); // registry[cppObjPtr] = nil
 }
 
 } // namespace Lua
