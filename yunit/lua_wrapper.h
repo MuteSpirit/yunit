@@ -151,12 +151,13 @@ public:
     void remove(int idx);
     
     const char* typeName(int idx);
-    bool isstring(int idx);
-    bool istable(int idx);
-    bool isuserdata(int idx);
-    bool isinteger(int idx);
-    bool isnumber(int idx);
-    bool isnil(int idx);
+
+    bool isstring(int idx = topIdx);
+    bool istable(int idx = topIdx);
+    bool isuserdata(int idx = topIdx);
+    bool isinteger(int idx = topIdx);
+    bool isnumber(int idx = topIdx);
+    bool isnil(int idx = topIdx);
     
     void getglobal(const char* name);
     void setglobal(const char* name);
@@ -164,7 +165,11 @@ public:
     void getfield(int idx, const char* key);
     void setfield(int idx, const char* key);
 
-    void settable(int idx);
+    void gettable(int idx = topIdx);
+    void settable(int idx = topIdx);
+
+    void getmetatable(int idx = topIdx); // if value has no metatable, push nil on top of the stack
+    void setmetatable(int idx = topIdx);
 
     void rawseti(int idx, int n);
     
@@ -301,14 +306,21 @@ private:
         return static_cast<T*>(*reinterpret_cast<void**>(to<void*>(idx)));\
     }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// @brief Push a C++ object on Lua stack in view of userdata
 /// @details Create new userdata in Lua with size equal sizeof(void**) to store C++ object pointer, because
 /// 1) client code may control memory allocating 
 /// 2) userdata may have individual metatable
 #define LUA_PUSH(cppObjPtr, className) \
-    lua.push(Userdata(sizeof(void**)));\
-    *reinterpret_cast<void**>(lua.to<void*>(topIdx)) = cppObjPtr;
-/// @todo Доделать получение и установку метатаблицы
-//    lua.push(reinterpret_cast<void*>(LUA_WRAPPER_NAME(className)::instance));\
+    lua_push(lua, cppObjPtr, reinterpret_cast<void*>(LUA_WRAPPER_NAME(className)::instance))
+
+void YUNIT_API lua_push(State &lua, void *cppObjPtr, void *classMetatableKey);
+
+/// @brief Delete additional data, created in lua_push. Call this func before you delete C++ object from userdata
+#define LUA_GC(cppObjIdx) \
+    lua_gc(lua, cppObjIdx)
+
+void YUNIT_API lua_gc(State &lua, const int cppObjIdx);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename LuaWrapperClass>
