@@ -38,6 +38,7 @@ namespace Lua {
 
 class State;
     
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class YUNIT_API Table
 {
     friend class State;
@@ -52,6 +53,7 @@ private:
     int nrec_;
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class YUNIT_API Value
 {
     friend class State;
@@ -64,7 +66,35 @@ private:
     int idx_;
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class YUNIT_API Userdata
+{
+    friend class State;
+public:
+    Userdata(size_t size)
+    : size_(size)
+    {
+    }
+private:
+    size_t size_;
+};
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class YUNIT_API LuaCclosure
+{
+    friend class State;
+public:
+    LuaCclosure(lua_CFunction fn, int numOfUpvalues)
+    : fn_(fn)
+    , numOfUpvalues_(numOfUpvalues)
+    {}
+
+private:
+    lua_CFunction fn_;
+    int numOfUpvalues_;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class YUNIT_API String
 {
 public:
@@ -84,6 +114,9 @@ enum _Nil { Nil };
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class YUNIT_API State
 {
+public:
+    enum {topIdx = -1};
+
 public:
     State(lua_State* L);
     
@@ -107,6 +140,7 @@ public:
     void push(Value v);
     void push(Table t);
     void push(_Nil);
+    void push(Userdata ud);
     
     void pushglobaltable();
 
@@ -141,14 +175,8 @@ public:
     void to(int idx, const char** str, size_t* len);
     void to(int idx, const char** str);
 
-
-    template<typename CppType>
-    void to(int idx, CppType** cppObj); /// @todo It is not place for that function
-    
-    enum {topIdx = -1};
-
-    template<typename T>
-    T to(int idx = topIdx);
+    template<typename CppType> void to(int idx, CppType** cppObj); /// @todo It is not place for that function
+    template<typename T>  T  to(int idx = topIdx);
 
     void getinfo(const char *what, lua_Debug *ar);
 
@@ -168,10 +196,11 @@ protected:
 
 template<> unsigned long State::to<unsigned long>(int idx);
 template<> const char*   State::to<const char*>(int idx);
+template<> void*         State::to<void*>(int idx);
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class YUNIT_API StateGuard : public State
+class YUNIT_API StateGuard /* rename to StateLiveGuard */ : public State
 {
     typedef State Parent;
 public:
@@ -263,6 +292,23 @@ private:
 ///     StateGuard lua;
 ///     LUA_REGISTER(CppClass)(lua);
 #define LUA_REGISTER(className) LUA_WRAPPER_NAME(className)::instance()->makeClassMetatable
+
+/// @brief Define State::to<T*> method, used for wrapped C++ objects in local paradigm of C++ storaging in Lua
+#define DEFINE_LUA_TO(T) \
+    template<> \
+    T* Lua::State::to<T*>(int idx)\
+    {\
+        return static_cast<T*>(*reinterpret_cast<void**>(to<void*>(idx)));\
+    }
+
+/// @details Create new userdata in Lua with size equal sizeof(void**) to store C++ object pointer, because
+/// 1) client code may control memory allocating 
+/// 2) userdata may have individual metatable
+#define LUA_PUSH(cppObjPtr, className) \
+    lua.push(Userdata(sizeof(void**)));\
+    *reinterpret_cast<void**>(lua.to<void*>(topIdx)) = cppObjPtr;
+/// @todo Доделать получение и установку метатаблицы
+//    lua.push(reinterpret_cast<void*>(LUA_WRAPPER_NAME(className)::instance));\
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename LuaWrapperClass>
@@ -471,6 +517,12 @@ template<>
 inline const char* State::to<const char*>(int idx)
 {
     return lua_tostring(l_, idx);
+}
+
+template<>
+inline void* State::to<void*>(int idx)
+{
+    return lua_touserdata(l_, idx);
 }
 
 } // namespace Lua

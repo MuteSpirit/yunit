@@ -17,7 +17,11 @@ LUA_CLASS(Object)
 
 LUA_CONSTRUCTOR(Object)
 {
-    return 0;
+    enum Args {nameIdx = 1};
+    Object *obj = new Object;
+    obj->name_ = lua.to<const char*>(nameIdx);
+    LUA_PUSH(obj, Object);
+    return 1;
 }
 
 LUA_DESTRUCTOR(Object)
@@ -30,11 +34,12 @@ struct Object
     const char *name_;
 };
 
+DEFINE_LUA_TO(Object);
+
 LUA_METHOD(Object, name)
 {
-    //enum Args {selfIdx = 1};
-    //lua.push(lua.to<Object*>(selfIdx)->name_);
-    lua.push("not implement yet");
+    enum Args {selfIdx = 1};
+    lua.push(lua.to<Object*>(selfIdx)->name_);
     return 1;
 }
 
