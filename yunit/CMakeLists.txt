@@ -31,7 +31,7 @@ endif(WIN32)
 # yunit.t
 # 
 set(YUNIT_T_FILES cppunit.t.cpp trace.t.cpp lua_wrapper.t.cpp mine.t.cpp)
-set(RUN_YUNIT_CPP_TESTS_SRC_FILE_TEMPLATE run_cpp_tests.cpp.in)
+set(RUN_YUNIT_CPP_TESTS_SRC_FILE_TEMPLATE run_cpp_tests.c.in)
 
 #####################################################################################################################################
 # function to add yunit project, linking concrete version of Lua library
@@ -125,22 +125,38 @@ function(yunitProject LUA_VERSION)
     #    => we create separate executable for every Lua version
     ### @todo Add project to run *.t.lua tests
     
-    set(YUNIT_LUA_${LUA_VERSION}_SRC_FILE yunit_lua_${LUA_VERSION}_cpp_tests_main.cpp)
+    set(YUNIT_LUA_${LUA_VERSION}_SRC_FILE yunit_lua_${LUA_VERSION}_cpp_tests_main.c)
     file(READ ${RUN_YUNIT_CPP_TESTS_SRC_FILE_TEMPLATE} RUN_TESTS_SOURCE_CODE)
     
-    string(REGEX REPLACE "EXE_PATH"     "${LUA_${LUA_VERSION}_EXEC}" RUN_TESTS_SOURCE_CODE "${RUN_TESTS_SOURCE_CODE}")
+    # string(REGEX REPLACE "ARGUMENTS" "${YUNIT_LUA_${LUA_VERSION}_TEST_CMD_ARG}" "${LUA_${LUA_VERSION}_EXEC}" RUN_TESTS_SOURCE_CODE "${RUN_TESTS_SOURCE_CODE}")
+    # using customized package.path and package.cpath to used only binaries from working directory and not from system
+    # string(REGEX REPLACE "LUA_PATH_ENV" "${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;${CMAKE_CURRENT_SOURCE_DIR}/../?/init.lua;" RUN_TESTS_SOURCE_CODE "${RUN_TESTS_SOURCE_CODE}")
+    # string(REGEX REPLACE "LUA_CPATH_ENV" "${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};" RUN_TESTS_SOURCE_CODE "${RUN_TESTS_SOURCE_CODE}")
+    # use four slashes to get one slash after REGEX REPLACE
+    # set(YUNIT_LUA_${LUA_VERSION}_TEST_CMD_ARG "-l yunit -e \\\\\"use{'yunit.cppunit'}\\\\\" -e \\\\\"run[[${YUNIT_T_TARGET_PATH}]]\\\\\"")
+    # string(REGEX REPLACE "CMD_LINE_ARG" "${YUNIT_LUA_${LUA_VERSION}_TEST_CMD_ARG}" RUN_TESTS_SOURCE_CODE "${RUN_TESTS_SOURCE_CODE}")
+    
+    set(CMD_ARG "\"${LUA_${LUA_VERSION}_EXEC}\"")
     
     # using customized package.path and package.cpath to used only binaries from working directory and not from system
-    string(REGEX REPLACE "LUA_PATH_ENV" "${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;${CMAKE_CURRENT_SOURCE_DIR}/../?/init.lua;" RUN_TESTS_SOURCE_CODE "${RUN_TESTS_SOURCE_CODE}")
-    string(REGEX REPLACE "LUA_CPATH_ENV" "${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};" RUN_TESTS_SOURCE_CODE "${RUN_TESTS_SOURCE_CODE}")
-    
-    # use four slashes to get one slash after REGEX REPLACE
-    set(YUNIT_LUA_${LUA_VERSION}_TEST_CMD_ARG "-l yunit -e \\\\\"use{'yunit.cppunit'}\\\\\" -e \\\\\"run[[${YUNIT_T_TARGET_PATH}]]\\\\\"")
-    string(REGEX REPLACE "CMD_LINE_ARG" "${YUNIT_LUA_${LUA_VERSION}_TEST_CMD_ARG}" RUN_TESTS_SOURCE_CODE "${RUN_TESTS_SOURCE_CODE}")
-    
+    set(CMD_ARG "${CMD_ARG},\n\t\t\"-e\", \"package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;${CMAKE_CURRENT_SOURCE_DIR}/../?/init.lua;]]..package.path\"")
+    set(CMD_ARG "${CMD_ARG},\n\t\t\"-e\", \"package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath\"")
+                                  
+    set(CMD_ARG "${CMD_ARG},\n\t\t\"-l\", \"yunit\"")
+    set(CMD_ARG "${CMD_ARG},\n\t\t\"-e\", \"use{'yunit.cppunit'}\"")         # use 4 slashes to get 1 slash after REGEX REPLACE                
+    set(CMD_ARG "${CMD_ARG},\n\t\t\"-e\", \"run[[${YUNIT_T_TARGET_PATH}]]\"") # use 4 slashes to get 1 slash after REGEX REPLACE                
+
+    string(REGEX REPLACE "ARGUMENTS" "${CMD_ARG}" RUN_TESTS_SOURCE_CODE "${RUN_TESTS_SOURCE_CODE}")
     file(WRITE ${YUNIT_LUA_${LUA_VERSION}_SRC_FILE} "${RUN_TESTS_SOURCE_CODE}")
     
+    # add_executable(yunit_lua_${LUA_VERSION}_cpp_tests ${LUA_${LUA_VERSION}_INCLUDE_DIR}/lua.c ${YUNIT_LUA_${LUA_VERSION}_SRC_FILE})
     add_executable(yunit_lua_${LUA_VERSION}_cpp_tests ${YUNIT_LUA_${LUA_VERSION}_SRC_FILE})
+    
+    # set spectial include directory to use #include <lua.c> for concrete Lua version interpreter source code file
+    set_target_properties(yunit_lua_${LUA_VERSION}_cpp_tests PROPERTIES COMPILE_FLAGS "/I\"${LUA_${LUA_VERSION}_INCLUDE_DIR}\"")
+
+    add_dependencies(yunit_lua_${LUA_VERSION}_cpp_tests ${LUA_INT_TARGET_NAME} ${YUNIT_T_TARGET_NAME})
+    target_link_libraries(yunit_lua_${LUA_VERSION}_cpp_tests ${LUA_LIB_OUT_NAME})
     
     # ${LUA_${LUA_VERSION}_EXEC} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l yunit -e "use{'yunit.cppunit'}" -e "run[[${YUNIT_T_TARGET_PATH}]]"
     

@@ -230,6 +230,9 @@ class CppClassWrapperForLuaImpl;
 class YUNIT_API CppClassWrapperForLua
 {
 public:
+    CppClassWrapperForLua();
+    ~CppClassWrapperForLua();
+
     void addMethod(const char *name, lua_CFunction method);
     void makeClassMetatable(State &lua);
 
