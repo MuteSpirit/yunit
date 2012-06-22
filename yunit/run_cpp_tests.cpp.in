@@ -1,14 +1,14 @@
-#include <process.h>
+#define main luaMain
+#include <lua.c>
+#undef main
 
-int main(int argc, char *argv[])
+int main(int, char *[])
 {
-    const char *env[] =
+    char *argv[] = 
     {
-        "LUA_PATH=LUA_PATH_ENV_VAR",
-        "LUA_PATH=LUA_CPATH_ENV_VAR",
+        ARGUMENTS,
         0
     };
-    
-    _spawnle(_P_WAIT, "EXE_PATH", "CMD_LINE_ARG", 0, env);
-    return 0;
+
+    return luaMain(sizeof(argv), argv);
 }
