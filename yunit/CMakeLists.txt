@@ -31,7 +31,7 @@ endif(WIN32)
 # yunit.t
 # 
 set(YUNIT_T_FILES cppunit.t.cpp trace.t.cpp lua_wrapper.t.cpp mine.t.cpp)
-# set(YUNIT_T_FILES cppunit.t.cpp trace.t.cpp lua_wrapper.t.cpp)
+set(RUN_YUNIT_CPP_TESTS_SRC_FILE_TEMPLATE run_cpp_tests.cpp.in)
 
 #####################################################################################################################################
 # function to add yunit project, linking concrete version of Lua library
@@ -45,10 +45,12 @@ function(yunitProject LUA_VERSION)
     find_path(LUA_${LUA_VERSION}_INCLUDE_DIR NAMES lua.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../lua_${LUA_VERSION}/src)
     #
     # autogeneration of yuni_lua_??.h config file
+    # !!! you must quotes around the variable, keeped file content, to save semicolon (;) from original file text.
+    # !!! This is strange CMake behaviour (bug #10107, http://public.kitware.com/Bug/view.php?id=10107)
     set(YUNIT_CONFIG_FILE_HEADER ${YUNIT_LIB_TARGET_NAME}.h)
     file(READ ${YUNIT_CONFIG_FILE_TEMPLATE} YUNIT_LUA_CONFIG_HEADER_TEXT)
-    string(REGEX REPLACE "OUTPUT_NAME" "${YUNIT_LIB_TARGET_NAME}" YUNIT_LUA_CONFIG_HEADER_TEXT ${YUNIT_LUA_CONFIG_HEADER_TEXT})
-    file(WRITE ${YUNIT_CONFIG_FILE_HEADER} ${YUNIT_LUA_CONFIG_HEADER_TEXT})
+    string(REGEX REPLACE "OUTPUT_NAME" "${YUNIT_LIB_TARGET_NAME}" YUNIT_LUA_CONFIG_HEADER_TEXT "${YUNIT_LUA_CONFIG_HEADER_TEXT}")
+    file(WRITE ${YUNIT_CONFIG_FILE_HEADER} "${YUNIT_LUA_CONFIG_HEADER_TEXT}")
     
     # we build yunit library as DLL, because it may be used by test container, linked with different (and maybe incompatible version of Lua)
     
@@ -109,11 +111,6 @@ function(yunitProject LUA_VERSION)
         set(SHARED_LIB_OUT_DIR "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
     endif(WIN32)
     
-    # using customized package.path and package.cpath to used only binaries from working directory and not from system
-    set(SET_LUA_PATH -e "package.path=[[${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;${CMAKE_CURRENT_SOURCE_DIR}/../?/init.lua;]]..package.path")
-    
-    set(SET_LUA_CPATH -e "package.cpath=[[${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};]]..package.cpath")
- 
     # use Lua interpretator utility, linked with the same version Lua library
     get_target_property(LUA_${LUA_VERSION}_EXEC_DIR ${LUA_INT_TARGET_NAME} RUNTIME_OUTPUT_DIRECTORY)
     get_target_property(LUA_${LUA_VERSION}_EXEC_FILENAME ${LUA_INT_TARGET_NAME} OUTPUT_NAME)
@@ -122,7 +119,30 @@ function(yunitProject LUA_VERSION)
     get_target_property(YUNIT_T_TARGET_DIR ${YUNIT_T_TARGET_NAME} RUNTIME_OUTPUT_DIRECTORY)
     set(YUNIT_T_TARGET_PATH ${YUNIT_T_TARGET_DIR}/${YUNIT_T_OUT_NAME}.${SHARED_LIB_EXT})
 
-    add_test(yunit_lua_${LUA_VERSION}_cpp_tests ${LUA_${LUA_VERSION}_EXEC} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l yunit -e "use{'yunit.cppunit'}" -e "run[[${YUNIT_T_TARGET_PATH}]]")
+    # if run test with CTest then you will not have ability to debug some unit test code
+    #    => we create separate executable to run tests under debugging
+    # yUnit try to support several versions of Lua and they can't correctly run test projects of each other
+    #    => we create separate executable for every Lua version
+    ### @todo Add project to run *.t.lua tests
+    
+    set(YUNIT_LUA_${LUA_VERSION}_SRC_FILE yunit_lua_${LUA_VERSION}_cpp_tests_main.cpp)
+    file(READ ${RUN_YUNIT_CPP_TESTS_SRC_FILE_TEMPLATE} RUN_TESTS_SOURCE_CODE)
+    
+    string(REGEX REPLACE "EXE_PATH"     "${LUA_${LUA_VERSION}_EXEC}" RUN_TESTS_SOURCE_CODE "${RUN_TESTS_SOURCE_CODE}")
+    
+    # using customized package.path and package.cpath to used only binaries from working directory and not from system
+    string(REGEX REPLACE "LUA_PATH_ENV" "${CMAKE_CURRENT_SOURCE_DIR}/../?.lua;${CMAKE_CURRENT_SOURCE_DIR}/../?/init.lua;" RUN_TESTS_SOURCE_CODE "${RUN_TESTS_SOURCE_CODE}")
+    string(REGEX REPLACE "LUA_CPATH_ENV" "${SHARED_LIB_OUT_DIR}/?.${SHARED_LIB_EXT};" RUN_TESTS_SOURCE_CODE "${RUN_TESTS_SOURCE_CODE}")
+    
+    # use four slashes to get one slash after REGEX REPLACE
+    set(YUNIT_LUA_${LUA_VERSION}_TEST_CMD_ARG "-l yunit -e \\\\\"use{'yunit.cppunit'}\\\\\" -e \\\\\"run[[${YUNIT_T_TARGET_PATH}]]\\\\\"")
+    string(REGEX REPLACE "CMD_LINE_ARG" "${YUNIT_LUA_${LUA_VERSION}_TEST_CMD_ARG}" RUN_TESTS_SOURCE_CODE "${RUN_TESTS_SOURCE_CODE}")
+    
+    file(WRITE ${YUNIT_LUA_${LUA_VERSION}_SRC_FILE} "${RUN_TESTS_SOURCE_CODE}")
+    
+    add_executable(yunit_lua_${LUA_VERSION}_cpp_tests ${YUNIT_LUA_${LUA_VERSION}_SRC_FILE})
+    
+    # ${LUA_${LUA_VERSION}_EXEC} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l yunit -e "use{'yunit.cppunit'}" -e "run[[${YUNIT_T_TARGET_PATH}]]"
     
 #    add_test(all_cppunit_lua_${LUA_VERSION}_tests ${LUA_51_EXEC} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l yunit -e "use{'yunit.cppunit', 'yunit.luaunit'}" -e "run{[[${SHARED_LIB_OUT_DIR}/lua_${LUA_VERSION}]], [[${CMAKE_CURRENT_SOURCE_DIR}]]}")
 

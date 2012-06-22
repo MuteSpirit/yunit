@@ -1,0 +1,14 @@
+#include <process.h>
+
+int main(int argc, char *argv[])
+{
+    const char *env[] =
+    {
+        "LUA_PATH=LUA_PATH_ENV_VAR",
+        "LUA_PATH=LUA_CPATH_ENV_VAR",
+        0
+    };
+    
+    _spawnle(_P_WAIT, "EXE_PATH", "CMD_LINE_ARG", 0, env);
+    return 0;
+}
