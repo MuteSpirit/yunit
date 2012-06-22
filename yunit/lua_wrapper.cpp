@@ -294,13 +294,13 @@ int State::call(unsigned int numberOfArgs, int numberOfReturnValues)
     assert(numberOfArgs <= std::numeric_limits<int>::max());
     int numOfArgs = static_cast<int>(numberOfArgs);
 
-    assert(top() >= numOfArgs + 1);
+    assert(top() >= numOfArgs);
     //
     // locating error handle function before calling function value
     push(db_errorfb);
-    insert(top() - numOfArgs + 1);
+    insert(top() - numOfArgs);
 
-    const int errHandleFuncIdx = top() - numOfArgs + 1;
+    const int errHandleFuncIdx = top() - numOfArgs;
     int rc = lua_pcall(l_, numOfArgs, numberOfReturnValues, errHandleFuncIdx);
 
     remove(errHandleFuncIdx);
@@ -397,6 +397,15 @@ void StateGuard::close()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+CppClassWrapperForLua::CppClassWrapperForLua()
+: impl_(new CppClassWrapperForLuaImpl)
+{}
+
+CppClassWrapperForLua::~CppClassWrapperForLua()
+{
+    delete impl_;
+}
+
 void CppClassWrapperForLua::addMethod(const char *name, lua_CFunction method)
 {
     impl_->addMethod(name, method);

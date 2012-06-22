@@ -2,7 +2,7 @@
 #include <lua.c>
 #undef main
 
-int main(int, char *[])
+int main(int argcExt, char *argvExt[])
 {
     char *argv[] = 
     {
