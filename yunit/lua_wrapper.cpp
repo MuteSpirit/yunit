@@ -297,10 +297,10 @@ int State::call(unsigned int numberOfArgs, int numberOfReturnValues)
     assert(top() >= numOfArgs);
     //
     // locating error handle function before calling function value
-    push(db_errorfb);
-    insert(top() - numOfArgs);
-
     const int errHandleFuncIdx = top() - numOfArgs;
+    push(db_errorfb);
+    insert(errHandleFuncIdx);
+
     int rc = lua_pcall(l_, numOfArgs, numberOfReturnValues, errHandleFuncIdx);
 
     remove(errHandleFuncIdx);
@@ -413,8 +413,14 @@ void CppClassWrapperForLua::addMethod(const char *name, lua_CFunction method)
 
 void CppClassWrapperForLua::makeClassMetatable(State &lua)
 {
-    lua.push(Table());
+    lua.push(Table());                  /* stack: classMetatable */
     const int classMetatableIdx = lua.top();
+
+    /* save class metatable in registry */
+    lua.push(getClassMetatableKey());   /* stack: classMetatable, classMetatableKey */
+    lua.push(Value(classMetatableIdx)); /* stack: classMetatable, classMetatableKey, classMetatable */
+    lua.settable(LUA_REGISTRYINDEX);    /* stack: classMetatable */
+
     setClassMetatableContent(lua, classMetatableIdx);
     lua.remove(classMetatableIdx);
 }
@@ -444,38 +450,26 @@ void YUNIT_API lua_push(State &lua, void *cppObjPtr, void *classMetatableKey)
     *reinterpret_cast<void**>(lua.to<void*>(State::topIdx)) = cppObjPtr;
     const int objectIdx = lua.top();
 
-    lua.push(Table());
-    const int propertyTableIdx = lua.top();
-
-    /* register property table into registry */
-    lua.push(cppObjPtr);                /* stack: cppObjPtr */
-    lua.push(Value(propertyTableIdx));  /* stack: cppObjPtr, propertyTable */
-    lua.settable(LUA_REGISTRYINDEX);    /* registry[cppObjPtr] = propertyTable */
-
-    /* remove property table from stack */
-    lua.remove(propertyTableIdx);
+    /// @todo Add property table only on real need
 
     /* get class metatable from registry */
     lua.push(classMetatableKey);        /* stack: classMetatableKey */
     lua.gettable(LUA_REGISTRYINDEX);    /* stack: classMetatable */
-    assert(lua.isnil()); // you forgot to call concrete LUA_REGISTER(...) function for this object
+    assert(!lua.isnil()); // you forgot to call concrete LUA_REGISTER(...) function for this object
     const int classMetatableIdx = lua.top();
     
-    /* object.__metatable = classMt */
+    /* metatable.__index = metatable */
     lua.push(Value(classMetatableIdx));
-    lua.setmetatable(objectIdx);
+    lua.setfield(classMetatableIdx, "__index");
 
-    /* remove class metatable from stack */
-    lua.remove(classMetatableIdx);
+    /* object.__metatable = classMt */
+    lua.setmetatable(objectIdx);
 }
 
 void YUNIT_API lua_gc(State &lua, const int cppObjIdx)
 {
-    void *cppObjPtr = *reinterpret_cast<void**>(lua.to<void*>(cppObjIdx));
-
-    lua.push(cppObjPtr);
-    lua.push(Nil);
-    lua.settable(LUA_REGISTRYINDEX); // registry[cppObjPtr] = nil
+    /// @todo Add deleting property table only on real need
+    *reinterpret_cast<void**>(lua.to<void*>(cppObjIdx)) = nullptr;
 }
 
 } // namespace Lua

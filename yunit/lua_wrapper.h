@@ -240,6 +240,7 @@ protected:
     lua_CFunction getMethod(const char *name);
 
     virtual void setClassMetatableContent(State &lua, const int classMtIdx) = 0;
+    virtual void* getClassMetatableKey() = 0;
 
 private:
     CppClassWrapperForLuaImpl *impl_;
@@ -266,6 +267,10 @@ private:
         }\
     protected:\
         inline virtual void setClassMetatableContent(State &lua, const int classMtIdx);\
+        inline virtual void* getClassMetatableKey()\
+        {\
+            return instance;\
+        }\
     };\
     \
     inline void className ## WrapperForLua::setClassMetatableContent(State &lua, const int classMtIdx)\
