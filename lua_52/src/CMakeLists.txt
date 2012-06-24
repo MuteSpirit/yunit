@@ -7,10 +7,6 @@ set(LUA_FILES lua.c)
 set(LUA_LIB_TARGET_NAME lua_lib_${LUA_VERSION})
 set(LUA_LIB_OUT_NAME lua${LUA_VERSION})
 
-if(MSVC)
-    add_definitions(/D_CRT_SECURE_NO_WARNINGS)
-endif(MSVC)
-
 add_library(${LUA_LIB_TARGET_NAME} ${LUA_LIB_FILES})
 set_target_properties(${LUA_LIB_TARGET_NAME} PROPERTIES OUTPUT_NAME ${LUA_LIB_OUT_NAME})
 

@@ -269,7 +269,7 @@ private:
         inline virtual void setClassMetatableContent(State &lua, const int classMtIdx);\
         inline virtual void* getClassMetatableKey()\
         {\
-            return instance;\
+            return reinterpret_cast<void*>(instance);\
         }\
     };\
     \
@@ -285,6 +285,9 @@ private:
 
 #define LUA_WRAPPER_CTOR_NAME(className) className ## _ ## className
 
+// this macro doesn't use LUA_WRAPPER_CTOR_NAME, because GCC consider this a error
+#define LUA_WRAPPER_CTOR_IMPL_NAME(className) className ## _ ## className ## _Impl
+
 
 /// @details Don't use symbol tilda (~) in 'className' parameter
 #define ADD_DESTRUCTOR(className) \
@@ -293,12 +296,18 @@ private:
 
 #define LUA_WRAPPER_DTOR_NAME(className) className ## _ ## __gc
 
+// this macro doesn't use LUA_WRAPPER_CTOR_NAME, because GCC consider this a error
+#define LUA_WRAPPER_DTOR_IMPL_NAME(className) className ## _ ## __gc ## _Impl
+
 
 #define ADD_METHOD(className, methodName) \
     lua.push(getMethod(TOSTR(LUA_WRAPPER_METHOD_NAME(className, methodName))));\
     lua.setfield(classMtIdx, #methodName);
 
 #define LUA_WRAPPER_METHOD_NAME(className, methodName) className ## _ ## methodName
+
+// this macro doesn't use LUA_WRAPPER_CTOR_NAME, because GCC consider this a error
+#define LUA_WRAPPER_METHOD_IMPL_NAME(className, methodName) className ## _ ## methodName ## _Impl
 
 
 /// @brief Use this macro to avoid using specific class in lua_State, for example,
@@ -340,34 +349,36 @@ struct AddWrapperMethod
     }
 };
 
-
 /// Constructor/destructor/method definition of C++ class wrapper into Lua
 #define LUA_CONSTRUCTOR(className) \
-    static inline int LUA_WRAPPER_CTOR_NAME(className)##_Impl(Lua::State&);\
+    static inline int LUA_WRAPPER_CTOR_IMPL_NAME(className)(Lua::State&);\
     static int LUA_WRAPPER_CTOR_NAME(className)(lua_State *L)\
     {\
-        return LUA_WRAPPER_CTOR_NAME(className)##_Impl(Lua::State(L));\
+    	Lua::State lua(L);\
+        return LUA_WRAPPER_CTOR_IMPL_NAME(className)(lua);\
     }\
     static AddWrapperMethod<LUA_WRAPPER_NAME(className)> addConstructorTo ## className ## Wrapper(TOSTR(LUA_WRAPPER_CTOR_NAME(className)), LUA_WRAPPER_CTOR_NAME(className));\
-    static inline int LUA_WRAPPER_CTOR_NAME(className)##_Impl(Lua::State &lua)
+    static inline int LUA_WRAPPER_CTOR_IMPL_NAME(className)(Lua::State &lua)
 
 #define LUA_DESTRUCTOR(className) \
-    static inline int LUA_WRAPPER_DTOR_NAME(className)##_Impl(Lua::State&);\
+    static inline int LUA_WRAPPER_DTOR_IMPL_NAME(className)(Lua::State&);\
     static int LUA_WRAPPER_DTOR_NAME(className)(lua_State *L)\
     {\
-        return LUA_WRAPPER_DTOR_NAME(className)##_Impl(Lua::State(L));\
+    	Lua::State lua(L);\
+        return LUA_WRAPPER_DTOR_IMPL_NAME(className)(lua);\
     }\
     static AddWrapperMethod<LUA_WRAPPER_NAME(className)> addDestructorTo ## className ## Wrapper(TOSTR(LUA_WRAPPER_DTOR_NAME(className)), LUA_WRAPPER_DTOR_NAME(className));\
-    static inline int LUA_WRAPPER_DTOR_NAME(className)##_Impl(Lua::State &lua)
+    static inline int LUA_WRAPPER_DTOR_IMPL_NAME(className)(Lua::State &lua)
     
 #define LUA_METHOD(className, methodName) \
-    static inline int LUA_WRAPPER_METHOD_NAME(className, methodName)##_Impl(Lua::State&);\
+    static inline int LUA_WRAPPER_METHOD_IMPL_NAME(className, methodName)(Lua::State&);\
     static int LUA_WRAPPER_METHOD_NAME(className, methodName)(lua_State *L)\
     {\
-        return LUA_WRAPPER_METHOD_NAME(className, methodName)##_Impl(Lua::State(L));\
+    	Lua::State lua(L);\
+        return LUA_WRAPPER_METHOD_IMPL_NAME(className, methodName)(lua);\
     }\
     static AddWrapperMethod<LUA_WRAPPER_NAME(className)> addMethod ## methodName ## To ## className ## Wrapper(TOSTR(LUA_WRAPPER_METHOD_NAME(className, methodName)), LUA_WRAPPER_METHOD_NAME(className, methodName));\
-    static inline int LUA_WRAPPER_METHOD_NAME(className, methodName)##_Impl(Lua::State &lua)
+    static inline int LUA_WRAPPER_METHOD_IMPL_NAME(className, methodName)(Lua::State &lua)
 
 } // namespace Lua
 

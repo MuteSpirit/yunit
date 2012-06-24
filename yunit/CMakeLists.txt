@@ -12,16 +12,15 @@ endif(NOT WIN32)
 # Enable C++ exceptions
 # 
 if(MSVC)
-    add_definitions(/EHsc /D_CRT_SECURE_NO_WARNINGS)
-else(MSVC)
-    add_definitions(-fexceptions -std=c++0x)
+    set(CPP_DEFS "/EHsc /D_CRT_SECURE_NO_WARNINGS")
+else (MSVC)
+    set(CPP_DEFS "-fexceptions -std=c++0x") 
 endif(MSVC)
 #
 # yunit
 # 
 set(YUNIT_CONFIG_FILE_TEMPLATE yunit_lua_config.h.in)
 set(YUNIT_FILES yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.h trace.cpp mine.h mine.cpp auxlib.h auxlib.cpp ${YUNIT_CONFIG_FILE_TEMPLATE})
-# set(YUNIT_FILES yunit.h cppunit.h cppunit.cpp lua_wrapper.h lua_wrapper.cpp lfs.cpp trace.h trace.cpp auxlib.h auxlib.cpp ${YUNIT_CONFIG_FILE_TEMPLATE})
 if(WIN32)
     set(YUNIT_COMMON_LIBS )
 else(WIN32)
@@ -39,7 +38,7 @@ set(RUN_YUNIT_CPP_TESTS_SRC_FILE_TEMPLATE run_cpp_tests.c.in)
 function(yunitProject LUA_VERSION)
     set(YUNIT_LIB_TARGET_NAME yunit_lua_${LUA_VERSION})
     set(LUA_LIB_TARGET_NAME lua_lib_${LUA_VERSION})
-    set(LUA_LIB_OUT_NAME lua${LUA_VERSION}) # @todo брать прямо из настроек проекта
+    set(LUA_LIB_OUT_NAME lua${LUA_VERSION}) # @todo пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     set(LUA_INT_TARGET_NAME lua_int_${LUA_VERSION})
 
     find_path(LUA_${LUA_VERSION}_INCLUDE_DIR NAMES lua.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../lua_${LUA_VERSION}/src)
@@ -62,12 +61,19 @@ function(yunitProject LUA_VERSION)
     #
     # we set CONFIG_HEADER to use macro LUA_SUBMODULE from yunit_lua_${LUA_VERSION}.h
     # 
-    set_target_properties(${YUNIT_LIB_TARGET_NAME}
-                            PROPERTIES 
-                                PREFIX ""
-                                COMPILE_FLAGS "/I\"${LUA_${LUA_VERSION}_INCLUDE_DIR}\" /D\"CONFIG_HEADER=${YUNIT_CONFIG_FILE_HEADER}\""
-                                OUTPUT_NAME ${YUNIT_LIB_TARGET_NAME}
-    )
+    if (MSVC)
+        set(INC_DIR_FLAG "/I")
+        set(DEFINE_FLAG "/D")
+    else (MSVC)
+        set(INC_DIR_FLAG "-I")
+        set(DEFINE_FLAG "-D")
+    endif(MSVC)
+    
+    set_target_properties(${YUNIT_LIB_TARGET_NAME} 
+        PROPERTIES 
+            PREFIX ""
+            COMPILE_FLAGS "${CPP_DEFS} ${INC_DIR_FLAG}\"${CMAKE_CURRENT_SOURCE_DIR}\" ${INC_DIR_FLAG}\"${LUA_${LUA_VERSION}_INCLUDE_DIR}\" ${DEFINE_FLAG}\"CONFIG_HEADER=${YUNIT_CONFIG_FILE_HEADER}\""
+            OUTPUT_NAME ${YUNIT_LIB_TARGET_NAME})
     #
     # yunit.t
     # 
@@ -81,7 +87,7 @@ function(yunitProject LUA_VERSION)
     set_target_properties(${YUNIT_T_TARGET_NAME}
                             PROPERTIES
                                 PREFIX ""
-                                COMPILE_FLAGS "/I\"${LUA_${LUA_VERSION}_INCLUDE_DIR}\" /D\"OUTPUT_NAME=${YUNIT_T_OUT_NAME}\""
+                                COMPILE_FLAGS "${CPP_DEFS} ${INC_DIR_FLAG}\"${CMAKE_CURRENT_SOURCE_DIR}\" ${INC_DIR_FLAG}\"${LUA_${LUA_VERSION}_INCLUDE_DIR}\" ${DEFINE_FLAG}\"OUTPUT_NAME=${YUNIT_T_OUT_NAME}\""
                                 OUTPUT_NAME ${YUNIT_T_OUT_NAME}
                                 LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lua_${LUA_VERSION}
     )
@@ -149,11 +155,12 @@ function(yunitProject LUA_VERSION)
     string(REGEX REPLACE "ARGUMENTS" "${CMD_ARG}" RUN_TESTS_SOURCE_CODE "${RUN_TESTS_SOURCE_CODE}")
     file(WRITE ${YUNIT_LUA_${LUA_VERSION}_SRC_FILE} "${RUN_TESTS_SOURCE_CODE}")
     
-    # add_executable(yunit_lua_${LUA_VERSION}_cpp_tests ${LUA_${LUA_VERSION}_INCLUDE_DIR}/lua.c ${YUNIT_LUA_${LUA_VERSION}_SRC_FILE})
     add_executable(yunit_lua_${LUA_VERSION}_cpp_tests ${YUNIT_LUA_${LUA_VERSION}_SRC_FILE})
     
     # set spectial include directory to use #include <lua.c> for concrete Lua version interpreter source code file
-    set_target_properties(yunit_lua_${LUA_VERSION}_cpp_tests PROPERTIES COMPILE_FLAGS "/I\"${LUA_${LUA_VERSION}_INCLUDE_DIR}\"")
+    set_target_properties(yunit_lua_${LUA_VERSION}_cpp_tests 
+        PROPERTIES 
+            COMPILE_FLAGS "${INC_DIR_FLAG}\"${LUA_${LUA_VERSION}_INCLUDE_DIR}\"")
 
     add_dependencies(yunit_lua_${LUA_VERSION}_cpp_tests ${LUA_INT_TARGET_NAME} ${YUNIT_T_TARGET_NAME})
     target_link_libraries(yunit_lua_${LUA_VERSION}_cpp_tests ${LUA_LIB_OUT_NAME})
