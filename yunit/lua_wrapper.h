@@ -257,7 +257,7 @@ private:
 ///     }
 
 #define LUA_CLASS(className) \
-    class LUA_WRAPPER_NAME(className) : public CppClassWrapperForLua\
+    class LUA_WRAPPER_NAME(className) : public Lua::CppClassWrapperForLua\
     {\
     public:\
         static LUA_WRAPPER_NAME(className) *instance()\
@@ -266,14 +266,14 @@ private:
             return &instance;\
         }\
     protected:\
-        inline virtual void setClassMetatableContent(State &lua, const int classMtIdx);\
+        inline virtual void setClassMetatableContent(Lua::State &lua, const int classMtIdx);\
         inline virtual void* getClassMetatableKey()\
         {\
             return reinterpret_cast<void*>(instance);\
         }\
     };\
     \
-    inline void className ## WrapperForLua::setClassMetatableContent(State &lua, const int classMtIdx)\
+    inline void className ## WrapperForLua::setClassMetatableContent(Lua::State &lua, const int classMtIdx)\
 
 #define LUA_WRAPPER_NAME(className) className ## WrapperForLua
 
@@ -329,7 +329,7 @@ private:
 /// 1) client code may control memory allocating 
 /// 2) userdata may have individual metatable
 #define LUA_PUSH(cppObjPtr, className) \
-    lua_push(lua, cppObjPtr, reinterpret_cast<void*>(LUA_WRAPPER_NAME(className)::instance))
+    Lua::lua_push(lua, cppObjPtr, reinterpret_cast<void*>(LUA_WRAPPER_NAME(className)::instance))
 
 void YUNIT_API lua_push(State &lua, void *cppObjPtr, void *classMetatableKey);
 
@@ -357,7 +357,7 @@ struct AddWrapperMethod
     	Lua::State lua(L);\
         return LUA_WRAPPER_CTOR_IMPL_NAME(className)(lua);\
     }\
-    static AddWrapperMethod<LUA_WRAPPER_NAME(className)> addConstructorTo ## className ## Wrapper(TOSTR(LUA_WRAPPER_CTOR_NAME(className)), LUA_WRAPPER_CTOR_NAME(className));\
+    static Lua::AddWrapperMethod<LUA_WRAPPER_NAME(className)> addConstructorTo ## className ## Wrapper(TOSTR(LUA_WRAPPER_CTOR_NAME(className)), LUA_WRAPPER_CTOR_NAME(className));\
     static inline int LUA_WRAPPER_CTOR_IMPL_NAME(className)(Lua::State &lua)
 
 #define LUA_DESTRUCTOR(className) \
@@ -367,7 +367,7 @@ struct AddWrapperMethod
     	Lua::State lua(L);\
         return LUA_WRAPPER_DTOR_IMPL_NAME(className)(lua);\
     }\
-    static AddWrapperMethod<LUA_WRAPPER_NAME(className)> addDestructorTo ## className ## Wrapper(TOSTR(LUA_WRAPPER_DTOR_NAME(className)), LUA_WRAPPER_DTOR_NAME(className));\
+    static Lua::AddWrapperMethod<LUA_WRAPPER_NAME(className)> addDestructorTo ## className ## Wrapper(TOSTR(LUA_WRAPPER_DTOR_NAME(className)), LUA_WRAPPER_DTOR_NAME(className));\
     static inline int LUA_WRAPPER_DTOR_IMPL_NAME(className)(Lua::State &lua)
     
 #define LUA_METHOD(className, methodName) \
@@ -377,7 +377,7 @@ struct AddWrapperMethod
     	Lua::State lua(L);\
         return LUA_WRAPPER_METHOD_IMPL_NAME(className, methodName)(lua);\
     }\
-    static AddWrapperMethod<LUA_WRAPPER_NAME(className)> addMethod ## methodName ## To ## className ## Wrapper(TOSTR(LUA_WRAPPER_METHOD_NAME(className, methodName)), LUA_WRAPPER_METHOD_NAME(className, methodName));\
+    static Lua::AddWrapperMethod<LUA_WRAPPER_NAME(className)> addMethod ## methodName ## To ## className ## Wrapper(TOSTR(LUA_WRAPPER_METHOD_NAME(className, methodName)), LUA_WRAPPER_METHOD_NAME(className, methodName));\
     static inline int LUA_WRAPPER_METHOD_IMPL_NAME(className, methodName)(Lua::State &lua)
 
 } // namespace Lua
