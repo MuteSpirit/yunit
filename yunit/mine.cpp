@@ -261,43 +261,50 @@ void Mine::turnoff()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//static ProcessKiller processKiller;
-//static Mine mine(&processKiller);
+LUA_CLASS(Mine)
+{
+    ADD_CONSTRUCTOR(Mine);
+    ADD_DESTRUCTOR(Mine);
+
+    ADD_METHOD(Mine, setTimer);
+    ADD_METHOD(Mine, turnoff);
+}
+
+} // namespace YUNIT_NS {
+
+DEFINE_LUA_TO(YUNIT_NS::Mine);
+
+namespace YUNIT_NS {
 
 extern "C"
 int YUNIT_API LUA_SUBMODULE(mine)(lua_State* L)
 {
     Lua::State lua(L);
-    luaWrapper<Mine>().makeMetatable(lua, MT_NAME(Mine));
+    LUA_REGISTER(Mine)(lua);
     lua.push(true);
     return 1;
 }
 
-LUA_META_METHOD(Mine, Mine) /// @todo Replace with more short construction, for example, LUA_CONSTRUCTOR(Mine)
+LUA_CONSTRUCTOR(Mine)
 {
     static ProcessKiller procKiller;
 
-    Lua::State lua(L);  /// @todo Accept Lua::State as function argument, don't create it inside function
-    lua.push(new Mine(&procKiller), MT_NAME(Mine));
+    LUA_PUSH(new Mine(&procKiller), Mine);
     return 1;
 }
 
-LUA_META_METHOD(Mine, __gc) /// @todo Replace with more short construction, for example, LUA_DESTRUCTOR(Mine)
+LUA_DESTRUCTOR(Mine)
 {
-    Lua::State lua(L);
-
     enum Args {selfIdx = 1};
-    Mine *mine = nullptr;
-    lua.to(selfIdx, &mine);
+    Mine *mine = lua.to<Mine*>(selfIdx);
+    lua_gc(lua, selfIdx);
     delete mine;
 
     return 0;
 }
 
-LUA_META_METHOD(Mine, sleep)
+LUA_METHOD(Mine, sleep)
 {
-    Lua::State lua(L);
-
     enum Args {timeoutInSecIdx = 1};
 
     if (!lua.isinteger(timeoutInSecIdx))
@@ -307,31 +314,23 @@ LUA_META_METHOD(Mine, sleep)
     return 0;
 }
 
-LUA_META_METHOD(Mine, setTimer)
+LUA_METHOD(Mine, setTimer)
 {
-    Lua::State lua(L);
-
     enum Args {selfIdx = 1, timeoutInSecIdx};
 
     if (!lua.isinteger(timeoutInSecIdx)) /// @todo Replace is some macro as CHECK_ARG_TYPE
         lua.error("integer expected as argument, but was %s", lua.typeName(timeoutInSecIdx));
 
-    Mine *mine = nullptr;
-    lua.to(selfIdx, &mine);
+    Mine *mine = lua.to<Mine*>(selfIdx);
     mine->setTimer(Seconds(lua.to<unsigned long>(timeoutInSecIdx)));
 
     return 0;
 }
 
-LUA_META_METHOD(Mine, turnoff)
+LUA_METHOD(Mine, turnoff)
 {
-    Lua::State lua(L);
-
     enum Args {selfIdx = 1};
-    Mine *mine = nullptr;
-    lua.to(selfIdx, &mine);
-    mine->turnoff();
-
+    lua.to<Mine*>(selfIdx)->turnoff();
     return 0;
 }
 
