@@ -21,7 +21,7 @@ else(WIN32)
                                         COMPILE_DEFINITIONS "LUA_COMPAT_OPENLIB;")
 endif(WIN32)
 #
-# lua interpretator
+# lua interpreter
 # 
 set(LUA_INT_TARGET_NAME lua_int_${LUA_VERSION})
 set(LUA_INT_OUT_NAME lua${LUA_VERSION})
@@ -37,6 +37,7 @@ else(WIN32)
     set_target_properties(${LUA_INT_TARGET_NAME} PROPERTIES 
                                  OUTPUT_NAME ${LUA_INT_OUT_NAME}
                                  COMPILE_DEFINITIONS "LUA_COMPAT_OPENLIB;")
+    # on Linux it is needed to link with math library
     target_link_libraries(${LUA_INT_TARGET_NAME} ${LUA_LIB_OUT_NAME} m)
 endif(WIN32)
 add_dependencies(${LUA_INT_TARGET_NAME} ${LUA_LIB_TARGET_NAME})

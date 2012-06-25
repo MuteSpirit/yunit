@@ -163,7 +163,13 @@ function(yunitProject LUA_VERSION)
             COMPILE_FLAGS "${INC_DIR_FLAG}\"${LUA_${LUA_VERSION}_INCLUDE_DIR}\"")
 
     add_dependencies(yunit_lua_${LUA_VERSION}_cpp_tests ${LUA_INT_TARGET_NAME} ${YUNIT_T_TARGET_NAME})
+
+if(WIN32)
     target_link_libraries(yunit_lua_${LUA_VERSION}_cpp_tests ${LUA_LIB_OUT_NAME})
+else(WIN32)
+    # on Linux it is needed to link with math library
+    target_link_libraries(yunit_lua_${LUA_VERSION}_cpp_tests ${LUA_LIB_OUT_NAME} m)
+endif(WIN32)
     
     # ${LUA_${LUA_VERSION}_EXEC} ${SET_LUA_PATH} ${SET_LUA_CPATH} -l yunit -e "use{'yunit.cppunit'}" -e "run[[${YUNIT_T_TARGET_PATH}]]"
     
