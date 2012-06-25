@@ -1,0 +1,14 @@
+#define main luaMain
+#include <lua.c>
+#undef main
+
+int main(int argcExt, char *argvExt[])
+{
+    char *argv[] = 
+    {
+        ARGUMENTS,
+        0
+    };
+
+    return luaMain(sizeof(argv), argv);
+}
