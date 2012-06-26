@@ -9,6 +9,7 @@
 #define _YUNIT_MINE_HEADER_
 
 #include "yunit.h"
+#include "lua_wrapper.h"
 
 namespace YUNIT_NS {
 
@@ -44,6 +45,18 @@ private:
     MineImpl* impl_;
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+LUA_CLASS(Mine)
+{
+    ADD_CONSTRUCTOR(Mine);
+    ADD_DESTRUCTOR(Mine);
+
+    ADD_METHOD(Mine, setTimer);
+    ADD_METHOD(Mine, turnoff);
+}
+
 } // namespace YUNIT_NS
+
+DEFINE_LUA_TO(YUNIT_NS::Mine);
 
 #endif // _YUNIT_MINE_HEADER_

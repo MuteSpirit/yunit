@@ -8,7 +8,6 @@
 
 #define YUNIT_DLL_EXPORTS
 #include "mine.h"
-#include "lua_wrapper.h"
 
 
 #ifdef _WIN32
@@ -259,22 +258,6 @@ void Mine::turnoff()
 {
     impl_->turnoff();
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-LUA_CLASS(Mine)
-{
-    ADD_CONSTRUCTOR(Mine);
-    ADD_DESTRUCTOR(Mine);
-
-    ADD_METHOD(Mine, setTimer);
-    ADD_METHOD(Mine, turnoff);
-}
-
-} // namespace YUNIT_NS {
-
-DEFINE_LUA_TO(YUNIT_NS::Mine);
-
-namespace YUNIT_NS {
 
 extern "C"
 int YUNIT_API LUA_SUBMODULE(mine)(lua_State* L)
