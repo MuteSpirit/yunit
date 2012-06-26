@@ -10,5 +10,10 @@ int main(int argcExt, char *argvExt[])
         0
     };
 
-    return luaMain(sizeof(argv), argv);
+    int argc;
+    char **p;
+    for (argc = 0, p = argv; *p; ++p, ++argc)
+        ;
+        
+    return luaMain(argc, argv);
 }
