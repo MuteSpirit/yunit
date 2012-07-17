@@ -43,6 +43,8 @@ class YUNIT_API Table
 {
     friend class State;
 public:
+    /// @param[in] narr Number of preallocated unnamed elements (their keys are numeric indexes)
+    /// @param[in] nrec Number of preallocated "key-value" elements
     Table(int narr = 0, int nrec = 0)
     : narr_(narr)
     , nrec_(nrec)
