@@ -17,17 +17,30 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct Trace {};
+using namespace Lua;
+
+static int trace(lua_State *L);
+static int traceback(lua_State *L);
 
 extern "C"
 int YUNIT_API LUA_SUBMODULE(trace)(lua_State *L)
 {
-    luaWrapper<Trace>().regLib(L, "yunit.trace");
+    State lua(L);
+
+    lua.push(Table());
+    const int libIdx = lua.top();
+
+    lua.push(trace);
+    lua.setfield(libIdx, "trace");
+
+    lua.push(traceback);
+    lua.setfield(libIdx, "traceback");
+
 	return 1;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-LUA_META_METHOD(Trace, trace)
+static int trace(lua_State *L)
 {
     const int msgArgInd = -1;
     if (lua_isstring(L, msgArgInd))
@@ -52,7 +65,7 @@ static void pushfuncname (lua_State *L, lua_Debug *ar);
 #define LEVELS2	10	/* size of the second part of the stack */
 
 
-LUA_META_METHOD(Trace, traceback)
+static int traceback(lua_State *L)
 {
     using namespace Lua;
     State lua(L);
@@ -92,11 +105,10 @@ LUA_META_METHOD(Trace, traceback)
 
     // Make 'stack' element of 'traceback'
     {
-        lua_Debug debInfo;
-
         lua.push(Table());
         int stackIdx = lua.top();
         
+        lua_Debug debInfo;
         unsigned int cStep = 0;
         
         while (lua_getstack(L1, level++, &debInfo))

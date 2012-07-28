@@ -22,7 +22,7 @@ function table.toLuaCode(inTable, indent, resultHandler)
             elseif 'string' == type(key) then
                 keyStr = indent .. '[' .. "'" .. key .. "'" .. '] = ';
             else
-                keyStr = indent .. '[' .. key .. '] = ';
+                keyStr = indent .. '[' .. tostring(key) .. '] = ';
             end
             out = out .. keyStr
        
