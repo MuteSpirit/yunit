@@ -7,18 +7,20 @@ set(LUA_FILES lua.c)
 set(LUA_LIB_TARGET_NAME lua_lib_${LUA_VERSION})
 set(LUA_LIB_OUT_NAME lua${LUA_VERSION})
 
-add_library(${LUA_LIB_TARGET_NAME} ${LUA_LIB_FILES})
+# Lua library must be shared (DLL), because lua interpreter executable file won't be ableto use Lua binding module, built as DLL and returning something,
+# created on heap, because process will crash during try to delete such objects in own (other then module) heap
+add_library(${LUA_LIB_TARGET_NAME} SHARED ${LUA_LIB_FILES})
 set_target_properties(${LUA_LIB_TARGET_NAME} PROPERTIES OUTPUT_NAME ${LUA_LIB_OUT_NAME})
 
 if(WIN32)
     set_target_properties(${LUA_LIB_TARGET_NAME} PROPERTIES 
                                         OUTPUT_NAME ${LUA_LIB_OUT_NAME}
-                                        COMPILE_DEFINITIONS "LUA_COMPAT_OPENLIB;_CRT_SECURE_NO_WARNINGS"
+                                        COMPILE_DEFINITIONS "LUA_BUILD_AS_DLL;_CRT_SECURE_NO_WARNINGS"
                                         LINK_FLAGS "/PDB:${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/liblua${LUA_VERSION}.pdb")
 else(WIN32)
     set_target_properties(${LUA_LIB_TARGET_NAME} PROPERTIES 
                                         OUTPUT_NAME ${LUA_LIB_OUT_NAME}
-                                        COMPILE_DEFINITIONS "LUA_COMPAT_OPENLIB;")
+                                        COMPILE_DEFINITIONS "LUA_BUILD_AS_DLL;")
 endif(WIN32)
 #
 # lua interpretator
@@ -30,13 +32,13 @@ add_executable(${LUA_INT_TARGET_NAME} ${LUA_FILES})
 if(WIN32)
     set_target_properties(${LUA_INT_TARGET_NAME} PROPERTIES 
                                  OUTPUT_NAME ${LUA_INT_OUT_NAME}
-                                 COMPILE_DEFINITIONS "LUA_COMPAT_OPENLIB;_CRT_SECURE_NO_WARNINGS"
+                                 COMPILE_DEFINITIONS "LUA_BUILD_AS_DLL;_CRT_SECURE_NO_WARNINGS"
                                  LINK_FLAGS "/PDB:${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/lua${LUA_VERSION}.pdb")
     target_link_libraries(${LUA_INT_TARGET_NAME} ${LUA_LIB_OUT_NAME})
 else(WIN32)
     set_target_properties(${LUA_INT_TARGET_NAME} PROPERTIES 
                                  OUTPUT_NAME ${LUA_INT_OUT_NAME}
-                                 COMPILE_DEFINITIONS "LUA_COMPAT_OPENLIB;")
+                                 COMPILE_DEFINITIONS "LUA_BUILD_AS_DLL;")
     target_link_libraries(${LUA_INT_TARGET_NAME} ${LUA_LIB_OUT_NAME} m)
 endif(WIN32)
 add_dependencies(${LUA_INT_TARGET_NAME} ${LUA_LIB_TARGET_NAME})
