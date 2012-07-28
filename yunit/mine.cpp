@@ -259,13 +259,36 @@ void Mine::turnoff()
     impl_->turnoff();
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+using namespace Lua;
+
+static int sleep(lua_State *L);
+
 extern "C"
 int YUNIT_API LUA_SUBMODULE(mine)(lua_State* L)
 {
-    Lua::State lua(L);
+    State lua(L);
     LUA_REGISTER(Mine)(lua);
-    lua.push(true);
+    
+    lua.push(Table());
+    const int libIdx = lua.top();
+    
+    lua.push(sleep);
+    lua.setfield(libIdx, "sleep");
+
     return 1;
+}
+
+static int sleep(lua_State *L)
+{
+    enum Args {timeoutInSecIdx = 1};
+    State lua(L);
+
+    if (!lua.isinteger(timeoutInSecIdx))
+        lua.error("integer expected as argument, but was %s", lua.typeName(timeoutInSecIdx));
+
+    sleep(Seconds(lua.to<unsigned long>(timeoutInSecIdx)));
+    return 0;
 }
 
 LUA_CONSTRUCTOR(Mine)
@@ -283,17 +306,6 @@ LUA_DESTRUCTOR(Mine)
     lua_gc(lua, selfIdx);
     delete mine;
 
-    return 0;
-}
-
-LUA_METHOD(Mine, sleep)
-{
-    enum Args {timeoutInSecIdx = 1};
-
-    if (!lua.isinteger(timeoutInSecIdx))
-        lua.error("integer expected as argument, but was %s", lua.typeName(timeoutInSecIdx));
-
-    sleep(Seconds(lua.to<unsigned long>(timeoutInSecIdx)));
     return 0;
 }
 

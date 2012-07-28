@@ -5,7 +5,7 @@ local _G = _M
 
 local fs = require "yunit.filesystem"
 local ytrace = require "yunit.trace"
--- local mine = require "yunit.mine"
+require "yunit.mine"
 
 TestResultHandler = 
 {
@@ -194,9 +194,6 @@ function runTestCase(testcase, testResultHandler)
     
     testResultHandler:onTestBegin(testName)
 
-    local oneTestExecutionTimeLimitInSec = 7
-    -- mine.setTimer(oneTestExecutionTimeLimitInSec)
-    
     if isTestIgnored then
         testResultHandler:onTestIgnore(testName, errorObjectDefault)    
     else
@@ -245,8 +242,6 @@ function runTestCase(testcase, testResultHandler)
         end
     end
     
-    -- mine.turnoff()
-
     testResultHandler:onTestEnd(testName);
 end
 
@@ -365,9 +360,15 @@ TestRunner =
         -- We change current directory, because
         -- during test execution they usually assume, that working directory is test container folder
         lfs.chdir(testContainerDir)
+
+		local oneTestExecutionTimeLimitInSec = 7
+		local mine = Mine()
+		
         
         for _, test in ipairs(tests) do
+			mine:setTimer(oneTestExecutionTimeLimitInSec)
             runTestCase(test, self.resultHandlers_)
+			mine:turnoff()
         end
     end;
     

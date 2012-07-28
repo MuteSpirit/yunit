@@ -115,31 +115,43 @@ function collectTestcasesFromSimpleTestCaseEnvironment()
         }
     }
     
-    local expectedTestList = 
-    {
-        {
-            name_ = '_ignoredTest',
-            isIgnored_ = true,
-            test = env._ignoredTest,
-        },
-        {
-            name_ = 'testCase',
-            isIgnored_ = false,
-            test = env.testCase,
-        },
-        {
-            name_ = 'fixtureTestCase',
-            setUp = env.fixture.setUp,
-            isIgnored_ = false,
-            test = env.fixture.fixtureTestCase,
-            tearDown = env.fixture.tearDown,
-        },
-    }
-    
-    local testContainerName = 'yunit.luaunit'
     local testList = luaUnit.collectPureTestCaseList(env)
     
-    isTrue(table.isEqual(expectedTestList, testList))
+	for _, test in pairs(testList) do
+		if 'fixtureTestCase' == test.name_ then
+			isTrue(table.isEqual(
+				{
+					name_ = 'fixtureTestCase',
+					setUp = env.fixture.setUp,
+					isIgnored_ = false,
+					test = env.fixture.fixtureTestCase,
+					tearDown = env.fixture.tearDown,
+					fileName_ = 'unknown',
+					lineNumber_ = 0,
+				},
+				test), table.toLuaCode(test))
+		elseif '_ignoredTest' == test.name_ then
+			isTrue(table.isEqual(
+				{
+					name_ = '_ignoredTest',
+					isIgnored_ = true,
+					test = env._ignoredTest,
+					fileName_ = 'unknown',
+					lineNumber_ = 0,
+				},
+				test), table.toLuaCode(test))
+		elseif 'testCase' == test.name_ then
+			isTrue(table.isEqual(
+				{
+					name_ = 'testCase',
+					isIgnored_ = false,
+					test = env.testCase,
+					fileName_ = 'unknown',
+					lineNumber_ = 0,
+				},
+				test), table.toLuaCode(test))
+		end
+	end
 end
 
 function useTmpDir.loadLuaContainer(self)

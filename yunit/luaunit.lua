@@ -120,9 +120,10 @@ local function wrapValue(v)
 end
 
 function registerAssertFucntionsInto(mt)
-    mt.isTrue = function(actual)
+    mt.isTrue = function(actual, explanatoryMessage)
         if not actual then
-            error("true expected but was nil or false", 0)
+			explanatoryMessage = explanatoryMessage and ': ' .. explanatoryMessage or ''
+            error("true expected but was nil or false" .. explanatoryMessage, 0)
         end
     end
 
