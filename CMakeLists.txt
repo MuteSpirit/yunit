@@ -59,8 +59,8 @@ if(WIN32)
 endif(WIN32)
 
 # we cannot use points in yunit shared library output file name, because it will not allow use it in Lua "require" command argument. So Lua version is 51 or 52 and no 5.1 and 5.2
-foreach(LUA_VERSION 51 52)
-    add_subdirectory(lua_${LUA_VERSION})
-endforeach(LUA_VERSION)    
+#foreach(LUA_VERSION 51 52)
+#    add_subdirectory(lua_${LUA_VERSION})
+#endforeach(LUA_VERSION)    
 
 add_subdirectory(yunit)
