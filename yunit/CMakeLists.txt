@@ -8,14 +8,29 @@ if(NOT WIN32)
 # use Ptreads library
     find_package (Threads)
 endif(NOT WIN32)
-#
-# Enable C++ exceptions
-# 
+
 if(MSVC)
     set(CPP_DEFS "/EHsc /D_CRT_SECURE_NO_WARNINGS")
 else (MSVC)
-    set(CPP_DEFS "-fexceptions -std=c++0x") 
+    set(CPP_DEFS "-fexceptions -std=c++0x -Wall") 
 endif(MSVC)
+
+if (MSVC)
+    set(INC_DIR_FLAG "/I")
+    set(DEFINE_FLAG "/D")
+else (MSVC)
+    set(INC_DIR_FLAG "-I")
+    set(DEFINE_FLAG "-D")
+endif(MSVC)
+
+add_library(sample_cpp_tue SHARED sample_tue.cpp)
+set_target_properties(sample_cpp_tue PROPERTIES COMPILE_FLAGS "${DEFINE_FLAG}TUE_LIB ${CPP_DEFS}")
+
+add_library(sample_c_tue SHARED sample_tue.c)
+set_target_properties(sample_c_tue PROPERTIES COMPILE_FLAGS "${DEFINE_FLAG}TUE_LIB")
+
+add_executable(yunit yunit_main.c)
+target_link_libraries(yunit dl)
 #
 # yunit
 # 
@@ -31,6 +46,7 @@ endif(WIN32)
 # 
 set(YUNIT_T_FILES cppunit.t.cpp trace.t.cpp lua_wrapper.t.cpp mine.t.cpp)
 set(RUN_YUNIT_CPP_TESTS_SRC_FILE_TEMPLATE run_cpp_tests.c.in)
+
 
 #####################################################################################################################################
 # function to add yunit project, linking concrete version of Lua library
@@ -61,13 +77,6 @@ function(yunitProject LUA_VERSION)
     #
     # we set CONFIG_HEADER to use macro LUA_SUBMODULE from yunit_lua_${LUA_VERSION}.h
     # 
-    if (MSVC)
-        set(INC_DIR_FLAG "/I")
-        set(DEFINE_FLAG "/D")
-    else (MSVC)
-        set(INC_DIR_FLAG "-I")
-        set(DEFINE_FLAG "-D")
-    endif(MSVC)
     
     set_target_properties(${YUNIT_LIB_TARGET_NAME} 
         PROPERTIES 
@@ -211,6 +220,6 @@ endif(WIN32)
 endfunction(yunitProject)
 
 # we cannot use points in yunit shared library output file name, because it will not allow use it in Lua "require" command argument. So Lua version is 51 or 52 and no 5.1 and 5.2
-foreach(LUA_VERSION 51 52)
-    yunitProject(${LUA_VERSION})
-endforeach(LUA_VERSION)    
+#foreach(LUA_VERSION 51 52)
+#    yunitProject(${LUA_VERSION})
+#endforeach(LUA_VERSION)    
