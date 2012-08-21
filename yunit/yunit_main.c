@@ -2,6 +2,7 @@
 #include <dlfcn.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #ifdef WIN32
 #  define ENDLINE "\r\n"
@@ -9,9 +10,41 @@
 #  define ENDLINE "\r\n"
 #endif
 
-void logSuccess(void *self, Test *test)
+#define stepSetUp 1
+#define stepTest 2
+#define stepTearDown 3
+
+struct _TestLogger
 {
-    printf("test is Ok" ENDLINE);
+    Test *currentTest_;
+    int step_;
+};
+typedef struct _TestLogger TestLogger;
+
+static const char* stepName(const int step)
+{
+    switch (step)
+    {
+    case stepSetUp:
+        return "setUp";
+    case stepTest:
+        return "test";
+    case stepTearDown:
+        return "tearDown";
+    default:
+        abort(); /* unknown step type */
+    }
+}
+
+static void success(TestLogger* logger)
+{
+    TestPtr test = logger->currentTest_;
+    printf("%s::%s is Ok" ENDLINE, (*test->name_)(test->self_), stepName(logger->step_));
+}
+
+void testLoggerSuccess(void *self)
+{
+    success((TestLogger*)self);
 }
 
 int main(int argc, char **argv)
@@ -45,15 +78,33 @@ int main(int argc, char **argv)
         typedef Test** (*LoadTestContainer)(const char*);
         LoadTestContainer loadTestContainer = (LoadTestContainer)funcPtr;
 
-        TestPtr test = loadTestContainer("")[0];
+        TestLogger testLogger;
 
         Logger logger;
         memset(&logger, 0, sizeof(logger));
-        logger.success_ = logSuccess;
-       
-        (*test->setUp_)(test, &logger);
-        (*test->test_)(test, &logger);
+        logger.self_ = &testLogger;
+        logger.success_ = testLoggerSuccess;
+
+        TestPtr *tests = loadTestContainer("");
+        TestPtr test;
+        
+        for (; *tests; ++tests)
+        {
+            test = *tests;
+            
+            testLogger.currentTest_ = test;
+           
+            testLogger.step_ = stepSetUp;
+            (*test->setUp_)(test, &logger);
+            
+            testLogger.step_ = stepTest;
+            (*test->test_)(test, &logger);
+            
+            testLogger.step_ = stepTearDown;
+            (*test->test_)(test, &logger);
+        }
     }
+    
     dlclose(hTue);
     
 #endif // WIN32
