@@ -1,7 +1,7 @@
 #include "test_unit_engine.h"
 #include <stdio.h>
 
-Test** loadTestContainer(const char *path)
+Test* loadTestContainer(const char *path)
 {
     return 0;
 }

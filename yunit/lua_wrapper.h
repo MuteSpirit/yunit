@@ -1,5 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // lua_wrapper.h
+/// @todo Now file contain two variants of wrapping implementation
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if _MSC_VER > 1000
 #  pragma once
@@ -8,11 +9,15 @@
 #ifndef _YUNIT_LUA_WRAPPER_HEADER_
 #define _YUNIT_LUA_WRAPPER_HEADER_
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+#ifdef __cplusplus
 }
+#endif
 
 #include "yunit.h"
 #include <vector>
@@ -100,7 +105,7 @@ private:
 class YUNIT_API String
 {
 public:
-    String(const char *s = nullptr, size_t size = 0)
+    String(const char *s = NULL, size_t size = 0)
     : s_(s)
     , size_(size)
     {}
@@ -529,6 +534,8 @@ int dtor(lua_State* L)
         delete *pp;
         *pp = NULL; // to avoid deleting object twice, if __gc metametod will be called more then once
     }
+    
+    return 0;
 }
 
 /// @todo Disadvantage of State's template methods is it's definition location in header file
