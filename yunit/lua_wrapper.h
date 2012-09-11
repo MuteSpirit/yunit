@@ -131,6 +131,8 @@ public:
     {
         return l_;
     }
+
+    static lua_State* newstate();
     
     void push(int v);
     void push(long v);
@@ -165,6 +167,9 @@ public:
     bool isinteger(int idx = topIdx);
     bool isnumber(int idx = topIdx);
     bool isnil(int idx = topIdx);
+    
+    template<typename T>
+    bool is(int idx = topIdx);
     
     void getglobal(const char* name);
     void setglobal(const char* name);

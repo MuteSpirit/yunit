@@ -22,11 +22,11 @@
             }\
             catch(...)\
             {\
-                logger->fail_(logger->self_, "unknown error in test");\
+                failure(logger, "unknown error in test");\
                 return;\
             }\
             \
-            logger->success_(logger->self_);\
+            success(logger);\
         }\
         void realTest();\
    } test##name;\
@@ -35,7 +35,7 @@
 
             //catch(std::exception &ex)
             //{
-            //    logger->fail_(logger->self_, ex.message());
+            //    failure(logger, ex.message());
             //}
             //catch(...)\ // !Attention! this statement will be cut in Release compile configuration
 
