@@ -71,11 +71,26 @@ struct _Logger
     void *self_;
     
     void (*success_)(void *self);
-    void (*fail_)(void *self, const char *message);
+    void (*failure_)(void *self, const char *message);
     void (*error_)(void *self, const char *message);
 
 };
 typedef struct _Logger Logger, *LoggerPtr;
+
+void success(LoggerPtr logger)
+{
+    (*logger->success_)(logger->self_);
+}
+
+void failure(LoggerPtr logger, const char *message)
+{
+    (*logger->failure_)(logger->self_, message);
+}
+
+void error(LoggerPtr logger, const char *message)
+{
+    (*logger->error_)(logger->self_, message);
+}
 
 /// @brief Test case object
 /// @details You should return test, even it must be ignored, because information hiding is wrong strategy

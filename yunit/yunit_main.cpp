@@ -97,7 +97,7 @@ int main(int argc, char **argv)
         memset(&logger, 0, sizeof(logger));
         logger.self_ = &testLogger;
         logger.success_ = &testLoggerSuccess;
-        logger.fail_ = &testLoggerFail;
+        logger.failure_ = &testLoggerFail;
 
         TestPtr test = loadTestContainer("");
         for (; test; test = test->next_)

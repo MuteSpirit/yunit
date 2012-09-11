@@ -31,11 +31,13 @@ set_target_properties(sample_c_tue PROPERTIES COMPILE_FLAGS "${DEFINE_FLAG}TUE_L
 
 add_library(sample_lua52_tue SHARED sample_lua52_tue.cpp)
 find_path(LUA52_INCLUDE_DIR NAMES lua.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../lua_52/src)
-set_target_properties(sample_lua52_tue PROPERTIES COMPILE_FLAGS "${DEFINE_FLAG}TUE_LIB ${CPP_DEFS}  ${INC_DIR_FLAG}\"${LUA52_INCLUDE_DIR}\"")
+set_target_properties(sample_lua52_tue PROPERTIES COMPILE_FLAGS "${DEFINE_FLAG}TUE_LIB ${CPP_DEFS} ${INC_DIR_FLAG}\"${LUA52_INCLUDE_DIR}\"")
 
 add_executable(yunit yunit_main.cpp)
 set_target_properties(yunit PROPERTIES COMPILE_FLAGS "${CPP_DEFS} ${INC_DIR_FLAG}\"${LUA52_INCLUDE_DIR}\"")
-target_link_libraries(yunit dl)
+if (NOT WIN32)
+    target_link_libraries(yunit dl)
+endif (NOT WIN32)
 #
 # yunit
 # 
