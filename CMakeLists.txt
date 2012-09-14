@@ -39,28 +39,33 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY lua)
 
 set(CPACK_SOURCE_GENERATOR TBZ2;TGZ;ZIP)
 
-IF(WIN32 AND NOT UNIX)
+if(WIN32 AND NOT UNIX)
     # There is a bug in NSI that does not handle full unix paths properly. Make
     # sure there is at least one set of four (4) backlasshes.
     set(CPACK_GENERATOR "NSIS")
     set(CPACK_NSIS_DISPLAY_NAME ${YUNIT_DESCRIPTION})
-    set(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\code.google.com/p/yunit/w/list")
+    set(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\code.google.com/p/yunit")
     set(CPACK_NSIS_CONTACT ${YUNIT_CONTACT})
     set(CPACK_NSIS_MODIFY_PATH ON)
-ELSE(WIN32 AND NOT UNIX)
+else(WIN32 AND NOT UNIX)
     set(CPACK_GENERATOR "DEB")
     set(CPACK_DEBIAN_PACKAGE_SECTION "Developer Tools")
-ENDIF(WIN32 AND NOT UNIX)
-    
-INCLUDE(CPack)
+endif(WIN32 AND NOT UNIX)
 
+include(CPack)
+    
+#
+# build Lua
+#
+# we cannot use points in yunit shared library output file name, because it will not allow use it in Lua "require" command argument. So Lua version is 51 or 52 instead of 5.1 and 5.2
+foreach(LUA_VERSION 51 52)
+    add_subdirectory(lua_${LUA_VERSION})
+endforeach(LUA_VERSION)    
+#
+# build yUnit
+#
 if(WIN32)
     set(COPY_TARGET_FILES copy /b /y $(TargetDir)\\$(TargetName).* $(TargetDir)\\..)
 endif(WIN32)
-
-# we cannot use points in yunit shared library output file name, because it will not allow use it in Lua "require" command argument. So Lua version is 51 or 52 and no 5.1 and 5.2
-#foreach(LUA_VERSION 51 52)
-#    add_subdirectory(lua_${LUA_VERSION})
-#endforeach(LUA_VERSION)    
 
 add_subdirectory(yunit)
