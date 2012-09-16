@@ -49,7 +49,7 @@ LUA_METHOD(Object, name)
 
 test(exposing_cpp_object_into_lua)
 {
-    StateGuard lua;
+    StateLiveGuard lua;
 
     LUA_REGISTER(Object)(lua);
 
