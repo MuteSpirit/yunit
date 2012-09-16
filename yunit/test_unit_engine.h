@@ -69,7 +69,11 @@ TUE_API Test* loadTestContainer(const char *path);
 struct _Logger
 {
     void *self_;
+
+    /// Using this method allow TestRunner to estimate elapsed time for test execution
+    void (*startTest_)(void *self);
     
+    // Any next method call means, that test execution has been finished
     void (*success_)(void *self);
     void (*failure_)(void *self, const char *message);
     void (*error_)(void *self, const char *message);
@@ -77,17 +81,22 @@ struct _Logger
 };
 typedef struct _Logger Logger, *LoggerPtr;
 
-void success(LoggerPtr logger)
+inline void startTest(LoggerPtr logger)
+{
+    (*logger->startTest_)(logger->self_);
+}
+
+inline void success(LoggerPtr logger)
 {
     (*logger->success_)(logger->self_);
 }
 
-void failure(LoggerPtr logger, const char *message)
+inline void failure(LoggerPtr logger, const char *message)
 {
     (*logger->failure_)(logger->self_, message);
 }
 
-void error(LoggerPtr logger, const char *message)
+inline void error(LoggerPtr logger, const char *message)
 {
     (*logger->error_)(logger->self_, message);
 }

@@ -1,5 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // lua_wrapper.cpp
+//
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define YUNIT_DLL_EXPORTS
 #include "lua_wrapper.h"
@@ -290,6 +291,15 @@ int State::dostring(String luaCode)
     return rc;
 }
 
+int State::dofile(const char *path)
+{
+    int rc = luaL_loadfile(l_, path);
+    if (0 == rc)
+        rc = call();
+
+    return rc;
+}
+
 static int db_errorfb(lua_State *L);
 
 int State::call(unsigned int numberOfArgs, int numberOfReturnValues)
@@ -381,18 +391,23 @@ static lua_State *getthread (lua_State *L, int *arg) {
   }
 }
 
+void State::openlibs()
+{
+    luaL_openlibs(l_);
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-StateGuard::StateGuard()
+StateLiveGuard::StateLiveGuard()
 : Parent(newstate())
 {
 }
 
-StateGuard::~StateGuard()
+StateLiveGuard::~StateLiveGuard()
 {
     close();
 }
 
-void StateGuard::close()
+void StateLiveGuard::close()
 {
     if (nullptr != l_)
     {

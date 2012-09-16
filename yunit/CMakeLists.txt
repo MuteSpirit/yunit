@@ -39,11 +39,15 @@ set_target_properties(sample_lua52_tue PROPERTIES
                         PREFIX "" # remove 'lib' prefix on Linux
                         COMPILE_FLAGS "${DEFINE_FLAG}TUE_LIB ${CPP_DEFS} ${INC_DIR_FLAG}\"${LUA52_INCLUDE_DIR}\"")
 
-add_executable(yunit yunit_main.cpp)
+add_executable(yunit yunit_main.cpp lua_wrapper.cpp test_engine.cpp)
 set_target_properties(yunit PROPERTIES COMPILE_FLAGS "${CPP_DEFS} ${INC_DIR_FLAG}\"${LUA52_INCLUDE_DIR}\"")
-if (NOT WIN32)
-    target_link_libraries(yunit dl)
-endif (NOT WIN32)
+if (WIN32)
+    add_dependencies(yunit lua_lib_52)
+    target_link_libraries(yunit dl lua52)
+else (WIN32)
+    add_dependencies(yunit lua_lib_52)
+    target_link_libraries(yunit dl lua52)
+endif (WIN32)
 
 if(WIN32)
     set(SHARED_LIB_EXT "dll")
@@ -54,5 +58,6 @@ else(WIN32)
 endif(WIN32)
 
 add_test(run_cpp_tests ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/yunit ${SHARED_LIB_OUT_DIR}/sample_cpp_tue.so)
+set_tests_properties(run_cpp_tests PROPERTIES PASS_REGULAR_EXPRESSION "Ok")
 
 

@@ -34,10 +34,10 @@ extern "C" {
 /// so name is not needed
 #define MT_NAME(CppType) #CppType "Metatable"
 
-#define LUA_CHECK_ARG(luaType, idx)\
-    if (!lua.is##luaType(idx))\
-        lua.error("invalid argument №%d, " #luaType " expected, but was %s\r\n", (idx), lua.typeName(1));
-        
+#define LUA_CHECK_ARG(luaType, cppType, idx)\
+    if (!lua.is<cppType>(idx))\
+        lua.error("invalid argument №%d, " #luaType " expected, but was %s\r\n", (idx), lua.typeName(idx));
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Lua {
 
@@ -110,6 +110,11 @@ public:
     , size_(size)
     {}
 
+    operator const char*() const
+    {
+        return s_;
+    }
+    
 public:
     const char *s_;
     size_t size_;
@@ -192,8 +197,11 @@ public:
     void to(int idx, const char** str, size_t* len);
     void to(int idx, const char** str);
 
-    template<typename CppType> void to(int idx, CppType** cppObj); /// @todo It is not place for that function
-    template<typename T>  T  to(int idx = topIdx);
+    template<typename CppType>
+    void to(int idx, CppType** cppObj); /// @todo It is not place for that function
+    
+    template<typename T>
+    T to(int idx = topIdx);
 
     void getinfo(const char *what, lua_Debug *ar);
 
@@ -203,10 +211,13 @@ public:
 
     int dostring(const char *luaCode);
     int dostring(String luaCode);
-
+    int dofile(const char *path);
+    
     enum {multiRetValues = -1};
     int call(unsigned int numberOfArgs = 0, int numberOfReturnValues = multiRetValues);
 
+    void openlibs();
+    
 protected:
     lua_State* l_;    
 };
@@ -214,15 +225,19 @@ protected:
 template<> unsigned long State::to<unsigned long>(int idx);
 template<> const char*   State::to<const char*>(int idx);
 template<> void*         State::to<void*>(int idx);
+template<> String        State::to<String>(int idx);
 
+
+template<> bool State::is<const char*>(int idx);
+template<> bool State::is<String>(int idx);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class YUNIT_API StateGuard /* rename to StateLiveGuard */ : public State
+class YUNIT_API StateLiveGuard : public State
 {
     typedef State Parent;
 public:
-    StateGuard();   // create a new lua_State
-    ~StateGuard();  // close it's lua_State, if it is not closed previously
+    StateLiveGuard();   // create a new lua_State
+    ~StateLiveGuard();  // close it's lua_State, if it is not closed previously
 
     void close();   // close it's lua_State
 };
@@ -562,6 +577,26 @@ template<>
 inline const char* State::to<const char*>(int idx)
 {
     return lua_tostring(l_, idx);
+}
+
+template<> 
+inline String State::to<String>(int idx)
+{
+    String s;
+    s.s_ = lua_tolstring(l_, idx, &s.size_);
+    return s;
+}
+
+template<> 
+inline bool State::is<String>(int idx)
+{
+    return lua_tostring(l_, idx);
+}
+
+template<>
+inline bool State::is<const char*>(int idx)
+{
+    return 1 == lua_isstring(l_, idx);
 }
 
 template<>
