@@ -1,4 +1,4 @@
-#include "test_unit_engine.h"
+#include "test_engine_interface.h"
 #include "test_engine.h"
 #include "lua_wrapper.h"
 
@@ -71,23 +71,23 @@
 //}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-LUA_CLASS(UnitTest)
-{
-    ADD_METHOD(UnitTest, name);
-    
-    /// @return String with path to source file, containing test definition
-    ADD_METHOD(UnitTest, source);
-    
-    /// @return Test definition first line number
-    ADD_METHOD(UnitTest, line);
-    
-    /// @return true, if test must be ignored and not executed
-    ADD_METHOD(UnitTest, isIgnored);
-
-    ADD_METHOD(UnitTest, setUp);
-    ADD_METHOD(UnitTest, test);
-    ADD_METHOD(UnitTest, tearDown);
-}
+//LUA_CLASS(UnitTest)
+//{
+//    ADD_METHOD(UnitTest, name);
+//    
+//    /// @return String with path to source file, containing test definition
+//    ADD_METHOD(UnitTest, source);
+//    
+//    /// @return Test definition first line number
+//    ADD_METHOD(UnitTest, line);
+//    
+//    /// @return true, if test must be ignored and not executed
+//    ADD_METHOD(UnitTest, isIgnored);
+//
+//    ADD_METHOD(UnitTest, setUp);
+//    ADD_METHOD(UnitTest, test);
+//    ADD_METHOD(UnitTest, tearDown);
+//}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv)
@@ -115,16 +115,16 @@ int main(int argc, char **argv)
            || 0 == ::strcmp("-e", argv[argIdx]))
         {
             /// @todo Add checking that path is really file path
-            lua.push(argv[++argIdx]);
             lua.push(++testEnginePathIdx);
+            lua.push(argv[++argIdx]);
             lua.settable(testEnginePathTableIdx);
         }
         else if (0 == ::strcmp("--test-container", argv[argIdx])
                 || 0 == ::strcmp("-t", argv[argIdx]))
         {
             /// @todo Add checking that path is really file path
-            lua.push(argv[++argIdx]);
             lua.push(++testContainerPathIdx);
+            lua.push(argv[++argIdx]);
             lua.settable(testContainerPathTableIdx);
         }
         else
@@ -161,8 +161,7 @@ int main(int argc, char **argv)
     lua.openlibs();
     
     LUA_REGISTER(TestEngine)(lua);
-//    LUA_REGISTER(UnitTest)(lua);
-
+    
     int rc = lua.dofile(mainScript);
     if (0 != rc)
     {

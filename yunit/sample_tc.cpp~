@@ -1,0 +1,43 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include "sample_tue.h"
+
+//TEST(emptyTest)
+//{
+//}
+
+struct TestEmptyTest : public BaseTest
+{
+    typedef TestEmptyTest Self;
+    
+    TestEmptyTest()
+    {
+        test_.self_ = this;
+        test_.test_ = &callAdapter<Self, &Self::test>;
+        testName_.assign("emptyTest");
+        
+        registerTest(&test_);
+    }
+    
+    void test(LoggerPtr logger)
+    {
+        try
+        {
+            realTest();
+        }
+        catch(...)
+        {
+            failure(logger, "unknown error in test");
+            return;
+        }
+        
+        success(logger);
+    }
+    void realTest();
+};
+
+void TestEmptyTest::realTest()
+{
+}
+

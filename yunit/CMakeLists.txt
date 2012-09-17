@@ -28,6 +28,11 @@ set_target_properties(sample_cpp_tue PROPERTIES
                         PREFIX "" # remove 'lib' prefix on Linux
                         COMPILE_FLAGS "${DEFINE_FLAG}TUE_LIB ${CPP_DEFS}")
 
+add_library(sample_cpp_tc SHARED sample_tc.cpp)
+set_target_properties(sample_cpp_tc PROPERTIES 
+                        PREFIX "" # remove 'lib' prefix on Linux
+                        COMPILE_FLAGS "${CPP_DEFS}")
+
 add_library(sample_c_tue SHARED sample_tue.c)
 set_target_properties(sample_c_tue PROPERTIES 
                         PREFIX "" # remove 'lib' prefix on Linux
@@ -57,7 +62,7 @@ else(WIN32)
     set(SHARED_LIB_OUT_DIR "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 endif(WIN32)
 
-add_test(run_cpp_tests ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/yunit ${SHARED_LIB_OUT_DIR}/sample_cpp_tue.so)
-set_tests_properties(run_cpp_tests PROPERTIES PASS_REGULAR_EXPRESSION "Ok")
+#message(run_cpp_tests ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/yunit -e "${SHARED_LIB_OUT_DIR}/sample_cpp_tue.so" -t "${SHARED_LIB_OUT_DIR}/sample_cpp_tc.so" yunit_main.lua)
+#set_tests_properties(run_cpp_tests PROPERTIES PASS_REGULAR_EXPRESSION "Ok")
 
 

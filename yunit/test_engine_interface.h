@@ -1,12 +1,12 @@
-#ifndef _TEST_UNIT_ENGINE_HEADER_
-#define _TEST_UNIT_ENGINE_HEADER_
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// @file test_unit_engine.h
+/// @file test_engine_interface.h
 /// @brief Declare test unit engine library interface functions
 ///
 /// @todo Rename methods isIgnored -> ignored
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#ifndef _TEST_ENGINE_INTERFACE_HEADER_
+#define _TEST_ENGINE_INTERFACE_HEADER_
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,24 +36,28 @@ extern "C" {
 #endif
 
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// @brief Must be implemented (and exported) by test engine shared library
 /// @return test container file extensions, supported by this test unit engine library.
-/// Last pointer must be NULL.
+/// @details Last pointer must be NULL.
 /// For example, you may return address of variable, defined like
 /// static const char* ext[] = {"t.cpp", NULL};
-/// @details test runner use it to filter test container files among all files
+/// Test runner use it to filter test container files among all files
 TUE_API const char** testContainerExtensions();
 
 struct _Test;
 typedef struct _Test Test, *TestPtr;
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @brief load one test container
+/// @brief Must be implemented (and exported) by test engine shared library
 /// @return list with unit test objects
 /// @param[in] path Full path to test container file
 /// @details test runner will not delete returned Test objects, it will use it only
-TUE_API Test* loadTestContainer(const char *path);
+TUE_API TestPtr loadTestContainer(const char *path);
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @brief Accept execution result
 /// @details Example of method call:
 /// @code{.cpp}
@@ -101,6 +105,7 @@ inline void error(LoggerPtr logger, const char *message)
     (*logger->error_)(logger->self_, message);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @brief Test case object
 /// @details You should return test, even it must be ignored, because information hiding is wrong strategy
 struct _Test
@@ -124,11 +129,43 @@ struct _Test
 	struct _Test* next_;                    ///< pointer to next Test in list
 };
 
-/// @question How test runner (?) get error message?
-/// @question 
+inline void setUp(TestPtr test, LoggerPtr logger)
+{
+    test->setUp_(test->self_, logger);
+}
+
+inline void test(TestPtr test, LoggerPtr logger)
+{
+    test->test_(test->self_, logger);
+}
+
+inline void tearDown(TestPtr test, LoggerPtr logger)
+{
+    test->tearDown_(test->self_, logger);
+}
+
+inline int isIgnored(const TestPtr test)
+{
+    return test->isIgnored_(test->self_);
+}
+
+inline const char* name(const TestPtr test)
+{
+    return test->name_(test->self_);
+}
+
+inline const char* source(const TestPtr test)
+{
+    return test->source_(test->self_);
+}
+
+inline int line(const TestPtr test)
+{
+    return test->line_(test->self_);
+}
 
 #ifdef __cplusplus
 } // extern "C"
 #endif
 
-#endif // _TEST_UNIT_ENGINE_HEADER_
+#endif // _TEST_ENGINE_INTERFACE_HEADER_
