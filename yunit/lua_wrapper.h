@@ -344,10 +344,12 @@ private:
 
 /// @brief Define State::to<T*> method, used for wrapped C++ objects in local paradigm of C++ storaging in Lua
 #define DEFINE_LUA_TO(T) \
-    template<> \
-    T* Lua::State::to<T*>(int idx)\
-    {\
-        return static_cast<T*>(*reinterpret_cast<void**>(to<void*>(idx)));\
+    namespace Lua {\
+        template<> \
+        inline T* State::to<T*>(int idx)\
+        {\
+            return static_cast<T*>(*reinterpret_cast<void**>(to<void*>(idx)));\
+        }\
     }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

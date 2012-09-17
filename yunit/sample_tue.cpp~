@@ -1,11 +1,6 @@
 #include "sample_tue.h"
 
-static Test *aloneTest;
-
-void registerTest(TestPtr test)
-{
-    aloneTest = test;
-}
+Test *aloneTest;
 
 const char** testContainerExtensions()
 {

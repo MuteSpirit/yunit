@@ -2,7 +2,7 @@
 /// @file sample_lua_tue.cpp
 /// @brief Engine for unit test on Lua 5.2 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#include "test_unit_engine.h"
+#include "test_engine_interface.h"
 #include "lua_wrapper.h"
 #include <assert.h>
 
