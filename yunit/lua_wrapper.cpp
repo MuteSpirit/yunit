@@ -175,10 +175,22 @@ const char* State::typeName(int idx)
 {
     return lua_typename(l_, lua_type(l_, idx));
 }
-    
+
 bool State::isstring(int idx)
 {
-    return 1 == lua_isstring(l_, idx);
+    return is<const char*>(idx);
+}
+
+template<> 
+bool State::is<String>(int idx)
+{
+    return is<const char*>(idx);
+}
+
+template<>
+bool State::is<const char*>(int idx)
+{
+    return LUA_TSTRING == lua_type(l_, idx);
 }
 
 bool State::istable(int idx)
@@ -246,6 +258,38 @@ void State::to(int idx, const char** str)
     *str = lua_tostring(l_, idx);
 }
 
+template<> 
+inline unsigned long State::to<unsigned long>(int idx)
+{
+#if LUA_VERSION_NUM == 501
+    return lua_tointeger(l_, idx);
+#elif LUA_VERSION_NUM == 502
+    return lua_tounsigned(l_, idx);
+#else
+#  error Unsupported Lua version
+#endif
+}
+
+template<>
+const char* State::to<const char*>(int idx)
+{
+    return lua_tostring(l_, idx);
+}
+
+template<> 
+String State::to<String>(int idx)
+{
+    String s;
+    s.s_ = lua_tolstring(l_, idx, &s.size_);
+    return s;
+}
+
+template<>
+void* State::to<void*>(int idx)
+{
+    return lua_touserdata(l_, idx);
+}
+
 void State::remove(int idx)
 {
     lua_remove(l_, idx);
@@ -302,21 +346,20 @@ int State::dofile(const char *path)
 
 static int db_errorfb(lua_State *L);
 
-int State::call(unsigned int numberOfArgs, int numberOfReturnValues)
+int State::call(int numberOfArgs, int numberOfReturnValues)
 {
     // stack has such content on function call moment: ..., function, arg1, ..., argN
     
+    assert(numberOfArgs >= 0);
     assert(numberOfArgs <= std::numeric_limits<int>::max());
-    int numOfArgs = static_cast<int>(numberOfArgs);
-
-    assert(top() >= numOfArgs);
+    assert(top() >= numberOfArgs);
     //
     // locating error handle function before calling function value
-    const int errHandleFuncIdx = top() - numOfArgs;
+    const int errHandleFuncIdx = top() - numberOfArgs;
     push(db_errorfb);
     insert(errHandleFuncIdx);
 
-    int rc = lua_pcall(l_, numOfArgs, numberOfReturnValues, errHandleFuncIdx);
+    int rc = lua_pcall(l_, numberOfArgs, numberOfReturnValues, errHandleFuncIdx);
 
     remove(errHandleFuncIdx);
     return rc;

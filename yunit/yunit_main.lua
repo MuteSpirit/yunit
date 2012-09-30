@@ -7,6 +7,7 @@ for _, path in pairs(testEnginePaths) do
     local testEngine, errMsg = TestEngine(path)
     if testEngine then
         table.insert(testEngines, testEngine)
+        print('TestEngine: ' .. tostring(testEngine))
     else
         print(errMsg)
     end
@@ -23,9 +24,14 @@ end
 
 for _, testEngine in pairs(testEngines) do
     for _, path in pairs(testContainerPaths) do
-        local tests = testEngine:load(path)
-        for _, test in pairs(tests) do
-            print(test)
+        print(path)
+        
+        local unitTests = testEngine:load(path)
+        print('unitTests = ', unitTests)
+        print(#unitTests)
+        
+        for _, unitTest in pairs(unitTests) do
+            unitTest:test()
         end
     end
 end

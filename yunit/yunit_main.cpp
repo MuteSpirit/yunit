@@ -15,80 +15,6 @@
 #include <stdlib.h>
 #include <list>
 
-
-#ifdef WIN32
-#  define ENDL "\r\n"
-#else
-#  define ENDL "\n"
-#endif
-
-#define stepSetUp 1
-#define stepTest 2
-#define stepTearDown 3
-
-//struct _TestLogger
-//{
-//    Test *currentTest_;
-//    int step_;
-//};
-//typedef struct _TestLogger TestLogger;
-//
-//static const char* stepName(const int step)
-//{
-//    switch (step)
-//    {
-//    case stepSetUp:
-//        return "setUp";
-//    case stepTest:
-//        return "test";
-//    case stepTearDown:
-//        return "tearDown";
-//    default:
-//        abort(); /* unknown step type */
-//    }
-//}
-//
-//static void success(TestLogger *logger)
-//{
-//    TestPtr test = logger->currentTest_;
-//    printf("%s::%s is Ok" ENDL, (*test->name_)(test->self_), stepName(logger->step_));
-//}
-//
-//static void testLoggerSuccess(void *self)
-//{
-//    success((TestLogger*)self);
-//}
-//
-//static void fail(TestLogger *logger, const char *message)
-//{
-//    TestPtr test = logger->currentTest_;
-//    printf("%s::%s is Fail" ENDL, (*test->name_)(test->self_), stepName(logger->step_));
-//}
-//
-//static void testLoggerFail(void *self, const char *message)
-//{
-//    fail((TestLogger*)self, message);
-//}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//LUA_CLASS(UnitTest)
-//{
-//    ADD_METHOD(UnitTest, name);
-//    
-//    /// @return String with path to source file, containing test definition
-//    ADD_METHOD(UnitTest, source);
-//    
-//    /// @return Test definition first line number
-//    ADD_METHOD(UnitTest, line);
-//    
-//    /// @return true, if test must be ignored and not executed
-//    ADD_METHOD(UnitTest, isIgnored);
-//
-//    ADD_METHOD(UnitTest, setUp);
-//    ADD_METHOD(UnitTest, test);
-//    ADD_METHOD(UnitTest, tearDown);
-//}
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
@@ -106,7 +32,7 @@ int main(int argc, char **argv)
     const int testContainerPathTableIdx = lua.top();
     int testContainerPathIdx = 0;
     
-    const char* mainScript;
+    const char* mainScript = NULL;
     
     for (int argIdx = 1/* skip program path */; argIdx < argc; ++argIdx)
     {
@@ -137,7 +63,8 @@ int main(int argc, char **argv)
         ST_ERROR = -1,
         ST_NO_ANY_TUE = -2,
         ST_NO_ANY_TEST_CONTAINER = -3,
-        ST_MAIN_SCRIPT_FAIL = -4
+        ST_MAIN_SCRIPT_FAIL = -4,
+        ST_NO_SET_MAIN_SCRIPT = -5
     };
     
     if (0 == testEnginePathIdx)
@@ -158,9 +85,16 @@ int main(int argc, char **argv)
     lua.push(Value(testContainerPathTableIdx));
     lua.setglobal(testContainerPathTableNameInLua);
     
+    if (NULL == mainScript)
+    {
+        perror("Not set Lua script for execution");
+        return ST_NO_SET_MAIN_SCRIPT;
+    }
+    
     lua.openlibs();
     
     LUA_REGISTER(TestEngine)(lua);
+    LUA_REGISTER(UnitTest)(lua);
     
     int rc = lua.dofile(mainScript);
     if (0 != rc)
@@ -171,60 +105,3 @@ int main(int argc, char **argv)
     
     return ST_SUCCESS;
 }
-    
-//#if defined(_WIN32)
-//#else
-//    void *hTue = dlopen(testEnginePath_.front(), RTLD_NOW | RTLD_GLOBAL);
-//    if (NULL == hTue)
-//        return 1;
-//    //
-//    // ask about supported extensions    
-//    {
-//        //dlerror(); /// @todo use it for error detection
-//        void *funcPtr = dlsym(hTue, "testContainerExtensions");
-//        if (NULL == funcPtr)
-//            return 1;
-//        
-//        typedef const char** (*TestContainerExtensions)();
-//        
-//        TestContainerExtensions testContainerExtensions = (TestContainerExtensions)funcPtr;
-//        
-//        printf("extension is \"%s\"" ENDL, testContainerExtensions()[0]);
-//    }
-//    //
-//    // run test
-//    {
-//        void *funcPtr = dlsym(hTue, "loadTestContainer");
-//        if (NULL == funcPtr)
-//            return 1;
-//            
-//        typedef Test* (*LoadTestContainer)(const char*);
-//        LoadTestContainer loadTestContainer = (LoadTestContainer)funcPtr;
-//
-//        TestLogger testLogger;
-//
-//        Logger logger;
-//        memset(&logger, 0, sizeof(logger));
-//        logger.self_ = &testLogger;
-//        logger.success_ = &testLoggerSuccess;
-//        logger.failure_ = &testLoggerFail;
-//
-//        TestPtr test = loadTestContainer("");
-//        for (; test; test = test->next_)
-//        {
-//            testLogger.currentTest_ = test;
-//           
-//            testLogger.step_ = stepSetUp;
-//            (*test->setUp_)(test, &logger);
-//            
-//            testLogger.step_ = stepTest;
-//            (*test->test_)(test, &logger);
-//            
-//            testLogger.step_ = stepTearDown;
-//            (*test->tearDown_)(test, &logger);
-//        }
-//    }
-//    
-//    dlclose(hTue);
-//    
-//#endif // WIN32

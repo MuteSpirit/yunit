@@ -214,7 +214,7 @@ public:
     int dofile(const char *path);
     
     enum {multiRetValues = -1};
-    int call(unsigned int numberOfArgs = 0, int numberOfReturnValues = multiRetValues);
+    int call(int numberOfArgs = 0, int numberOfReturnValues = multiRetValues);
 
     void openlibs();
     
@@ -558,53 +558,6 @@ int dtor(lua_State* L)
     }
     
     return 0;
-}
-
-/// @todo Disadvantage of State's template methods is it's definition location in header file
-/// So, we cannot incapsulate native Lua API from client
-
-template<> 
-inline unsigned long State::to<unsigned long>(int idx)
-{
-#if LUA_VERSION_NUM == 501
-    return lua_tointeger(l_, idx);
-#elif LUA_VERSION_NUM == 502
-    return lua_tounsigned(l_, idx);
-#else
-#  error Unsupported Lua version
-#endif
-}
-
-template<>
-inline const char* State::to<const char*>(int idx)
-{
-    return lua_tostring(l_, idx);
-}
-
-template<> 
-inline String State::to<String>(int idx)
-{
-    String s;
-    s.s_ = lua_tolstring(l_, idx, &s.size_);
-    return s;
-}
-
-template<> 
-inline bool State::is<String>(int idx)
-{
-    return lua_tostring(l_, idx);
-}
-
-template<>
-inline bool State::is<const char*>(int idx)
-{
-    return 1 == lua_isstring(l_, idx);
-}
-
-template<>
-inline void* State::to<void*>(int idx)
-{
-    return lua_touserdata(l_, idx);
 }
 
 } // namespace Lua

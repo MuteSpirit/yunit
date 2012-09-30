@@ -70,4 +70,7 @@ nbproject/
 # Mercurial intermediate files
 *.orig
 
+# Lua's Makefiles, changed by CMake
+lua_*/Makefile
+lua_*/src/Makefile
 
