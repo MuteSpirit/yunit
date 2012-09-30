@@ -1,6 +1,10 @@
 #include "sample_tue.h"
 
-static Test *aloneTest;
+#ifndef _WIN32
+#  include <dlfcn.h>
+#endif
+
+static Test *aloneTest = NULL;
 
 void registerTest(TestPtr test)
 {
@@ -15,6 +19,8 @@ const char** testContainerExtensions()
 
 Test* loadTestContainer(const char *path)
 {
+    dlopen(path, RTLD_NOW | RTLD_GLOBAL);
+
     return aloneTest;
 }
 

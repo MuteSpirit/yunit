@@ -16,7 +16,63 @@
 #  include <dlfcn.h>
 #endif
 
+template<typename T, typename Arg, void (T::*method)(Arg)>
+void callAdapter(void *t, Arg arg)
+{
+    (static_cast<T*>(t)->*method)(arg);
+}
 
+template<typename T, void (T::*method)()>
+void callAdapter(void *t)
+{
+    (static_cast<T*>(t)->*method)();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class SimpleLogger
+{
+    typedef SimpleLogger Self;
+    struct Step 
+    {
+        enum {setUp, test, tearDown};
+    };
+    
+public:
+    SimpleLogger();
+    LoggerPtr logger();
+    
+    // work with Test Engine:
+    void startWorkWithTestEngine(const char *path);
+    void startLoadTe();
+    void startGetExt();
+    void startUnloadTe();
+    
+    // work with Test Container:
+    void startWorkWithTestContainer(const char *path);
+    void startLoadTc();
+    void startUnloadTc();
+    
+    // work with Unit Test:
+    void startWorkWithTest(TestPtr);
+    void startSetUp();
+    void startTest();
+    void startTearDown();
+
+    void success();
+    void failure(const char *message);
+    void error(const char *message);
+    
+private:
+    static const char* stepName(const int step);
+    static void destroy(void*);
+    
+private:
+    Logger logger_;
+    TestPtr currentTest_;
+    int step_;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static bool isExist(const char* path)
 {
     enum {existenceOnlyMode = 0, notAccessible = -1};
@@ -258,6 +314,193 @@ LUA_METHOD(TestEngine, load)
     }
     
     return 1;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+LUA_METHOD(UnitTest, setUp)
+{
+    enum Args {selfIdx = 1, loggerIdx};
+    return 0;
+}
+
+LUA_METHOD(UnitTest, test)
+{
+    enum Args {selfIdx = 1, loggerIdx};
+    return 0;
+}
+
+LUA_METHOD(UnitTest, tearDown)
+{
+    enum Args {selfIdx = 1, loggerIdx};
+    return 0;
+}
+
+LUA_METHOD(UnitTest, isIgnored)
+{
+    enum Args {selfIdx = 1};
+    lua.push(isIgnored(lua.to<Test*>(selfIdx)));
+    return 1;
+}
+
+LUA_METHOD(UnitTest, name)
+{
+    enum Args {selfIdx = 1};
+    lua.push(name(lua.to<Test*>(selfIdx)));
+    return 1;
+}
+
+LUA_METHOD(UnitTest, source)
+{
+    enum Args {selfIdx = 1};
+    lua.push(source(lua.to<Test*>(selfIdx)));
+    return 1;
+}
+
+LUA_METHOD(UnitTest, line)
+{
+    enum Args {selfIdx = 1};
+    lua.push(line(lua.to<Test*>(selfIdx)));
+    return 1;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+SimpleLogger::SimpleLogger()
+: currentTest_(NULL)
+, step_(0)
+{
+    logger_.self_ = this;
+
+    logger_.startWorkWithTestEngine_ = callAdapter<Self, const char*, &Self::startWorkWithTestEngine>;
+    logger_.startLoadTe_ = callAdapter<Self, &Self::startLoadTe>;
+    logger_.startGetExt_ = callAdapter<Self, &Self::startGetExt>;
+    logger_.startUnloadTe_ = callAdapter<Self, &Self::startUnloadTe>;
+    
+    logger_.startWorkWithTestContainer_ = callAdapter<Self, const char*, &Self::startWorkWithTestContainer>;
+    logger_.startLoadTc_ = callAdapter<Self, &Self::startLoadTc>;
+    logger_.startUnloadTc_ = callAdapter<Self, &Self::startUnloadTc>;
+    
+    logger_.startWorkWithTest_ = callAdapter<Self, TestPtr, &Self::startWorkWithTest>;
+    logger_.startSetUp_ = callAdapter<Self, &Self::startSetUp>;
+    logger_.startTest_ = callAdapter<Self, &Self::startTest>;
+    logger_.startTearDown_ = callAdapter<Self, &Self::startTearDown>;
+
+    logger_.destroy_ = destroy;
+    logger_.success_ = callAdapter<Self, &Self::success>;
+    logger_.failure_ = callAdapter<Self, const char*, &Self::failure>;
+    logger_.error_ = callAdapter<Self, const char*, &Self::error>;
+}
+
+LoggerPtr SimpleLogger::logger()
+{
+    return &logger_;
+}
+
+void SimpleLogger::startWorkWithTestEngine(const char *path)
+{
+    
+}
+
+void SimpleLogger::startLoadTe()
+{
+    
+}
+
+void SimpleLogger::startGetExt()
+{
+    
+}
+
+void SimpleLogger::startUnloadTe()
+{
+    
+}
+
+void SimpleLogger::startWorkWithTestContainer(const char *path)
+{
+    
+}
+
+void SimpleLogger::startLoadTc()
+{
+    
+}
+
+void SimpleLogger::startUnloadTc()
+{
+    
+}
+
+void SimpleLogger::startWorkWithTest(TestPtr test)
+{
+    currentTest_ = test;
+}
+
+void SimpleLogger::startSetUp()
+{
+    step_ = Step::setUp;
+}
+
+void SimpleLogger::startTest()
+{
+    step_ = Step::test;
+}
+
+void SimpleLogger::startTearDown()
+{
+    step_ = Step::tearDown;
+}
+
+void SimpleLogger::success()
+{
+    printf("%s::%s is Ok" ENDL, name(currentTest_), stepName(step_));
+}
+
+void SimpleLogger::failure(const char *message)
+{
+    printf("%s::%s is Fail: '%s'" ENDL, name(currentTest_), stepName(step_), message);
+}
+
+void SimpleLogger::error(const char *message)
+{
+    printf("%s::%s is Error: '%s'" ENDL, name(currentTest_), stepName(step_), message);
+}
+
+const char* SimpleLogger::stepName(const int step)
+{
+   switch (step)
+   {
+   case Step::setUp:
+       return "setUp";
+   case Step::test:
+       return "test";
+   case Step::tearDown:
+       return "tearDown";
+   default:
+       abort(); /* unknown step type */
+   }
+}
+
+void SimpleLogger::destroy(void *ptr)
+{
+    SimpleLogger *self = static_cast<SimpleLogger*>(ptr);
+    delete self;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+LUA_CONSTRUCTOR(Logger)
+{
+    return 0;
+}
+
+LUA_DESTRUCTOR(Logger)
+{
+    /// @todo destructor code in not understandable, make procedure simpler or understandable
+    
+    enum Args {selfIdx = 1};
+    lua_gc(lua, selfIdx);
+
+    destroy(lua.to<Logger*>(selfIdx));
+    return 0;
 }
 
 #endif // _WIN32

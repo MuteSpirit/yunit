@@ -8,6 +8,12 @@
 #include "lua_wrapper.h"
 #include "test_engine_interface.h"
 
+#ifdef _WIN32
+#  define ENDL "\r\n"
+#else
+#  define ENDL "\n"
+#endif
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class TestEngine
 {
@@ -60,7 +66,26 @@ DEFINE_LUA_TO(TestEngine)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 LUA_CLASS(UnitTest)
 {
+    ADD_METHOD(UnitTest, setUp);
+    ADD_METHOD(UnitTest, test);
+    ADD_METHOD(UnitTest, tearDown);
+
+    ADD_METHOD(UnitTest, isIgnored);
     
+    ADD_METHOD(UnitTest, name);
+    ADD_METHOD(UnitTest, source);
+    ADD_METHOD(UnitTest, line);
 };
+
+DEFINE_LUA_TO(Test)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+LUA_CLASS(Logger)
+{
+    ADD_CONSTRUCTOR(Logger);
+    ADD_DESTRUCTOR(Logger);
+}
+
+DEFINE_LUA_TO(Logger)
 
 #endif // _TEST_ENGINE_HEADER_

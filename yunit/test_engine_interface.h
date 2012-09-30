@@ -3,6 +3,7 @@
 /// @brief Declare test unit engine library interface functions
 ///
 /// @todo Rename methods isIgnored -> ignored
+/// @todo Use Logger's startSetUp, startTearDown and finish methods to estimate elapsed time for test execution
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef _TEST_ENGINE_INTERFACE_HEADER_
 #define _TEST_ENGINE_INTERFACE_HEADER_
@@ -56,54 +57,38 @@ typedef struct _Test Test, *TestPtr;
 /// @details test runner will not delete returned Test objects, it will use it only
 TUE_API TestPtr loadTestContainer(const char *path);
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// @brief Accept execution result
-/// @details Example of method call:
-/// @code{.cpp}
-/// void testExecute(void *self, LoggerPtr logger)
-/// {
-///     TestPtr test = (TestPtr)self;
-///     if (test->execute())
-///         (*logger->success_)(logger, test);
-///     else
-///         (*logger->fail_)(logger, test, "Oops! :-(")
-/// }
-/// @endcode
-struct _Logger
+typedef struct _Logger
 {
-    void *self_;
-
-    /// Using this method allow TestRunner to estimate elapsed time for test execution
-    void (*startTest_)(void *self);
+    // work with Test Engine:
+    void (*startWorkWithTestEngine_)(void *self, const char *path);
+    void (*startLoadTe_)(void *self);
+    void (*startGetExt_)(void *self);
+    void (*startUnloadTe_)(void *self);
     
-    // Any next method call means, that test execution has been finished
-    void (*success_)(void *self);
-    void (*failure_)(void *self, const char *message);
-    void (*error_)(void *self, const char *message);
+    // work with Test Container:
+    void (*startWorkWithTestContainer_)(void *self, const char *path);
+    void (*startLoadTc_)(void *self);
+    void (*startUnloadTc_)(void *self);
+    
+    // work with Unit Test:
+    void (*startWorkWithTest_)(void *self, TestPtr);
+    void (*startSetUp_)(void *self);
+    void (*startTest_)(void *self);
+    void (*startTearDown_)(void *self);
+    
+    // Call any of next 3 methods means that step has been finished:
+    void (*success_)(void *self);                      ///< @brief Inform about successfull step finish
+    void (*failure_)(void *self, const char *message); ///< @brief Inform about failure step finish
+    void (*error_)(void *self, const char *message);   ///< @brief Inform about unexpected error during step
 
-};
-typedef struct _Logger Logger, *LoggerPtr;
+    /// @brief Pointer to real object, hiding behind 'Logger' interface
+    void *self_;
+    
+    /// @brief Allow destroy real object, hiding behind 'Logger' interface
+    void (*destroy_)(void *self);
 
-inline void startTest(LoggerPtr logger)
-{
-    (*logger->startTest_)(logger->self_);
-}
-
-inline void success(LoggerPtr logger)
-{
-    (*logger->success_)(logger->self_);
-}
-
-inline void failure(LoggerPtr logger, const char *message)
-{
-    (*logger->failure_)(logger->self_, message);
-}
-
-inline void error(LoggerPtr logger, const char *message)
-{
-    (*logger->error_)(logger->self_, message);
-}
+} Logger, *LoggerPtr;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @brief Test case object
@@ -114,21 +99,21 @@ struct _Test
     void *self_;
     
     ///< will be called before 'test'
-	void (*setUp_)(void *self, LoggerPtr logger);
-	void (*test_)(void *self, LoggerPtr logger);               ///< test's 'main' function, will be called if 'setUp' has been success
-	void (*tearDown_)(void *self, LoggerPtr logger);           ///< will be called, if 'setUp' has been success
-
+    void (*setUp_)(void *self, LoggerPtr logger);
+    void (*test_)(void *self, LoggerPtr logger);               ///< test's 'main' function, will be called if 'setUp' has been success
+    void (*tearDown_)(void *self, LoggerPtr logger);           ///< will be called, if 'setUp' has been success
 
     /// @return 1 if test must be ignored and not executed and 0 otherwise
-	int (*isIgnored_)(const void *self);
+    int (*isIgnored_)(const void *self);
 
-	const char* (*name_)(const void *self);  ///< @return test name
-	const char* (*source_)(const void *self);///< @return full path of file, containing test source
+    const char* (*name_)(const void *self);  ///< @return test name
+    const char* (*source_)(const void *self);///< @return full path of file, containing test source
     int (*line_)(const void *self);          ///< @return number of 1st line of test definition
-	
-	struct _Test* next_;                    ///< pointer to next Test in list
+    
+    struct _Test* next_;                    ///< pointer to next Test in list
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 inline void setUp(TestPtr test, LoggerPtr logger)
 {
     test->setUp_(test->self_, logger);
@@ -162,6 +147,82 @@ inline const char* source(const TestPtr test)
 inline int line(const TestPtr test)
 {
     return test->line_(test->self_);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+inline void startWorkWithTestEngine(LoggerPtr logger, const char *path)
+{
+    (*logger->startWorkWithTestEngine_)(logger->self_, path);
+}
+
+inline void startLoadTe(LoggerPtr logger)
+{
+    (*logger->startLoadTe_)(logger->self_);
+}
+
+inline void startGetExt(LoggerPtr logger)
+{
+    (*logger->startGetExt_)(logger->self_);
+}
+
+inline void startUnloadTe(LoggerPtr logger)
+{
+    (*logger->startUnloadTe_)(logger->self_);
+}
+
+inline void startWorkWithTestContainer(LoggerPtr logger, const char *path)
+{
+    (*logger->startWorkWithTestContainer_)(logger->self_, path);
+}
+
+inline void startLoadTc(LoggerPtr logger)
+{
+    (*logger->startLoadTc_)(logger->self_);
+}
+
+inline void startUnloadTc(LoggerPtr logger)
+{
+    (*logger->startUnloadTc_)(logger->self_);
+}
+
+inline void startWorkWithTest(LoggerPtr logger, TestPtr test)
+{
+    (*logger->startWorkWithTest_)(logger->self_, test);
+}
+
+inline void startSetUp(LoggerPtr logger)
+{
+    (*logger->startSetUp_)(logger->self_);
+}
+
+inline void startTest(LoggerPtr logger)
+{
+    (*logger->startTest_)(logger->self_);
+}
+
+inline void startTearDown(LoggerPtr logger)
+{
+    (*logger->startTearDown_)(logger->self_);
+}
+
+inline void success(LoggerPtr logger)
+{
+    (*logger->success_)(logger->self_);
+}
+
+inline void failure(LoggerPtr logger, const char *message)
+{
+    (*logger->failure_)(logger->self_, message);
+}
+
+inline void error(LoggerPtr logger, const char *message)
+{
+    (*logger->error_)(logger->self_, message);
+}
+
+inline void destroy(LoggerPtr logger)
+{
+    (*logger->destroy_)(logger->self_);
 }
 
 #ifdef __cplusplus
