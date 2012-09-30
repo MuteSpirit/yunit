@@ -31,7 +31,8 @@ for _, testEngine in pairs(testEngines) do
         print(#unitTests)
         
         for _, unitTest in pairs(unitTests) do
-            unitTest:test()
+            unitTest:start(logger)
+            unitTest:test(logger)
         end
     end
 end

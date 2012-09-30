@@ -29,50 +29,6 @@ void callAdapter(void *t)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class SimpleLogger
-{
-    typedef SimpleLogger Self;
-    struct Step 
-    {
-        enum {setUp, test, tearDown};
-    };
-    
-public:
-    SimpleLogger();
-    LoggerPtr logger();
-    
-    // work with Test Engine:
-    void startWorkWithTestEngine(const char *path);
-    void startLoadTe();
-    void startGetExt();
-    void startUnloadTe();
-    
-    // work with Test Container:
-    void startWorkWithTestContainer(const char *path);
-    void startLoadTc();
-    void startUnloadTc();
-    
-    // work with Unit Test:
-    void startWorkWithTest(TestPtr);
-    void startSetUp();
-    void startTest();
-    void startTearDown();
-
-    void success();
-    void failure(const char *message);
-    void error(const char *message);
-    
-private:
-    static const char* stepName(const int step);
-    static void destroy(void*);
-    
-private:
-    Logger logger_;
-    TestPtr currentTest_;
-    int step_;
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static bool isExist(const char* path)
 {
     enum {existenceOnlyMode = 0, notAccessible = -1};
@@ -233,135 +189,7 @@ Test* TestEngineUnix::load(const char* testContainerPath)
     return (*loadTestContainerFunc_)(testContainerPath);
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-LUA_CONSTRUCTOR(TestEngine)
-{
-    using namespace Lua;
-    
-    enum Args {pathIdx = 1};
-    LUA_CHECK_ARG(string, Lua::String, pathIdx);
-    
-    String path(lua.to<Lua::String>(pathIdx));
-    if (0 == path.size_)
-    {
-        lua.push(Nil);
-        lua.push("expected file path as argument, but was empty string");
-        return 2;
-    }
-    
-    if (!isExist(path))
-    {
-        lua.push(Nil);
-        lua.push("accept path of nonexistent file");
-        return 2;
-    }
-    
-    TestEngine *testEngine = TestEngineFactory::create(path);
-    if (testEngine->initialize())
-    {
-        LUA_PUSH(testEngine, TestEngine);
-        return 1;
-    }
-    else
-    {
-        lua.push(Nil);
-        lua.push(testEngine->error());
-        TestEngineFactory::destroy(testEngine);
-        return 2;
-    }
-}
-
-LUA_METHOD(TestEngine, supportedExtensions)
-{
-    enum Args {selfIdx = 1};
-    /// @todo Add argument type check
-    
-    TestEngine *testEngine = lua.to<TestEngine*>(selfIdx);
-    const char **ext = testEngine->supportedExtensions();
-    
-    lua.push(Lua::Table());
-    const int extTableIdx = lua.top();
-    int extIdx = 0;
-    
-    for (; *ext; ++ext)
-    {
-        lua.push(++extIdx);
-        lua.push(*ext);
-        lua.settable(extTableIdx);
-    }
-    
-    return 1;
-}
-
-LUA_METHOD(TestEngine, load)
-{
-    enum Args {selfIdx = 1, testContainerPathIdx};
-    /// @todo Add argument type check
-    LUA_CHECK_ARG(string, const char*, testContainerPathIdx);
-    
-    TestEngine *testEngine = lua.to<TestEngine*>(selfIdx);
-    TestPtr test = testEngine->load(lua.to<const char*>(testContainerPathIdx));
-    
-    lua.push(Lua::Table());
-    const int testTableIdx = lua.top();
-    int testIdx = 0;
-    
-    for (; test; test = test->next_)
-    {
-        lua.push(++testIdx);
-        LUA_PUSH(test, UnitTest);
-        lua.settable(testTableIdx);
-    }
-    
-    return 1;
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-LUA_METHOD(UnitTest, setUp)
-{
-    enum Args {selfIdx = 1, loggerIdx};
-    return 0;
-}
-
-LUA_METHOD(UnitTest, test)
-{
-    enum Args {selfIdx = 1, loggerIdx};
-    return 0;
-}
-
-LUA_METHOD(UnitTest, tearDown)
-{
-    enum Args {selfIdx = 1, loggerIdx};
-    return 0;
-}
-
-LUA_METHOD(UnitTest, isIgnored)
-{
-    enum Args {selfIdx = 1};
-    lua.push(isIgnored(lua.to<Test*>(selfIdx)));
-    return 1;
-}
-
-LUA_METHOD(UnitTest, name)
-{
-    enum Args {selfIdx = 1};
-    lua.push(name(lua.to<Test*>(selfIdx)));
-    return 1;
-}
-
-LUA_METHOD(UnitTest, source)
-{
-    enum Args {selfIdx = 1};
-    lua.push(source(lua.to<Test*>(selfIdx)));
-    return 1;
-}
-
-LUA_METHOD(UnitTest, line)
-{
-    enum Args {selfIdx = 1};
-    lua.push(line(lua.to<Test*>(selfIdx)));
-    return 1;
-}
+#endif // _WIN32
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SimpleLogger::SimpleLogger()
@@ -487,20 +315,157 @@ void SimpleLogger::destroy(void *ptr)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-LUA_CONSTRUCTOR(Logger)
+LUA_CONSTRUCTOR(TestEngine)
 {
-    return 0;
-}
-
-LUA_DESTRUCTOR(Logger)
-{
-    /// @todo destructor code in not understandable, make procedure simpler or understandable
+    using namespace Lua;
     
-    enum Args {selfIdx = 1};
-    lua_gc(lua, selfIdx);
+    enum Args {pathIdx = 1};
+    LUA_CHECK_ARG(string, Lua::String, pathIdx);
+    
+    String path(lua.to<Lua::String>(pathIdx));
+    if (0 == path.size_)
+    {
+        lua.push(Nil);
+        lua.push("expected file path as argument, but was empty string");
+        return 2;
+    }
+    
+    if (!isExist(path))
+    {
+        lua.push(Nil);
+        lua.push("accept path of nonexistent file");
+        return 2;
+    }
+    
+    TestEngine *testEngine = TestEngineFactory::create(path);
+    if (testEngine->initialize())
+    {
+        LUA_PUSH(testEngine, TestEngine);
+        return 1;
+    }
+    else
+    {
+        lua.push(Nil);
+        lua.push(testEngine->error());
+        TestEngineFactory::destroy(testEngine);
+        return 2;
+    }
+}
 
-    destroy(lua.to<Logger*>(selfIdx));
+LUA_METHOD(TestEngine, supportedExtensions)
+{
+    enum Args {selfIdx = 1};
+    /// @todo Add argument type check
+    
+    TestEngine *testEngine = lua.to<TestEngine*>(selfIdx);
+    const char **ext = testEngine->supportedExtensions();
+    
+    lua.push(Lua::Table());
+    const int extTableIdx = lua.top();
+    int extIdx = 0;
+    
+    for (; *ext; ++ext)
+    {
+        lua.push(++extIdx);
+        lua.push(*ext);
+        lua.settable(extTableIdx);
+    }
+    
+    return 1;
+}
+
+LUA_METHOD(TestEngine, load)
+{
+    enum Args {selfIdx = 1, testContainerPathIdx};
+    /// @todo Add argument type check
+    LUA_CHECK_ARG(string, const char*, testContainerPathIdx);
+    
+    TestEngine *testEngine = lua.to<TestEngine*>(selfIdx);
+    TestPtr test = testEngine->load(lua.to<const char*>(testContainerPathIdx));
+    
+    lua.push(Lua::Table());
+    const int testTableIdx = lua.top();
+    int testIdx = 0;
+    
+    for (; test; test = test->next_)
+    {
+        lua.push(++testIdx);
+        LUA_PUSH(test, UnitTest);
+        lua.settable(testTableIdx);
+    }
+    
+    return 1;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+LUA_METHOD(UnitTest, start)
+{
+    enum Args {selfIdx = 1, loggerIdx};
+    TestPtr testCase = lua.to<TestPtr>(selfIdx);
+    LoggerPtr logger = lua.to<LoggerPtr>(loggerIdx);
+
+    startWorkWithTest(logger, testCase);
     return 0;
 }
 
-#endif // _WIN32
+LUA_METHOD(UnitTest, setUp)
+{
+    enum Args {selfIdx = 1, loggerIdx};
+    TestPtr testCase = lua.to<TestPtr>(selfIdx);
+    LoggerPtr logger = lua.to<LoggerPtr>(loggerIdx);
+    
+    startTest(logger);
+    setUp(testCase, logger);
+    return 0;
+}
+
+LUA_METHOD(UnitTest, test)
+{
+    enum Args {selfIdx = 1, loggerIdx};
+    TestPtr testCase = lua.to<TestPtr>(selfIdx);
+    LoggerPtr logger = lua.to<LoggerPtr>(loggerIdx);
+    
+    startTest(logger);
+    test(testCase, logger);
+    return 0;
+}
+
+LUA_METHOD(UnitTest, tearDown)
+{
+    enum Args {selfIdx = 1, loggerIdx};
+    TestPtr testCase = lua.to<TestPtr>(selfIdx);
+    LoggerPtr logger = lua.to<LoggerPtr>(loggerIdx);
+    
+    startTest(logger);
+    tearDown(testCase, logger);
+    return 0;
+}
+
+LUA_METHOD(UnitTest, isIgnored)
+{
+    enum Args {selfIdx = 1};
+    lua.push(isIgnored(lua.to<TestPtr>(selfIdx)));
+    return 1;
+}
+
+LUA_METHOD(UnitTest, name)
+{
+    enum Args {selfIdx = 1};
+    lua.push(name(lua.to<TestPtr>(selfIdx)));
+    return 1;
+}
+
+LUA_METHOD(UnitTest, source)
+{
+    enum Args {selfIdx = 1};
+    lua.push(source(lua.to<TestPtr>(selfIdx)));
+    return 1;
+}
+
+LUA_METHOD(UnitTest, line)
+{
+    enum Args {selfIdx = 1};
+    lua.push(line(lua.to<TestPtr>(selfIdx)));
+    return 1;
+}
+

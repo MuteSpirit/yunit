@@ -1,6 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // @file test_engine.h
 // 
+/// @todo Rename UnitTest -> TestCase
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef _TEST_ENGINE_HEADER_
 #define _TEST_ENGINE_HEADER_
@@ -66,6 +67,8 @@ DEFINE_LUA_TO(TestEngine)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 LUA_CLASS(UnitTest)
 {
+    ADD_METHOD(UnitTest, start);
+    
     ADD_METHOD(UnitTest, setUp);
     ADD_METHOD(UnitTest, test);
     ADD_METHOD(UnitTest, tearDown);
@@ -80,11 +83,53 @@ LUA_CLASS(UnitTest)
 DEFINE_LUA_TO(Test)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class SimpleLogger
+{
+    typedef SimpleLogger Self;
+    struct Step 
+    {
+        enum {setUp, test, tearDown};
+    };
+    
+public:
+    SimpleLogger();
+    LoggerPtr logger();
+    
+    // work with Test Engine:
+    void startWorkWithTestEngine(const char *path);
+    void startLoadTe();
+    void startGetExt();
+    void startUnloadTe();
+    
+    // work with Test Container:
+    void startWorkWithTestContainer(const char *path);
+    void startLoadTc();
+    void startUnloadTc();
+    
+    // work with Unit Test:
+    void startWorkWithTest(TestPtr);
+    void startSetUp();
+    void startTest();
+    void startTearDown();
+
+    void success();
+    void failure(const char *message);
+    void error(const char *message);
+    
+private:
+    static const char* stepName(const int step);
+    static void destroy(void*);
+    
+private:
+    Logger logger_;
+    TestPtr currentTest_;
+    int step_;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 LUA_CLASS(Logger)
 {
-    ADD_CONSTRUCTOR(Logger);
-    ADD_DESTRUCTOR(Logger);
-}
+};
 
 DEFINE_LUA_TO(Logger)
 
