@@ -1,8 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// @file test_engine.cpp
+// test_engine.cpp
 // 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 #include "test_engine.h"
 #include "test_engine_interface.h"
 
@@ -38,36 +37,69 @@ static bool isExist(const char* path)
 
 #ifdef _WIN32
 
-class TestEngineWin32 : public TestEngine
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class DinamicLinkLibraryWin32 : public DinamicLinkLibrary
+{
+public:
+    DinamicLinkLibraryWin32();
+    ~DinamicLinkLibraryWin32();
+    
+    virtual bool load(const char *path);
+    virtual void* resolve(const char *functionName);
+    virtual const char* error() const;
+    virtual void unload();
+    
+private:
+    HANDLE hModule_;
+    std::string error_;
+}; 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class TestEngineWin32 : public  TestEngine
+                       , private DinamicLinkLibraryWin32
 {
 public:
     TestEngineWin32(const char *path);
     virtual bool initialize();
-    virtual const char *error() const;
     virtual const char** supportedExtensions();
     virtual Test* load(const char* testContainerPath);
     
 private:
     std::string path_;
-    HMODULE hModule_;
-    std::string error_;
 };
 
 #else // _WIN32
 
-class TestEngineUnix : public TestEngine
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class DinamicLinkLibraryUnix : public DinamicLinkLibrary
+{
+public:
+    DinamicLinkLibraryUnix();
+    ~DinamicLinkLibraryUnix();
+    
+    virtual bool load(const char *path);
+    virtual void* resolve(const char *functionName);
+    virtual const char* error() const;
+    virtual void unload();
+    
+private:
+    void *hModule_;
+    std::string error_;
+}; 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class TestEngineUnix : public  TestEngine
+                      , private DinamicLinkLibraryUnix
 {
 public:
     TestEngineUnix(const char *path);
     virtual bool initialize();
-    virtual const char *error() const;
     virtual const char** supportedExtensions();
     virtual TestPtr load(const char* testContainerPath);
     
 private:
     std::string path_;
     void *hModule_;
-    std::string error_;
     
     typedef const char** (*TestContainerExtensionsFunc)();
     TestContainerExtensionsFunc testContainerExtensions_;
@@ -81,6 +113,58 @@ private:
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifdef WIN32
 
+DinamicLinkLibraryWin32::DinamicLinkLibraryWin32()
+: hModule_(INVALID_HANDLE)
+{
+}
+
+DinamicLinkLibraryWin32::~DinamicLinkLibraryWin32()
+{
+    if (INVALID_HANDLE != hModule_)
+        unload();
+}
+
+bool DinamicLinkLibraryWin32::load(const char *path)
+{
+    assert(INVALID_HANDLE == hModule_);
+    error_ = "";
+    hModule_ = ::LoadLibraryExA(path_, NULL, 0);
+    
+    if (NULL == hModule_)
+    {
+        setError(::GetLastError());            
+        return false;
+    }
+    
+    return true;
+}
+
+void DinamicLinkLibraryWin32::setError(long lastErrorCode)
+{
+    /// @todo Rewrite function, using flag for auto allocating memory 
+    enum {bufferSize = 4048};
+    char buffer[bufferSize];
+
+    if (::FormatMessageA(FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM, NULL, lastErrorCode, 0, buffer, bufferSize, NULL))
+        error_.assign(buffer);
+    else
+        snprintf(buffer, bufferSize, "system error %d\n", error)
+}
+
+void* DinamicLinkLibraryWin32::resolve(const char *functionName)
+{
+}
+
+const char* DinamicLinkLibraryWin32::error() const
+{
+    return error_.c_str();
+}
+
+void DinamicLinkLibraryWin32::unload()
+{
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TestEngineWin32::TestEngineWin32(const char *path)
 : path_(path)
 , hModule_(NULL)
@@ -89,24 +173,6 @@ TestEngineWin32::TestEngineWin32(const char *path)
         
 void TestEngineWin32::initialize()
 {
-    error_ = "";
-    hModule_ = ::LoadLibraryExA(path_, NULL, 0);
-    
-    if (NULL == hModule_)
-    {
-        enum {bufferSize = 1024};
-        char buffer[bufferSize];
-
-        const int error = ::GetLastError();
-        if (::FormatMessageA(FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM, NULL, error, 0, buffer, bufferSize, NULL))
-            error_.assign(buffer);
-        else
-            snprintf(buffer, bufferSize, "system error %d\n", error)
-                    
-        return false;
-    }
-    
-    return true;
 }
 
 TestEngine* TestEngineFactory::create(const char *filePath)
@@ -115,6 +181,7 @@ TestEngine* TestEngineFactory::create(const char *filePath)
 }
 
 #else // _WIN32
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TestEngine* TestEngineFactory::create(const char *filePath)
 {
@@ -127,9 +194,74 @@ void TestEngineFactory::destroy(TestEngine *object)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+DinamicLinkLibraryUnix::DinamicLinkLibraryUnix()
+: hModule_(NULL)
+{
+}
+
+DinamicLinkLibraryUnix::~DinamicLinkLibraryUnix()
+{
+    if (NULL != hModule_)
+        unload();
+}
+
+void* DinamicLinkLibraryUnix::load(const char *path)
+{
+    assert(NULL == hModule_);
+    error_ = "";
+    dlerror(); /* Clear any existing error */
+    
+    // RTLD_LAZY 
+    // Perform  lazy  binding. Only  resolve  symbols  as  the code that references them is executed.  
+    // If the symbol is never referenced, then it is never resolved. (Lazy binding is only performed for
+    // function references; references to variables are always immediately bound when the library is loaded.)
+    //
+    // RTLD_DEEPBIND
+    // Place  the  lookup scope of the symbols in this library ahead of the global scope.
+    // This means that a self-contained library will use its own symbols in preference to global symbols with
+    // the same name contained in libraries that have already been loaded.
+    hModule_ = dlopen(path_.c_str(), RTLD_LAZY | RTLD_DEEPBIND);
+    if (NULL == hModule)
+    {
+        const char *errMsg = dlerror();
+        error_ = (NULL != errMsg) ? errMsg : "unknown error";
+        return false;
+    }
+    
+    return true;
+}
+
+void* DinamicLinkLibraryUnix::resolve(const char *functionName)
+{
+    assert(NULL != functionName);
+    assert(NULL != hModule_);
+    error_ = "";
+    dlerror(); // Clear any existing error
+
+    void *funcPtr = dlsym(hModule_, functionName);
+    if (NULL == funcPtr)
+    {
+        const char *errMsg = dlerror();
+        error_ = (NULL != errMsg) ? errMsg : "unknown error";
+    }
+    
+    return funcPtr;        
+}
+
+const char* DinamicLinkLibraryUnix::error() const
+{
+    return error_.c_str();
+}
+
+void DinamicLinkLibraryUnix::unload()
+{
+    dlclose(hModule_);
+    hModule_ = NULL;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TestEngineUnix::TestEngineUnix(const char *path)
 : path_(path)
-, hModule_(NULL)
 , testContainerExtensions_(NULL)
 , loadTestContainerFunc_(NULL)
 {
@@ -137,46 +269,22 @@ TestEngineUnix::TestEngineUnix(const char *path)
 
 bool TestEngineUnix::initialize()
 {
-    error_ = "";
-
-    dlerror();    /* Clear any existing error */
-    hModule_ = dlopen(path_.c_str(), RTLD_NOW | RTLD_GLOBAL);
-    if (NULL == hModule_)
-    {
-        error_ = dlerror();
+    if (!load(path_))
         return false;
-    }
-
+    
     void *funcPtr;
     
-    dlerror();    /* Clear any existing error */
-    funcPtr = dlsym(hModule_, "testContainerExtensions");
+    funcPtr = resolve("testContainerExtensions");
     if (NULL == funcPtr)
-    {
-        error_ = dlerror();
-        dlclose(hModule_);
         return false;
-    }
-    else
-        testContainerExtensions_ = reinterpret_cast<TestContainerExtensionsFunc>(funcPtr);
-    
-    dlerror();    /* Clear any existing error */
-    funcPtr = dlsym(hModule_, "loadTestContainer");
+    testContainerExtensions_ = reinterpret_cast<TestContainerExtensionsFunc>(funcPtr)    
+
+    funcPtr = resolve("loadTestContainer");
     if (NULL == funcPtr)
-    {
-        error_ = dlerror();
-        dlclose(hModule_);
         return false;
-    }
-    else
-        loadTestContainerFunc_ = reinterpret_cast<LoadTestContainerFunc>(funcPtr);
+    loadTestContainerFunc_ = reinterpret_cast<LoadTestContainerFunc>(funcPtr);
     
     return true;
-}
-
-const char* TestEngineUnix::error() const
-{
-    return error_.c_str();
 }
 
 const char** TestEngineUnix::supportedExtensions()

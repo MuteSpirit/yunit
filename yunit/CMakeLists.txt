@@ -1,3 +1,6 @@
+### @todo Statically link c runtime to 'yunit'
+### @todo Statically link Lua library to 'yunit'
+
 # We need to link Lua as dynamic library(ies)
 #? If we link lua statically, then lua command interpreter and yunit DLL will have 
 #? own copy of lua core copy. So when Lua of yunit.cppunit will allocate new TestCase objects and return
@@ -51,12 +54,17 @@ set_target_properties(sample_lua52_tue PROPERTIES
                         PREFIX "" # remove 'lib' prefix on Linux
                         COMPILE_FLAGS "${DEFINE_FLAG}TUE_LIB ${CPP_DEFS} ${INC_DIR_FLAG}\"${LUA52_INCLUDE_DIR}\"")
 
+# main program ('yunit') must not influence to T(est)ENG(ine) and T(est)CON(tainer) files, by it's linked
+# and loaded dynamic link libraries during starting process. They may cancel loading some DLL library with
+# the same name as it's own, but linking by some TENG, waiting library of other version, number of 
+# exported functions or classes and other. Also 'yunit' must link C/C++ runtime library statically.
 add_executable(yunit yunit_main.cpp lua_wrapper.cpp test_engine.cpp)
-set_target_properties(yunit PROPERTIES COMPILE_FLAGS "${CPP_DEFS} ${INC_DIR_FLAG}\"${LUA52_INCLUDE_DIR}\"")
 if (WIN32)
+    set_target_properties(yunit PROPERTIES COMPILE_FLAGS "${CPP_DEFS} -static ${INC_DIR_FLAG}\"${LUA52_INCLUDE_DIR}\"")
     add_dependencies(yunit lua_lib_52)
     target_link_libraries(yunit dl lua52)
 else (WIN32)
+    set_target_properties(yunit PROPERTIES COMPILE_FLAGS "${CPP_DEFS} ${INC_DIR_FLAG}\"${LUA52_INCLUDE_DIR}\"")
     add_dependencies(yunit lua_lib_52)
     target_link_libraries(yunit dl lua52)
 endif (WIN32)
