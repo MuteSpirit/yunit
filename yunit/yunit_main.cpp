@@ -90,6 +90,10 @@ int main(int argc, char **argv)
         perror("Not set Lua script for execution");
         return ST_NO_SET_MAIN_SCRIPT;
     }
+    //
+    // add executable file path into Lua state environment
+    lua.push(arg[0]);
+    lua.setglobal("program");
     
     lua.openlibs();
     
