@@ -19,7 +19,7 @@
 class DinamicLinkLibrary
 {
 public:
-    virtual void* load(const char *path) = 0;
+    virtual bool loadLib(const char *path) = 0;
     virtual void* resolve(const char *functionName) = 0;
     virtual const char* error() const = 0;
     virtual void unload() = 0;
@@ -53,23 +53,11 @@ LUA_CLASS(TestEngine)
     /// @return object or nil and error message
     ADD_CONSTRUCTOR(TestEngine);
 
-    /// @return Table with supported test container file extensions
-    ADD_METHOD(TestEngine, supportedExtensions);
-
     /// @fn load(testContainerPath)
     ADD_METHOD(TestEngine, load);
-            
-    /// @param path Path to possible test container file
-    /// @return true if this file is supported and this TUE may initialize tests from it
-    //ADD_METHOD(TestEngine, supportFile);
-    
-    /// @param path Path to supported test container file
-    /// @return array with unit tests, contained by test container file
-    //ADD_METHOD(TestEngine, loadFile);
-    
-    /// @param array with unit tests, returned from 'loadFile' method call
-    /// @brief Free memory allocated for unit test objects, so you must NOT even try to use that test objects
-    //ADD_METHOD(TestEngine, freeTests);
+
+    /// @fn unload()
+    ADD_METHOD(TestEngine, unload);
 };
 
 DEFINE_LUA_TO(TestEngine)

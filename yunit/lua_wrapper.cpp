@@ -188,8 +188,9 @@ bool State::is<String>(int idx)
 }
 
 template<>
-bool State::is<const char*>(int idx)
+inline bool State::is<const char*>(int idx)
 {
+    // accordingly Lua source code, variable is string, if it has 'number' or 'string' type 
     return LUA_TSTRING == lua_type(l_, idx);
 }
 
