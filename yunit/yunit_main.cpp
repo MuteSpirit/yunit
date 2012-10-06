@@ -92,7 +92,7 @@ int main(int argc, char **argv)
     }
     //
     // add executable file path into Lua state environment
-    lua.push(arg[0]);
+    lua.push(argv[0]);
     lua.setglobal("program");
     
     lua.openlibs();

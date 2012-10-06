@@ -15,6 +15,9 @@
 #  include <dlfcn.h>
 #endif
 
+#include <assert.h>
+
+
 template<typename T, typename Arg, void (T::*method)(Arg)>
 void callAdapter(void *t, Arg arg)
 {
@@ -44,7 +47,7 @@ public:
     DinamicLinkLibraryWin32();
     ~DinamicLinkLibraryWin32();
     
-    virtual bool load(const char *path);
+    virtual void* load(const char *path);
     virtual void* resolve(const char *functionName);
     virtual const char* error() const;
     virtual void unload();
@@ -77,7 +80,7 @@ public:
     DinamicLinkLibraryUnix();
     ~DinamicLinkLibraryUnix();
     
-    virtual bool load(const char *path);
+    virtual bool loadLib(const char *path);
     virtual void* resolve(const char *functionName);
     virtual const char* error() const;
     virtual void unload();
@@ -91,12 +94,16 @@ private:
 class TestEngineUnix : public  TestEngine
                       , private DinamicLinkLibraryUnix
 {
+    typedef TestEngineUnix Self;
+    typedef TestEngine Parent1;
+    typedef DinamicLinkLibraryUnix Parent2;
 public:
     TestEngineUnix(const char *path);
     virtual bool initialize();
     virtual const char** supportedExtensions();
     virtual TestPtr load(const char* testContainerPath);
-    
+    virtual const char *error() const;
+        
 private:
     std::string path_;
     void *hModule_;
@@ -205,7 +212,7 @@ DinamicLinkLibraryUnix::~DinamicLinkLibraryUnix()
         unload();
 }
 
-void* DinamicLinkLibraryUnix::load(const char *path)
+bool DinamicLinkLibraryUnix::loadLib(const char *path)
 {
     assert(NULL == hModule_);
     error_ = "";
@@ -220,8 +227,8 @@ void* DinamicLinkLibraryUnix::load(const char *path)
     // Place  the  lookup scope of the symbols in this library ahead of the global scope.
     // This means that a self-contained library will use its own symbols in preference to global symbols with
     // the same name contained in libraries that have already been loaded.
-    hModule_ = dlopen(path_.c_str(), RTLD_LAZY | RTLD_DEEPBIND);
-    if (NULL == hModule)
+    hModule_ = dlopen(path, RTLD_LAZY | RTLD_DEEPBIND);
+    if (NULL == hModule_)
     {
         const char *errMsg = dlerror();
         error_ = (NULL != errMsg) ? errMsg : "unknown error";
@@ -269,7 +276,7 @@ TestEngineUnix::TestEngineUnix(const char *path)
 
 bool TestEngineUnix::initialize()
 {
-    if (!load(path_))
+    if (!loadLib(path_.c_str()))
         return false;
     
     void *funcPtr;
@@ -277,7 +284,7 @@ bool TestEngineUnix::initialize()
     funcPtr = resolve("testContainerExtensions");
     if (NULL == funcPtr)
         return false;
-    testContainerExtensions_ = reinterpret_cast<TestContainerExtensionsFunc>(funcPtr)    
+    testContainerExtensions_ = reinterpret_cast<TestContainerExtensionsFunc>(funcPtr);    
 
     funcPtr = resolve("loadTestContainer");
     if (NULL == funcPtr)
@@ -295,6 +302,11 @@ const char** TestEngineUnix::supportedExtensions()
 Test* TestEngineUnix::load(const char* testContainerPath)
 {
     return (*loadTestContainerFunc_)(testContainerPath);
+}
+
+const char *TestEngineUnix::error() const
+{
+    return Parent2::error();
 }
 
 #endif // _WIN32
