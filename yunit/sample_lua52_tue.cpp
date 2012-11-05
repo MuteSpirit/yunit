@@ -8,13 +8,6 @@
 
 using namespace Lua;
 
-static const char* supportedExts[] = {"t.lua", NULL};
-
-const char** testContainerExtensions()
-{
-    return supportedExts;
-}
-
 Test* loadTestContainer(const char *path)
 {
 //    Lua::State lua(Lua::State::newstate());

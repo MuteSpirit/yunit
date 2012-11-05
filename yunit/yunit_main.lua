@@ -24,7 +24,7 @@
         Several Test Engines may support 
 --]]
 
-local testEngine, errMsg
+local testEngine, testContainer, unitTests, errMsg
 
 for _, path in pairs(testEnginePaths) do
     testEngine, errMsg = TestEngine(path)
@@ -34,19 +34,26 @@ for _, path in pairs(testEnginePaths) do
         for _, path in pairs(testContainerPaths) do
             print(path)
             
-            local unitTests = testEngine:load(path)
-            print('unitTests = ', unitTests)
-            print(#unitTests)
-            
-            for _, unitTest in pairs(unitTests) do
-                unitTest:start(logger)
-                unitTest:test(logger)
-            end
-        end
-    else
-        print(errMsg)
+            testContainer = testEngine:load(path)
+            if testContainer then
+                testCases = testContainer:tests() 
+                 if testCases then
+                     print('testCases = ', testCases)
+                     print(#unitTests)
+                
+                     for _, unitTest in pairs(testCases) do
+                         unitTest:setUp()
+                         unitTest:test()
+			 unitTest:tearDown()
+                     end
+                 end
+		testEngine:unload(testContainer)
+		testContainer = nil
+             end
+	end
     end
-    testEngine:unload()
+    
+    unload(testEngine)
     testEngine = nil
 end
 
