@@ -103,7 +103,8 @@ public:
     virtual const char** supportedExtensions();
     virtual TestPtr load(const char* testContainerPath);
     virtual const char *error() const;
-        
+    virtual void unload();
+            
 private:
     std::string path_;
     void *hModule_;
@@ -182,12 +183,29 @@ void TestEngineWin32::initialize()
 {
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TestEngine* TestEngineFactory::create(const char *filePath)
 {
     return new TestEngineWin32(filePath);
 }
 
-#else // _WIN32
+void TestEngineFactory::destroy(TestEngine *ptr);
+{
+    delete ptr;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+DinamicLinkLibrary* DinamicLinkLibraryFactory::create()
+{
+    return new DinamicLinkLibraryUnix;
+}
+
+void DinamicLinkLibraryFactory::destroy(DinamicLinkLibrary *ptr);
+{
+    delete ptr;
+}
+
+else // _WIN32
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TestEngine* TestEngineFactory::create(const char *filePath)
@@ -307,6 +325,11 @@ Test* TestEngineUnix::load(const char* testContainerPath)
 const char *TestEngineUnix::error() const
 {
     return Parent2::error();
+}
+
+void TestEngineUnix::unload()
+{
+    Parent2::unload();
 }
 
 #endif // _WIN32
@@ -515,6 +538,13 @@ LUA_METHOD(TestEngine, load)
     }
     
     return 1;
+}
+
+LUA_METHOD(TestEngine, unload)
+{
+    enum Args {selfIdx = 1};
+    lua.to<TestEngine*>(selfIdx)->unload();
+    return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

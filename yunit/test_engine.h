@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // @file test_engine.h
 // 
-/// @todo Rename UnitTest -> TestCase
+/// @todo Rename TestCase -> TestCase
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef _TEST_ENGINE_HEADER_
 #define _TEST_ENGINE_HEADER_
@@ -25,14 +25,29 @@ public:
     virtual void unload() = 0;
 }; 
 
+class DinamicLinkLibraryFactory
+{
+public:
+    static DinamicLinkLibrary* create();
+    static void destroy(DinamicLinkLibrary*);
+};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class TestContainer
+{
+public:
+	virtual void unload() = 0;
+	virtual TestPtr tests() = 0;
+	virtual ~TestContainer() {}
+};
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class TestEngine
 {
 public:
     virtual bool initialize() = 0;
     virtual const char *error() const = 0;
-    virtual const char** supportedExtensions() = 0;
-    virtual TestPtr load(const char* testContainerPath) = 0;
+    virtual TestContainerPtr load(const char* path) = 0;
+    virtual void unload() = 0;
     virtual ~TestEngine() {}
 };
 
@@ -45,13 +60,16 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int unloadTestEngine(lua_State*);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 LUA_CLASS(TestEngine)
 {
     /// @param path Path to dynamic link library file with Test Engine feature and some C API functions:
-    /// TUE_API const char** testContainerExtensions();
-    /// TUE_API Test* loadTestContainer(const char *path);
     /// @return object or nil and error message
     ADD_CONSTRUCTOR(TestEngine);
+
+	ADD_DESTRUCTOR(TestEngine);
 
     /// @fn load(testContainerPath)
     ADD_METHOD(TestEngine, load);
@@ -63,19 +81,37 @@ LUA_CLASS(TestEngine)
 DEFINE_LUA_TO(TestEngine)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-LUA_CLASS(UnitTest)
+LUA_CLASS(TestContainer)
 {
-    ADD_METHOD(UnitTest, start);
-    
-    ADD_METHOD(UnitTest, setUp);
-    ADD_METHOD(UnitTest, test);
-    ADD_METHOD(UnitTest, tearDown);
+	/// @fn tests()
+	/// @return Table with all TestCase object of current test container
+	ADD_METHOD(TestContainer, tests);
 
-    ADD_METHOD(UnitTest, isIgnored);
+	/// @fn load()
+	/// @return none
+	ADD_METHOD(TestContainer, load);
+
+	/// @fn unload()
+	/// @return none
+	ADD_METHOD(TestContainer, unload);
+
+	ADD_DESTRUCTOR(TestContainer);
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+LUA_CLASS(TestCase)
+{
+    ADD_METHOD(TestCase, start);
     
-    ADD_METHOD(UnitTest, name);
-    ADD_METHOD(UnitTest, source);
-    ADD_METHOD(UnitTest, line);
+    ADD_METHOD(TestCase, setUp);
+    ADD_METHOD(TestCase, test);
+    ADD_METHOD(TestCase, tearDown);
+
+    ADD_METHOD(TestCase, isIgnored);
+    
+    ADD_METHOD(TestCase, name);
+    ADD_METHOD(TestCase, source);
+    ADD_METHOD(TestCase, line);
 };
 
 DEFINE_LUA_TO(Test)

@@ -4,6 +4,7 @@
 ///
 /// @todo Rename methods isIgnored -> ignored
 /// @todo Use Logger's startSetUp, startTearDown and finish methods to estimate elapsed time for test execution
+/// @todo remove function testContainerExtensions, 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef _TEST_ENGINE_INTERFACE_HEADER_
 #define _TEST_ENGINE_INTERFACE_HEADER_
@@ -36,26 +37,8 @@ extern "C" {
 #   endif
 #endif
 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// @brief Must be implemented (and exported) by test engine shared library
-/// @return test container file extensions, supported by this test unit engine library.
-/// @details Last pointer must be NULL.
-/// For example, you may return address of variable, defined like
-/// static const char* ext[] = {"t.cpp", NULL};
-/// Test runner use it to filter test container files among all files
-TUE_API const char** testContainerExtensions();
-
 struct _Test;
 typedef struct _Test Test, *TestPtr;
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// @brief load one test container
-/// @brief Must be implemented (and exported) by test engine shared library
-/// @return list with unit test objects
-/// @param[in] path Full path to test container file
-/// @details test runner will not delete returned Test objects, it will use it only
-TUE_API TestPtr loadTestContainer(const char *path);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef struct _Logger
