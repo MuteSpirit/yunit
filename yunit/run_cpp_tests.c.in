@@ -1,0 +1,19 @@
+#define main luaMain
+#include <lua.c>
+#undef main
+
+int main(int argcExt, char *argvExt[])
+{
+    char *argv[] = 
+    {
+        ARGUMENTS,
+        0
+    };
+
+    int argc;
+    char **p;
+    for (argc = 0, p = argv; *p; ++p, ++argc)
+        ;
+        
+    return luaMain(argc, argv);
+}

@@ -1,0 +1,62 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// mine.h
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#if _MSC_VER > 1000
+#  pragma once
+#endif
+
+#ifndef _YUNIT_MINE_HEADER_
+#define _YUNIT_MINE_HEADER_
+
+#include "yunit.h"
+#include "lua_wrapper.h"
+
+namespace YUNIT_NS {
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct YUNIT_API Seconds
+{
+    Seconds(unsigned long num);
+    unsigned long num_;
+};
+
+void YUNIT_API sleep(Seconds seconds);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class DamageAgent
+{
+public:
+    virtual void boom() = 0;
+};
+
+
+class MineImpl;
+
+class YUNIT_API Mine
+{
+public:
+    Mine(DamageAgent* damageAgent);
+    ~Mine();
+
+    void setTimer(Seconds seconds);
+    void turnoff();
+
+private:
+    MineImpl* impl_;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+LUA_CLASS(Mine)
+{
+    ADD_CONSTRUCTOR(Mine);
+    ADD_DESTRUCTOR(Mine);
+
+    ADD_METHOD(Mine, setTimer);
+    ADD_METHOD(Mine, turnoff);
+}
+
+} // namespace YUNIT_NS
+
+DEFINE_LUA_TO(YUNIT_NS::Mine);
+
+#endif // _YUNIT_MINE_HEADER_
