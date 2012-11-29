@@ -99,11 +99,11 @@ int main(int argc, char **argv)
     
     LUA_REGISTER(TestEngine)(lua);
     LUA_REGISTER(TestCase)(lua);
-    LUA_REGISTER(Logger)(lua);
+//    LUA_REGISTER(Logger)(lua);
 
     SimpleLogger logger;
-    LUA_PUSH(logger.logger(), Logger);
-    lua.setglobal("logger");
+//    LUA_PUSH(logger.logger(), Logger);
+//    lua.setglobal("logger");
     
     int rc = lua.dofile(mainScript);
     if (0 != rc)
