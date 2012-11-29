@@ -1,66 +1,22 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // @file test_engine.h
 // 
-/// @todo Rename TestCase -> TestCase
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef _TEST_ENGINE_HEADER_
 #define _TEST_ENGINE_HEADER_
 
 #include "lua_wrapper.h"
-#include "test_engine_interface.h"
 
+/// @todo add end of line in MacOS X style
 #ifdef _WIN32
 #  define ENDL "\r\n"
 #else
 #  define ENDL "\n"
 #endif
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class DinamicLinkLibrary
-{
-public:
-    virtual bool loadLib(const char *path) = 0;
-    virtual void* resolve(const char *functionName) = 0;
-    virtual const char* error() const = 0;
-    virtual void unload() = 0;
-}; 
-
-class DinamicLinkLibraryFactory
-{
-public:
-    static DinamicLinkLibrary* create();
-    static void destroy(DinamicLinkLibrary*);
-};
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class TestContainer
-{
-public:
-	virtual void unload() = 0;
-	virtual TestPtr tests() = 0;
-	virtual ~TestContainer() {}
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class TestEngine
-{
-public:
-    virtual bool initialize() = 0;
-    virtual const char *error() const = 0;
-    virtual TestContainerPtr load(const char* path) = 0;
-    virtual void unload() = 0;
-    virtual ~TestEngine() {}
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class TestEngineFactory
-{
-public:
-    static TestEngine *create(const char *filePath);
-    static void destroy(TestEngine*);
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int unloadTestEngine(lua_State*);
+class TestEngine;
+class TestContainer;
+class TestCase;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 LUA_CLASS(TestEngine)
@@ -114,7 +70,7 @@ LUA_CLASS(TestCase)
     ADD_METHOD(TestCase, line);
 };
 
-DEFINE_LUA_TO(Test)
+DEFINE_LUA_TO(TestCase)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class SimpleLogger
@@ -159,12 +115,11 @@ private:
     TestPtr currentTest_;
     int step_;
 };
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-LUA_CLASS(Logger)
-{
-};
-
-DEFINE_LUA_TO(Logger)
+// LUA_CLASS(Logger)
+// {
+// };
+// 
+// DEFINE_LUA_TO(Logger)
 
 #endif // _TEST_ENGINE_HEADER_

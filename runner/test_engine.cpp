@@ -18,12 +18,6 @@
 #include <assert.h>
 #include "test_engine_interface.h"
 
-#ifdef _WIN32
-#  define ENDL "\r\n"
-#else
-#  define ENDL "\n"
-#endif
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class DinamicLinkLibrary
 {
@@ -73,49 +67,6 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int unloadTestEngine(lua_State*);
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class SimpleLogger
-{
-    typedef SimpleLogger Self;
-    struct Step 
-    {
-        enum {setUp, test, tearDown};
-    };
-    
-public:
-    SimpleLogger();
-    LoggerPtr logger();
-    
-    // work with Test Engine:
-    void startWorkWithTestEngine(const char *path);
-    void startLoadTe();
-    void startGetExt();
-    void startUnloadTe();
-    
-    // work with Test Container:
-    void startWorkWithTestContainer(const char *path);
-    void startLoadTc();
-    void startUnloadTc();
-    
-    // work with Unit Test:
-    void startWorkWithTest(TestPtr);
-    void startSetUp();
-    void startTest();
-    void startTearDown();
-
-    void success();
-    void failure(const char *message);
-    void error(const char *message);
-    
-private:
-    static const char* stepName(const int step);
-    static void destroy(void*);
-    
-private:
-    Logger logger_;
-    TestPtr currentTest_;
-    int step_;
-};
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T, typename Arg, void (T::*method)(Arg)>
