@@ -72,4 +72,4 @@ file(WRITE lua_52/CMakeLists.txt ${CMAKE_LISTS_LUA52})
 add_subdirectory(lua_52)
 #
 # build yUnit runner
-#add_subdirectory(yunit)
+add_subdirectory(runner)

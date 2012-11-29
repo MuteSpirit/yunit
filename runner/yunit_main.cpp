@@ -98,7 +98,7 @@ int main(int argc, char **argv)
     lua.openlibs();
     
     LUA_REGISTER(TestEngine)(lua);
-    LUA_REGISTER(UnitTest)(lua);
+    LUA_REGISTER(TestCase)(lua);
     LUA_REGISTER(Logger)(lua);
 
     SimpleLogger logger;

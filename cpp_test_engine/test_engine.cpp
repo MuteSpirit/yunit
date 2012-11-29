@@ -16,16 +16,116 @@
 #endif
 
 #include <assert.h>
+#include "test_engine_interface.h"
 
+#ifdef _WIN32
+#  define ENDL "\r\n"
+#else
+#  define ENDL "\n"
+#endif
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class DinamicLinkLibrary
+{
+public:
+    virtual bool loadLib(const char *path) = 0;
+    virtual void* resolve(const char *functionName) = 0;
+    virtual const char* error() const = 0;
+    virtual void unload() = 0;
+}; 
+
+class DinamicLinkLibraryFactory
+{
+public:
+    static DinamicLinkLibrary* create();
+    static void destroy(DinamicLinkLibrary*);
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class TestContainer
+{
+public:
+	virtual void unload() = 0;
+	virtual TestPtr tests() = 0;
+	virtual ~TestContainer() {}
+};
+typedef TestContainer* TestContainerPtr;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class TestEngine
+{
+public:
+    virtual bool initialize() = 0;
+    virtual const char *error() const = 0;
+    virtual TestContainerPtr load(const char* path) = 0;
+    virtual void unload() = 0;
+    virtual ~TestEngine() {}
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class TestEngineFactory
+{
+public:
+    static TestEngine *create(const char *filePath);
+    static void destroy(TestEngine*);
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int unloadTestEngine(lua_State*);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class SimpleLogger
+{
+    typedef SimpleLogger Self;
+    struct Step 
+    {
+        enum {setUp, test, tearDown};
+    };
+    
+public:
+    SimpleLogger();
+    LoggerPtr logger();
+    
+    // work with Test Engine:
+    void startWorkWithTestEngine(const char *path);
+    void startLoadTe();
+    void startGetExt();
+    void startUnloadTe();
+    
+    // work with Test Container:
+    void startWorkWithTestContainer(const char *path);
+    void startLoadTc();
+    void startUnloadTc();
+    
+    // work with Unit Test:
+    void startWorkWithTest(TestPtr);
+    void startSetUp();
+    void startTest();
+    void startTearDown();
+
+    void success();
+    void failure(const char *message);
+    void error(const char *message);
+    
+private:
+    static const char* stepName(const int step);
+    static void destroy(void*);
+    
+private:
+    Logger logger_;
+    TestPtr currentTest_;
+    int step_;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T, typename Arg, void (T::*method)(Arg)>
-void callAdapter(void *t, Arg arg)
+void methodAdapter(void *t, Arg arg)
 {
     (static_cast<T*>(t)->*method)(arg);
 }
 
 template<typename T, void (T::*method)()>
-void callAdapter(void *t)
+void methodAdapter(void *t)
 {
     (static_cast<T*>(t)->*method)();
 }
@@ -59,7 +159,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class TestEngineWin32 : public  TestEngine
-                       , private DinamicLinkLibraryWin32
+                      , private DinamicLinkLibraryWin32
 {
 public:
     TestEngineWin32(const char *path);
@@ -92,7 +192,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class TestEngineUnix : public  TestEngine
-                      , private DinamicLinkLibraryUnix
+                     , private DinamicLinkLibraryUnix
 {
     typedef TestEngineUnix Self;
     typedef TestEngine Parent1;
@@ -341,24 +441,24 @@ SimpleLogger::SimpleLogger()
 {
     logger_.self_ = this;
 
-    logger_.startWorkWithTestEngine_ = callAdapter<Self, const char*, &Self::startWorkWithTestEngine>;
-    logger_.startLoadTe_ = callAdapter<Self, &Self::startLoadTe>;
-    logger_.startGetExt_ = callAdapter<Self, &Self::startGetExt>;
-    logger_.startUnloadTe_ = callAdapter<Self, &Self::startUnloadTe>;
+    logger_.startWorkWithTestEngine_ = methodAdapter<Self, const char*, &Self::startWorkWithTestEngine>;
+    logger_.startLoadTe_ = methodAdapter<Self, &Self::startLoadTe>;
+    logger_.startGetExt_ = methodAdapter<Self, &Self::startGetExt>;
+    logger_.startUnloadTe_ = methodAdapter<Self, &Self::startUnloadTe>;
     
-    logger_.startWorkWithTestContainer_ = callAdapter<Self, const char*, &Self::startWorkWithTestContainer>;
-    logger_.startLoadTc_ = callAdapter<Self, &Self::startLoadTc>;
-    logger_.startUnloadTc_ = callAdapter<Self, &Self::startUnloadTc>;
+    logger_.startWorkWithTestContainer_ = methodAdapter<Self, const char*, &Self::startWorkWithTestContainer>;
+    logger_.startLoadTc_ = methodAdapter<Self, &Self::startLoadTc>;
+    logger_.startUnloadTc_ = methodAdapter<Self, &Self::startUnloadTc>;
     
-    logger_.startWorkWithTest_ = callAdapter<Self, TestPtr, &Self::startWorkWithTest>;
-    logger_.startSetUp_ = callAdapter<Self, &Self::startSetUp>;
-    logger_.startTest_ = callAdapter<Self, &Self::startTest>;
-    logger_.startTearDown_ = callAdapter<Self, &Self::startTearDown>;
+    logger_.startWorkWithTest_ = methodAdapter<Self, TestPtr, &Self::startWorkWithTest>;
+    logger_.startSetUp_ = methodAdapter<Self, &Self::startSetUp>;
+    logger_.startTest_ = methodAdapter<Self, &Self::startTest>;
+    logger_.startTearDown_ = methodAdapter<Self, &Self::startTearDown>;
 
     logger_.destroy_ = destroy;
-    logger_.success_ = callAdapter<Self, &Self::success>;
-    logger_.failure_ = callAdapter<Self, const char*, &Self::failure>;
-    logger_.error_ = callAdapter<Self, const char*, &Self::error>;
+    logger_.success_ = methodAdapter<Self, &Self::success>;
+    logger_.failure_ = methodAdapter<Self, const char*, &Self::failure>;
+    logger_.error_ = methodAdapter<Self, const char*, &Self::error>;
 }
 
 LoggerPtr SimpleLogger::logger()
@@ -533,7 +633,7 @@ LUA_METHOD(TestEngine, load)
     for (; test; test = test->next_)
     {
         lua.push(++testIdx);
-        LUA_PUSH(test, UnitTest);
+        LUA_PUSH(test, TestCase);
         lua.settable(testTableIdx);
     }
     
@@ -548,7 +648,7 @@ LUA_METHOD(TestEngine, unload)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-LUA_METHOD(UnitTest, start)
+LUA_METHOD(TestCase, start)
 {
     enum Args {selfIdx = 1, loggerIdx};
     TestPtr testCase = lua.to<TestPtr>(selfIdx);
@@ -558,7 +658,7 @@ LUA_METHOD(UnitTest, start)
     return 0;
 }
 
-LUA_METHOD(UnitTest, setUp)
+LUA_METHOD(TestCase, setUp)
 {
     enum Args {selfIdx = 1, loggerIdx};
     TestPtr testCase = lua.to<TestPtr>(selfIdx);
@@ -569,7 +669,7 @@ LUA_METHOD(UnitTest, setUp)
     return 0;
 }
 
-LUA_METHOD(UnitTest, test)
+LUA_METHOD(TestCase, test)
 {
     enum Args {selfIdx = 1, loggerIdx};
     TestPtr testCase = lua.to<TestPtr>(selfIdx);
@@ -580,7 +680,7 @@ LUA_METHOD(UnitTest, test)
     return 0;
 }
 
-LUA_METHOD(UnitTest, tearDown)
+LUA_METHOD(TestCase, tearDown)
 {
     enum Args {selfIdx = 1, loggerIdx};
     TestPtr testCase = lua.to<TestPtr>(selfIdx);
@@ -591,28 +691,28 @@ LUA_METHOD(UnitTest, tearDown)
     return 0;
 }
 
-LUA_METHOD(UnitTest, isIgnored)
+LUA_METHOD(TestCase, isIgnored)
 {
     enum Args {selfIdx = 1};
     lua.push(isIgnored(lua.to<TestPtr>(selfIdx)));
     return 1;
 }
 
-LUA_METHOD(UnitTest, name)
+LUA_METHOD(TestCase, name)
 {
     enum Args {selfIdx = 1};
     lua.push(name(lua.to<TestPtr>(selfIdx)));
     return 1;
 }
 
-LUA_METHOD(UnitTest, source)
+LUA_METHOD(TestCase, source)
 {
     enum Args {selfIdx = 1};
     lua.push(source(lua.to<TestPtr>(selfIdx)));
     return 1;
 }
 
-LUA_METHOD(UnitTest, line)
+LUA_METHOD(TestCase, line)
 {
     enum Args {selfIdx = 1};
     lua.push(line(lua.to<TestPtr>(selfIdx)));
