@@ -1,10 +1,8 @@
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @file test_engine_interface.h
 /// @brief Declare test unit engine library interface functions
 ///
-/// @todo Rename methods isIgnored -> ignored
 /// @todo Use Logger's startSetUp, startTearDown and finish methods to estimate elapsed time for test execution
-/// @todo remove function testContainerExtensions, 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef _TEST_ENGINE_INTERFACE_HEADER_
 #define _TEST_ENGINE_INTERFACE_HEADER_
@@ -37,8 +35,8 @@ extern "C" {
 #   endif
 #endif
 
-struct _Test;
-typedef struct _Test Test, *TestPtr;
+struct _TestCase;
+typedef struct _TestCase TestCase, *TestCasePtr;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef struct _Logger
@@ -55,7 +53,7 @@ typedef struct _Logger
     void (*startUnloadTc_)(void *self);
     
     // work with Unit Test:
-    void (*startWorkWithTest_)(void *self, TestPtr);
+    void (*startWorkWithTest_)(void *self, TestCasePtr);
     void (*startSetUp_)(void *self);
     void (*startTest_)(void *self);
     void (*startTearDown_)(void *self);
@@ -74,20 +72,57 @@ typedef struct _Logger
 } Logger, *LoggerPtr;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct _TestContainer;
+typedef struct _TestContainer TestContainer, *TestContainerPtr;
+
+/// @brief Create new TestContainer object
+/// @param[in] path Path to test container file (usually, but really it maybe path to some other resource)
+TUE_API TestContainerPtr newTestContainer(const char *path);
+
+/// @brief Delete TestContainer object
+TUE_API void closeTestContainer(TestContainerPtr tcPtr);
+
+
+struct _TestContainer
+{
+    void *self_;
+
+    const char* (*errMsg_)(void *self); ///< @return Last occured error's message
+
+    TestCasePtr (*load_)(void *self); ///< load test container file, get it's tests and return them
+    bool (*unload_)(void *self); ///< unload test container file. You must not use got TestCase objects after this method call
+};
+
+inline const char* testContainerErrMsg(TestContainerPtr tc)
+{
+    return tc->errMsg_(tc->self_);
+}
+
+inline TestCasePtr testContainerLoad(TestContainerPtr tc)
+{
+    return tc->load_(tc->self_);
+}
+
+inline bool testContainerUnload(TestContainerPtr tc)
+{
+    return tc->unload_(tc->self_);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @brief Test case object
 /// @details You should return test, even it must be ignored, because information hiding is wrong strategy
-struct _Test
+struct _TestCase
 {
-    ///< @brief test object 'this' pointer
+    ///< test object's "this" pointer
     void *self_;
     
     ///< will be called before 'test'
     void (*setUp_)(void *self, LoggerPtr logger);
-    void (*test_)(void *self, LoggerPtr logger);               ///< test's 'main' function, will be called if 'setUp' has been success
+    void (*testBody_)(void *self, LoggerPtr logger);               ///< test's 'main' function, will be called if 'setUp' has been success
     void (*tearDown_)(void *self, LoggerPtr logger);           ///< will be called, if 'setUp' has been success
 
     /// @return 1 if test must be ignored and not executed and 0 otherwise
-    int (*isIgnored_)(const void *self);
+    int (*ignored_)(const void *self);
 
     const char* (*name_)(const void *self);  ///< @return test name
     const char* (*source_)(const void *self);///< @return full path of file, containing test source
@@ -97,37 +132,37 @@ struct _Test
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline void setUp(TestPtr test, LoggerPtr logger)
+inline void setUp(TestCasePtr test, LoggerPtr logger)
 {
     test->setUp_(test->self_, logger);
 }
 
-inline void test(TestPtr test, LoggerPtr logger)
+inline void testBody(TestCasePtr test, LoggerPtr logger)
 {
-    test->test_(test->self_, logger);
+    test->testBody_(test->self_, logger);
 }
 
-inline void tearDown(TestPtr test, LoggerPtr logger)
+inline void tearDown(TestCasePtr test, LoggerPtr logger)
 {
     test->tearDown_(test->self_, logger);
 }
 
-inline int isIgnored(const TestPtr test)
+inline int ignored(const TestCasePtr test)
 {
-    return test->isIgnored_(test->self_);
+    return test->ignored_(test->self_);
 }
 
-inline const char* name(const TestPtr test)
+inline const char* name(const TestCasePtr test)
 {
     return test->name_(test->self_);
 }
 
-inline const char* source(const TestPtr test)
+inline const char* source(const TestCasePtr test)
 {
     return test->source_(test->self_);
 }
 
-inline int line(const TestPtr test)
+inline int line(const TestCasePtr test)
 {
     return test->line_(test->self_);
 }
@@ -168,7 +203,7 @@ inline void startUnloadTc(LoggerPtr logger)
     (*logger->startUnloadTc_)(logger->self_);
 }
 
-inline void startWorkWithTest(LoggerPtr logger, TestPtr test)
+inline void startWorkWithTest(LoggerPtr logger, TestCasePtr test)
 {
     (*logger->startWorkWithTest_)(logger->self_, test);
 }
