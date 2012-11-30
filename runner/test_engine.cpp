@@ -386,6 +386,167 @@ void TestEngineUnix::unload()
 #endif // _WIN32
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct _Logger
+{
+    // work with Test Engine:
+    void (*startWorkWithTestEngine_)(void *self, const char *path);
+    void (*startLoadTe_)(void *self);
+    void (*startGetExt_)(void *self);
+    void (*startUnloadTe_)(void *self);
+    
+    // work with Test Container:
+    void (*startWorkWithTestContainer_)(void *self, const char *path);
+    void (*startLoadTc_)(void *self);
+    void (*startUnloadTc_)(void *self);
+    
+    // work with Unit Test:
+    void (*startWorkWithTest_)(void *self, TestCasePtr);
+    void (*startSetUp_)(void *self);
+    void (*startTest_)(void *self);
+    void (*startTearDown_)(void *self);
+    
+    // Call any of next 3 methods means that step has been finished:
+    void (*success_)(void *self);                      ///< @brief Inform about successfull step finish
+    void (*failure_)(void *self, const char *message); ///< @brief Inform about failure step finish
+    void (*error_)(void *self, const char *message);   ///< @brief Inform about unexpected error during step
+
+    /// @brief Pointer to real object, hiding behind 'Logger' interface
+    void *self_;
+    
+    /// @brief Allow destroy real object, hiding behind 'Logger' interface
+    void (*destroy_)(void *self);
+
+} Logger, *LoggerPtr;
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class SimpleLogger
+{
+    typedef SimpleLogger Self;
+    struct Step 
+    {
+        enum {setUp, test, tearDown};
+    };
+    
+public:
+    SimpleLogger();
+    LoggerPtr logger();
+    
+    // work with Test Engine:
+    void startWorkWithTestEngine(const char *path);
+    void startLoadTe();
+    void startGetExt();
+    void startUnloadTe();
+    
+    // work with Test Container:
+    void startWorkWithTestContainer(const char *path);
+    void startLoadTc();
+    void startUnloadTc();
+    
+    // work with Unit Test:
+    void startWorkWithTest(TestPtr);
+    void startSetUp();
+    void startTest();
+    void startTearDown();
+
+    void success();
+    void failure(const char *message);
+    void error(const char *message);
+    
+private:
+    static const char* stepName(const int step);
+    static void destroy(void*);
+    
+private:
+    Logger logger_;
+    TestPtr currentTest_;
+    int step_;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// LUA_CLASS(Logger)
+// {
+// };
+// 
+// DEFINE_LUA_TO(Logger)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+inline void startWorkWithTestEngine(LoggerPtr logger, const char *path)
+{
+    (*logger->startWorkWithTestEngine_)(logger->self_, path);
+}
+
+inline void startLoadTe(LoggerPtr logger)
+{
+    (*logger->startLoadTe_)(logger->self_);
+}
+
+inline void startGetExt(LoggerPtr logger)
+{
+    (*logger->startGetExt_)(logger->self_);
+}
+
+inline void startUnloadTe(LoggerPtr logger)
+{
+    (*logger->startUnloadTe_)(logger->self_);
+}
+
+inline void startWorkWithTestContainer(LoggerPtr logger, const char *path)
+{
+    (*logger->startWorkWithTestContainer_)(logger->self_, path);
+}
+
+inline void startLoadTc(LoggerPtr logger)
+{
+    (*logger->startLoadTc_)(logger->self_);
+}
+
+inline void startUnloadTc(LoggerPtr logger)
+{
+    (*logger->startUnloadTc_)(logger->self_);
+}
+
+inline void startWorkWithTest(LoggerPtr logger, TestCasePtr test)
+{
+    (*logger->startWorkWithTest_)(logger->self_, test);
+}
+
+inline void startSetUp(LoggerPtr logger)
+{
+    (*logger->startSetUp_)(logger->self_);
+}
+
+inline void startTest(LoggerPtr logger)
+{
+    (*logger->startTest_)(logger->self_);
+}
+
+inline void startTearDown(LoggerPtr logger)
+{
+    (*logger->startTearDown_)(logger->self_);
+}
+
+inline void success(LoggerPtr logger)
+{
+    (*logger->success_)(logger->self_);
+}
+
+inline void failure(LoggerPtr logger, const char *message)
+{
+    (*logger->failure_)(logger->self_, message);
+}
+
+inline void error(LoggerPtr logger, const char *message)
+{
+    (*logger->error_)(logger->self_, message);
+}
+
+inline void destroy(LoggerPtr logger)
+{
+    (*logger->destroy_)(logger->self_);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SimpleLogger::SimpleLogger()
 : currentTest_(NULL)
 , step_(0)
