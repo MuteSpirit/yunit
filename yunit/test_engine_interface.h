@@ -8,6 +8,7 @@
 /// 3) define all functions from current file, marked with attribute TUE_API (they will be exported, 
 /// 4) build library as DLL
 /// 
+/// @todo Think about strategy of TestCase, TestError creation and destroing
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef _TEST_ENGINE_INTERFACE_HEADER_
 #define _TEST_ENGINE_INTERFACE_HEADER_
@@ -37,9 +38,8 @@ extern "C" {
 #endif // ifndef TUE_API
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct _TestCase;
-typedef struct _TestCase TestCase, *TestCasePtr;
-
+// API functions:
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct _TestContainer;
 typedef struct _TestContainer TestContainer, *TestContainerPtr;
 
@@ -51,28 +51,52 @@ TUE_API TestContainerPtr newTestContainer(const char *path);
 TUE_API void closeTestContainer(TestContainerPtr tcPtr);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct _TestCase;
+typedef struct _TestCase TestCase, *TestCasePtr;
+
 struct _TestContainer
 {
     void *self_;
 
-    TestCasePtr (*load_)(void *self); ///< load test container file, get it's tests and return them
-    bool (*unload_)(void *self, TestCasePtr testList); ///< unload test container file. You must not use got TestCase objects after this method call
+    /// @brief load test container file and tests from it
+    /// @return list of TestCase objects or NULL in case of tests abscent
+    TestCasePtr (*load_)(void *self); 
 
-    const char* (*errMsg_)(void *self); ///< @return Last occured error's message
+    /// unload test container file. You must not use got TestCase objects after this method call
+    /// @param[in] self "this" pointer
+    /// @param[in] testList list of tests, returned from load_ call
+    bool (*unload_)(void *self, TestCasePtr testList); 
+
+    /// @return Last occured error's message. String must be copied by client code before usage.
+    const char* (*errMsg_)(void *self); 
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct _TestError;
+typedef struct _TestError TestError;
+
 /// @brief Test Case object
 /// @details You should return test, even it must be ignored, because information hiding is wrong strategy
 struct _TestCase
 {
-    ///< test object's "this" pointer
+    /// real obect "this" pointer
     void *self_;
     
-    ///< will be called before 'test'
-    void (*setUp_)(void *self, LoggerPtr logger);
-    void (*testBody_)(void *self, LoggerPtr logger);               ///< test's 'main' function, will be called if 'setUp' has been success
-    void (*tearDown_)(void *self, LoggerPtr logger);           ///< will be called, if 'setUp' has been success
+    /// will be called before 'testBody'
+    /// @return true in case of succes and false otherwise
+    bool (*setUp_)(void *self);
+
+    /// test's 'main' function, will be called if 'setUp' has been success
+    /// @return true in case of succes and false otherwise
+    bool (*testBody_)(void *self);               
+
+    /// will be called, if 'setUp' has been success
+    /// @return true in case of succes and false otherwise
+    bool (*tearDown_)(void *self);           
+
+    /// will be called if any of 'setUp', 'testBody' or 'tearDown' functions return false to get 
+    /// @param[out] errorInfo it will be fiiled with information about last error
+    void (*error_)(void *self, TestError *errorInfo); 
 
     /// @return 1 if test must be ignored and not executed and 0 otherwise
     int (*ignored_)(const void *self);
@@ -107,19 +131,19 @@ inline bool testContainerUnload(TestContainerPtr tc, TestCasePtr testList)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline void setUp(TestCasePtr test, LoggerPtr logger)
+inline bool setUp(TestCasePtr test)
 {
-    test->setUp_(test->self_, logger);
+    test->setUp_(test->self_);
 }
 
-inline void testBody(TestCasePtr test, LoggerPtr logger)
+inline bool testBody(TestCasePtr test)
 {
-    test->testBody_(test->self_, logger);
+    test->testBody_(test->self_);
 }
 
-inline void tearDown(TestCasePtr test, LoggerPtr logger)
+inline bool tearDown(TestCasePtr test)
 {
-    test->tearDown_(test->self_, logger);
+    test->tearDown_(test->self_);
 }
 
 inline int ignored(const TestCasePtr test)
