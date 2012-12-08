@@ -11,6 +11,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @todo Think about how TestCase::test* methods say about asserts passes, pass messages
 /// @todo Try to pass TestError objects into setUp, testBody, tearDown
+/// @todo Replace 'bool' type with 'int', because there is no boolean type in language C
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @todo @done Think about strategy of TestCase, TestError creation and destroing
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,8 +82,8 @@ struct _TestContainer
 
     /// @brief unload test container file. Free TestCase's members, besides of 'next_'
     /// @param[in] self Pass 'self_'
-    /// @param[in] testList list of tests, returned from load_ call
-    bool (*unload_)(void *self, TestCasePtr testList); 
+    /// @param[in] testList list of tests, set in load_ call
+    void (*unload_)(void *self, TestCasePtr testList); 
 
     /// @param[in] self Pass 'self_'
     /// @return Last occured error's message. Client code must use only copy of this string.
@@ -92,7 +93,7 @@ struct _TestContainer
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct _TestError;
-typedef struct _TestError TestError;
+typedef struct _TestError TestError, *TestErrorPtr;
 
 /// @brief Test Case object
 /// @details You should return test, even it must be ignored, because information hiding is wrong strategy
@@ -149,15 +150,15 @@ struct _TestError
 
     /// @param[in] self Pass 'self_'
     /// @return full path of file containing error
-    const char* (*source_)(void *self);
+    const char* (*source_)(const void *self);
 
     /// @param[in] self Pass 'self_'
     /// @return number of error line
-    int (*line_)(void *self);
+    int (*line_)(const void *self);
 
     /// @param[in] self Pass 'self_'
     /// @return error message (made by assert function, etc.)
-    const char* (*errMsg_)(void *self);
+    const char* (*errMsg_)(const void *self);
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -176,12 +177,12 @@ inline unsigned int testContainerNumberOfTests(TestContainerPtr tc)
 
 inline void testContainerLoad(TestContainerPtr tc, TestCasePtr testList) 
 {
-    return tc->load_(tc->self_);
+    return tc->load_(tc->self_, testList);
 }
 
-inline bool testContainerUnload(TestContainerPtr tc, TestCasePtr testList) 
+inline void testContainerUnload(TestContainerPtr tc, TestCasePtr testList) 
 {
-    return tc->unload_(tc->self_);
+    tc->unload_(tc->self_, testList);
 }
 
 inline const char* testContainerErrMsg(TestContainerPtr tc) 
@@ -195,17 +196,17 @@ inline const char* testContainerErrMsg(TestContainerPtr tc)
 
 inline bool setUp(TestCasePtr test)
 {
-    test->setUp_(test->self_);
+    return test->setUp_(test->self_);
 }
 
 inline bool testBody(TestCasePtr test)
 {
-    test->testBody_(test->self_);
+    return test->testBody_(test->self_);
 }
 
 inline bool tearDown(TestCasePtr test)
 {
-    test->tearDown_(test->self_);
+    return test->tearDown_(test->self_);
 }
 
 inline int ignored(const TestCasePtr test)
@@ -232,17 +233,17 @@ inline int line(const TestCasePtr test)
 // TestError
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-inline const char* source(TestError err)
+inline const char* testCaseSource(const TestErrorPtr err)
 {
     return err->source_(err->self_);
 }
 
-inline int line(TestError err)
+inline int testCaseLine(const TestErrorPtr err)
 {
     return err->line_(err->self_);
 }
 
-inline const char* errMsg(TestError err)
+inline const char* testCaseErrMsg(const TestErrorPtr err)
 {
     return err->errMsg_(err->self_);
 }
