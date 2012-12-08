@@ -142,6 +142,25 @@ struct _TestCase
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct _TestError
+{
+    /// @brief Pointer to real object, created inside test engine
+    void *self_;
+
+    /// @param[in] self Pass 'self_'
+    /// @return full path of file containing error
+    const char* (*source_)(void *self);
+
+    /// @param[in] self Pass 'self_'
+    /// @return number of error line
+    int (*line_)(void *self);
+
+    /// @param[in] self Pass 'self_'
+    /// @return error message (made by assert function, etc.)
+    const char* (*errMsg_)(void *self);
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // inline funcions definition
 //
 // This functions is like class methods, they only call functions-members of structs.
@@ -173,6 +192,7 @@ inline const char* testContainerErrMsg(TestContainerPtr tc)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // TestCase
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 inline bool setUp(TestCasePtr test)
 {
     test->setUp_(test->self_);
@@ -207,6 +227,26 @@ inline int line(const TestCasePtr test)
 {
     return test->line_(test->self_);
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TestError
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+inline const char* source(TestError err)
+{
+    return err->source_(err->self_);
+}
+
+inline int line(TestError err)
+{
+    return err->line_(err->self_);
+}
+
+inline const char* errMsg(TestError err)
+{
+    return err->errMsg_(err->self_);
+}
+
 
 #ifdef __cplusplus
 } // extern "C"
