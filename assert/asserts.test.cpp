@@ -22,6 +22,7 @@ int main(int /*argc*/, char ** /*argv*/)
     areNotEq("", "foo");
     areNotEq(L"", L"foo");
 
+    willThrow(std::exception mustBeCatched; throw mustBeCatched;, std::exception);
 
     return 0;
 }
