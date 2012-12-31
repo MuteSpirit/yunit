@@ -77,21 +77,19 @@ YUNIT_NS_BEGIN
 }
 
 #define willThrow(expression, exceptionType)																\
+    for (;;) \
     {                                                                                                       \
-        bool catched = false;                                                                               \
         try																									\
         {																									\
             expression;																			            \
         }																									\
         catch(const exceptionType&)																			\
         {																									\
-            catched = true;																					\
+            break;                                                                                          \
         }																									\
-        if (!catched)																						\
-        {                                                                                                   \
-            YUNIT_NS_PREF(throwException)(YUNIT_SOURCELINE(),												\
-            "Expected exception \"" #exceptionType "\" has not been thrown", true);						    \
-        }                                                                                                   \
+                                                                                                            \
+        YUNIT_NS_PREF(throwException)(YUNIT_SOURCELINE(),												\
+        "Expected exception \"" #exceptionType "\" has not been thrown", true);						    \
     }
 
 #define noSpecificThrow(expression, exceptionType)														\

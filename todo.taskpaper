@@ -6,5 +6,5 @@ yunit-task-manager:
 		- add macro for WIN32 asserts @done(2012-12-31 19:02:57)
 		- build executable project, used "asserts" module @done(2012-12-31 20:24:11)
 		- refactoring assert implementation
-		- rewrite willThrow macro with for loop usage
+		- rewrite willThrow macro with for loop usage @done(2012-12-31 20:47:39)
 
