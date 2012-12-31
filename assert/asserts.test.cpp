@@ -1,4 +1,5 @@
 #include "asserts.h"
+#include <cstdio>
 
 int main(int /*argc*/, char ** /*argv*/)
 {
@@ -23,6 +24,24 @@ int main(int /*argc*/, char ** /*argv*/)
     areNotEq(L"", L"foo");
 
     willThrow(std::exception mustBeCatched; throw mustBeCatched;, std::exception);
+
+    try
+    {
+        isNotNull(0);
+    }
+    catch (std::exception &e)
+    {
+        printf("%s", e.what());
+    }
+
+    try
+    {
+        areEq(1, 0);
+    }
+    catch (std::exception &e)
+    {
+        printf("%s", e.what());
+    }
 
     return 0;
 }
