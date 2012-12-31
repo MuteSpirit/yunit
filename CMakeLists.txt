@@ -16,7 +16,7 @@ link_directories("${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
 # Package info
 ##############################################################################################################    
 set(YUNIT_NAME "yUnit")
-set(YUNIT_VERSION 0 3 16)
+set(YUNIT_VERSION 0 4 1)
 set(YUNIT_DESCRIPTION "yUnit (Yet another xUnit)")
 set(YUNIT_VENDOR "Ivan Efimov aka MuteSpirit")
 set(YUNIT_CONTACT "mutespirit@gmail.com")
@@ -38,7 +38,7 @@ set(CPACK_PACKAGE_CONTACT ${YUNIT_CONTACT})
 set(CPACK_RESOURCE_FILE_README "${PROJECT_SOURCE_DIR}/readme.txt")
 set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/copyright.txt")
 
-set(CPACK_PACKAGE_INSTALL_DIRECTORY lua)
+set(CPACK_PACKAGE_INSTALL_DIRECTORY yunit)
 
 set(CPACK_SOURCE_GENERATOR TBZ2;TGZ;ZIP)
 
@@ -63,16 +63,16 @@ endif(WIN32 AND NOT UNIX)
 # Now Lua source is situated in external repository, loaded as subrepo. Such repository does not contain CMake files.
 # Use template CMakeLists.txt files for Lua lib building, because it allow to keep Lua repository clean from alien code
 ##############################################################################################################    
-file(READ CMakeLists.lua51.in CMAKE_LISTS_LUA51)
-file(WRITE lua_51/CMakeLists.txt ${CMAKE_LISTS_LUA51})
-add_subdirectory(lua_51)
-
-file(READ CMakeLists.lua52.in CMAKE_LISTS_LUA52)
-file(WRITE lua_52/CMakeLists.txt ${CMAKE_LISTS_LUA52})
-add_subdirectory(lua_52)
+#file(READ CMakeLists.lua51.in CMAKE_LISTS_LUA51)
+#file(WRITE lua_51/CMakeLists.txt ${CMAKE_LISTS_LUA51})
+#add_subdirectory(lua_51)
+#
+#file(READ CMakeLists.lua52.in CMAKE_LISTS_LUA52)
+#file(WRITE lua_52/CMakeLists.txt ${CMAKE_LISTS_LUA52})
+#add_subdirectory(lua_52)
 #
 # build yUnit runner
 #add_subdirectory(runner)
 #
-# build C++ test engine
-add_subdirectory(cppunit)
+# assert module test application
+add_subdirectory(assert)
