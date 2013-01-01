@@ -30,10 +30,14 @@
 /// @define ASSERT_MESSAGE_PREFIX(file, line)
 /// @param file literal string
 /// @param line integer value. number of line
-#ifdef _MSC_VER
-#  define ASSERT_MESSAGE_PREFIX(file, line) file "(" TOSTR(line) ") : "
-#else
-#  define ASSERT_MESSAGE_PREFIX(file, line) file ":" TOSTR(line) ":0: error: "
+/// You may define your own ASSERT_MESSAGE_PREFIX macro for your specific IDE
+#ifndef ASSERT_MESSAGE_PREFIX
+#  ifdef _MSC_VER
+// implementation for MS Visual Studio error message format
+#    define ASSERT_MESSAGE_PREFIX(file, line) file "(" TOSTR(line) ") : "
+#  else
+#    define ASSERT_MESSAGE_PREFIX(file, line) file ":" TOSTR(line) ":0: error: "
+#  endif
 #endif
 
 #define TOSTR_(expression) #expression 
@@ -169,11 +173,13 @@ bool areEqValues(const void *expected, const void *actual);
 bool areEqValues(const char *expected, const char *actual);
 bool areEqValues(const wchar_t *expected, const wchar_t *actual);
 
-inline bool areEqValues(const std::wstring& expected, const std::wstring& actual) {
+inline bool areEqValues(const std::wstring& expected, const std::wstring& actual)
+{
     return areEqValues(expected.c_str(), actual.c_str());
 }
 
-inline bool areEqValues(const std::string& expected, const std::string& actual) {
+inline bool areEqValues(const std::string& expected, const std::string& actual)
+{
     return areEqValues(expected.c_str(), actual.c_str());
 }
 
