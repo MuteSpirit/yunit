@@ -73,6 +73,5 @@ endif(WIN32 AND NOT UNIX)
 #
 # build yUnit runner
 #add_subdirectory(runner)
-#
-# assert module test application
-add_subdirectory(assert)
+
+add_subdirectory(cppunit)
