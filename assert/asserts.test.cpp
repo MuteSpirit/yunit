@@ -23,6 +23,14 @@ int main(int /*argc*/, char ** /*argv*/)
     areNotEq("", "foo");
     areNotEq(L"", L"foo");
 
+    areEq((void*)main, (void*)main);
+
+    struct ___
+    {
+        static void foo() {}
+    };
+    areNotEq((void*)main, (void*)___::foo);
+
     willThrow(std::exception mustBeCatched; throw mustBeCatched;, std::exception);
 
     try
@@ -31,7 +39,7 @@ int main(int /*argc*/, char ** /*argv*/)
     }
     catch (std::exception &e)
     {
-        printf("%s", e.what());
+        printf("%s\n", e.what());
     }
 
     try
@@ -40,7 +48,25 @@ int main(int /*argc*/, char ** /*argv*/)
     }
     catch (std::exception &e)
     {
-        printf("%s", e.what());
+        printf("%s\n", e.what());
+    }
+
+    try
+    {
+        areEq("string", "строка");
+    }
+    catch (std::exception &e)
+    {
+        printf("%s\n", e.what());
+    }
+
+    try
+    {
+        areDoubleEq(1.0, 5.99, 0.00001);
+    }
+    catch (std::exception &e)
+    {
+        printf("%s\n", e.what());
     }
 
     return 0;
