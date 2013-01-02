@@ -35,7 +35,7 @@ int main(int /*argc*/, char ** /*argv*/)
 
     try
     {
-        isNotNull(0);
+        isTrue(false);
     }
     catch (std::exception &e)
     {

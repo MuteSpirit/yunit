@@ -1,4 +1,5 @@
 #include "tests.h"
+#include "asserts.h"
 #include <cstdio>
 
 using namespace YUNIT_NS;
@@ -26,9 +27,10 @@ int main(int /*argc*/, char ** /*argv*/)
             else if (TestRegistry::fail == arg)
             {
                 ++(self->failTestCounter_);
-                char *errmsg = static_cast<char*>(data);
-                printf("%s\n", errmsg);
-                delete [] errmsg;
+                TestRegistry::FailCtx *failCtx = static_cast<TestRegistry::FailCtx*>(data);
+                printf("%s\n", failCtx->errmsg_);
+                delete [] failCtx->errmsg_;
+                delete failCtx;
             }
 
         }
@@ -49,3 +51,8 @@ int main(int /*argc*/, char ** /*argv*/)
 
 TEST(smokeTest)
 {}
+
+TEST(failedTest)
+{
+    isTrue(false);
+}

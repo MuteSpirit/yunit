@@ -50,7 +50,7 @@ private:
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static bool catchCppExceptions(TestCase *testCase, Thunk thunk, char **data);
 
-static int callTestCaseThunk(TestCase *testCase, Thunk thunk, char **data)
+static bool callTestCaseThunk(TestCase *testCase, Thunk thunk, char **data)
 {
     bool caught = false;
 #ifdef _MSC_VER
@@ -66,9 +66,10 @@ static int callTestCaseThunk(TestCase *testCase, Thunk thunk, char **data)
         caught = true;
 
 #define UNEXPECTED_SEH_CAUGHT "Unexpected SEH exception was caught"
-        enum {dataSize = sizeof(UNEXPECTED_SEH_CAUGHT)};
-        *data = new char[dataSize];
-        ::memcpy(*data, UNEXPECTED_SEH_CAUGHT, dataSize);
+//        enum {dataSize = sizeof(UNEXPECTED_SEH_CAUGHT)};
+//        *data = new char[dataSize];
+//        ::memcpy(*data, UNEXPECTED_SEH_CAUGHT, dataSize);
+        printf(UNEXPECTED_SEH_CAUGHT);
 #undef UNEXPECTED_SEH_CAUGHT
     }
 #endif
@@ -82,27 +83,29 @@ static bool catchCppExceptions(TestCase *testCase, Thunk thunk, char **data)
     {
         thunk.invoke();
     }
-    catch(std::exception& ex)
+    catch (std::exception& ex)
     {
-        const char *errmsg = ex.what();
-        const size_t len = ::strlen(errmsg);
-        char *data = new char[len + 1/* \0 */];
-        ::memcpy(data, errmsg, len);
-        data[len] = '\0';
-		return false;
+//        const char *errmsg = ex.what();
+        printf("std::exception");
+//        const size_t len = ::strlen(errmsg);
+//        *data = new char[len + 1/* \0 */];
+//        ::memcpy(*data, errmsg, len);
+//        *data[len] = '\0';
+		return true;
     }
-    catch(...)
+    catch (...)
     {
 #define UNEXPECTED_CPP_EXCEPTION "Unexpected unknown C++ exception was caught"
-        enum {dataSize = sizeof(UNEXPECTED_CPP_EXCEPTION)};
-        *data = new char[dataSize];
-        ::memcpy(*data, UNEXPECTED_CPP_EXCEPTION, dataSize);
+//        enum {dataSize = sizeof(UNEXPECTED_CPP_EXCEPTION)};
+//        *data = new char[dataSize];
+//        ::memcpy(*data, UNEXPECTED_CPP_EXCEPTION, dataSize);
+        printf(UNEXPECTED_CPP_EXCEPTION);
 #undef UNEXPECTED_CPP_EXCEPTION
-		return false;
+		return true;
 	}
 
     *data = NULL;
-	return true;
+	return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -254,6 +257,7 @@ struct TestRegistryImpl : TestRegistry
         {
             TestCase *test = *it;
             char *errmsg = NULL;
+            bool testRes = false, tearDownRes = false;
 
             if (test->isIgnored())
                 callback(ctx, TestRegistry::ignored, test);
@@ -261,11 +265,16 @@ struct TestRegistryImpl : TestRegistry
             {
                 if (callTestCaseThunk(test, test->setUpThunk(), &errmsg))
                 {
-                    if (!callTestCaseThunk(test, test->testThunk(), &errmsg))
+                    testRes = callTestCaseThunk(test, test->testThunk(), &errmsg);
+                    if (!testRes)
                         callback(ctx, TestRegistry::fail, new TestRegistry::FailCtx(test, errmsg));
 
-                    if (!callTestCaseThunk(test, test->tearDownThunk(), &errmsg))
+                    tearDownRes = callTestCaseThunk(test, test->tearDownThunk(), &errmsg);
+                    if (!tearDownRes)
                         callback(ctx, TestRegistry::fail, new TestRegistry::FailCtx(test, errmsg));
+
+                    if (testRes && tearDownRes)
+                        callback(ctx, TestRegistry::success, test);
                 }
                 else
                     callback(ctx, TestRegistry::fail, new TestRegistry::FailCtx(test, errmsg));
@@ -292,7 +301,7 @@ void delTestRegistry()
 template<typename T>
 Chain<T>::Chain()
 : size_(0)
-, tail_(0)
+, tail_(NULL)
 {
 }
 
