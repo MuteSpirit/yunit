@@ -8,6 +8,7 @@
 
 #include "../yunit/yunit.h"
 #include <cstddef>
+#include <cstdio>
 
 YUNIT_NS_BEGIN
 
@@ -286,8 +287,7 @@ struct RegisterTestCase : TestCase
     {
         if (NULL == testCase_)
             createTestCase();
-        printf("execute");
-        //testCase_->execute();
+        testCase_->execute();
     }
 
     virtual void innerTearDown()
