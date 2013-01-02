@@ -66,10 +66,9 @@ static bool callTestCaseThunk(TestCase *testCase, Thunk thunk, char **data)
         caught = true;
 
 #define UNEXPECTED_SEH_CAUGHT "Unexpected SEH exception was caught"
-//        enum {dataSize = sizeof(UNEXPECTED_SEH_CAUGHT)};
-//        *data = new char[dataSize];
-//        ::memcpy(*data, UNEXPECTED_SEH_CAUGHT, dataSize);
-        printf(UNEXPECTED_SEH_CAUGHT);
+        enum {dataSize = sizeof(UNEXPECTED_SEH_CAUGHT)};
+        *data = new char[dataSize];
+        ::memcpy(*data, UNEXPECTED_SEH_CAUGHT, dataSize);
 #undef UNEXPECTED_SEH_CAUGHT
     }
 #endif
@@ -85,21 +84,19 @@ static bool catchCppExceptions(TestCase *testCase, Thunk thunk, char **data)
     }
     catch (std::exception& ex)
     {
-//        const char *errmsg = ex.what();
-        printf("std::exception");
-//        const size_t len = ::strlen(errmsg);
-//        *data = new char[len + 1/* \0 */];
-//        ::memcpy(*data, errmsg, len);
-//        *data[len] = '\0';
+        const char *errmsg = ex.what();
+        const size_t len = ::strlen(errmsg);
+        *data = new char[len + 1/* \0 */];
+        ::memcpy(*data, errmsg, len);
+        *data[len] = '\0';
 		return true;
     }
     catch (...)
     {
 #define UNEXPECTED_CPP_EXCEPTION "Unexpected unknown C++ exception was caught"
-//        enum {dataSize = sizeof(UNEXPECTED_CPP_EXCEPTION)};
-//        *data = new char[dataSize];
-//        ::memcpy(*data, UNEXPECTED_CPP_EXCEPTION, dataSize);
-        printf(UNEXPECTED_CPP_EXCEPTION);
+        enum {dataSize = sizeof(UNEXPECTED_CPP_EXCEPTION)};
+        *data = new char[dataSize];
+        ::memcpy(*data, UNEXPECTED_CPP_EXCEPTION, dataSize);
 #undef UNEXPECTED_CPP_EXCEPTION
 		return true;
 	}
