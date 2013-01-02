@@ -286,7 +286,8 @@ struct RegisterTestCase : TestCase
     {
         if (NULL == testCase_)
             createTestCase();
-        testCase_->execute();
+        printf("execute");
+        //testCase_->execute();
     }
 
     virtual void innerTearDown()

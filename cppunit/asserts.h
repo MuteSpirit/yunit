@@ -130,8 +130,6 @@ YUNIT_NS_BEGIN
 
 #endif // _WIN32
 
-#define YUNIT_SOURCELINE()   YUNIT_NS::SourceLine(__FILE__, __LINE__)
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool areEqValues(const long long int expected, const long long int actual);
 
