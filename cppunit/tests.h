@@ -67,43 +67,43 @@ YUNIT_NS_BEGIN
     struct derived : public base1,\
                      public base2 \
     {\
-        virtual void innerSetUp()\
+        virtual void setUp()\
         {\
-            base1::innerSetUp();\
-            base2::innerSetUp();\
+            base1::setUp();\
+            base2::setUp();\
         }\
-        virtual void innerTearDown()\
+        virtual void tearDown()\
         {\
-            base1::innerTearDown();\
-            base2::innerTearDown();\
+            base1::tearDown();\
+            base2::tearDown();\
         }\
     };
 
 #define SETUP()\
-    virtual void innerSetUp()
+    virtual void setUp()
 
 #define TEARDOWN()\
-    virtual void innerTearDown()
+    virtual void tearDown()
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST_(name)\
     struct TestCase__##name : public YUNIT_NS_PREF(TestCase)\
     {\
-        TestCase__##name(const char* name, bool isIgnored, const YUNIT_NS_PREF(SourceLine)& source)\
-        : YUNIT_NS_PREF(TestCase)(name, isIgnored, source)\
+        TestCase__##name(const char* name, bool ignored, const YUNIT_NS_PREF(SourceLine)& source)\
+        : YUNIT_NS_PREF(TestCase)(name, ignored, source)\
         {}\
-        virtual void innerSetUp() {}\
-        virtual void execute();\
-        virtual void innerTearDown() {}\
+        virtual void setUp() {}\
+        virtual void testBody();\
+        virtual void tearDown() {}\
     };
 
 #define TEST1_(name, usedFixture)\
     struct TestCase__##name : public YUNIT_NS_PREF(TestCase), public usedFixture\
     {\
-        TestCase__##name(const char* name, bool isIgnored, const YUNIT_NS_PREF(SourceLine)& source)\
-        : YUNIT_NS_PREF(TestCase)(name, isIgnored, source)\
+        TestCase__##name(const char* name, bool ignored, const YUNIT_NS_PREF(SourceLine)& source)\
+        : YUNIT_NS_PREF(TestCase)(name, ignored, source)\
         {}\
-        virtual void execute();\
+        virtual void testBody();\
     };
 
 #define registerTest(name, source)\
@@ -113,10 +113,10 @@ YUNIT_NS_BEGIN
     YUNIT_NS_PREF(RegisterIgnoredTestCase)<TestCase__##name> UNIQUENAME(name)(#name, source);
 
 #define testBodyDef(name)\
-    void TestCase__##name::execute()
+    void TestCase__##name::testBody()
 
 #define ignoredTestBodyDef(name)\
-    void TestCase__##name::execute() {}\
+    void TestCase__##name::testBody() {}\
     template<typename T> void TestCase ## name ## Fake()
 
 
@@ -166,7 +166,7 @@ private:
 class Test
 {
 public:
-    virtual void execute() = 0;
+    virtual void testBody() = 0;
     virtual Thunk testThunk();
     virtual ~Test();
 
@@ -181,8 +181,8 @@ private:
 class Fixture
 {
 public:
-    virtual void innerSetUp() = 0;
-    virtual void innerTearDown() = 0;
+    virtual void setUp() = 0;
+    virtual void tearDown() = 0;
 
     virtual Thunk setUpThunk();
     virtual Thunk tearDownThunk();
@@ -205,17 +205,17 @@ public:
     virtual ~TestCase();
 
     const char* name() const;
-    bool isIgnored() const;
+    bool ignored() const;
     const SourceLine& source() const;
 
 protected:
-    TestCase(const char* name, const bool isIgnored, const SourceLine& source);
+    TestCase(const char* name, const bool ignored, const SourceLine& source);
     TestCase(const TestCase& rhs);
     TestCase& operator=(const TestCase& rhs);
 
 private:
     const char *name_;
-    bool isIgnored_;
+    bool ignored_;
     SourceLine source_;
 };
 
@@ -227,7 +227,9 @@ struct TestRegistry
     virtual void add(TestCase* testCase) = 0;
     virtual void executeAllTests(void (*callback)(void *ctx, void *arg, void *data), void *ctx) = 0;
 
-    static char *ignored, *success, *fail;
+    static const char *ignored; // const TestCase* will be passed as 'data' argument of 'callback'
+    static const char *success; // const TestCase* will be passed as 'data' argument of 'callback'
+    static const char *fail;    // FailCtx* will be passed as 'data' argument of 'callback'
 
     // FailCtx object will be passed as 'data' argument of 'callback' function, that must delete 'errmsg_' and 'FailCtx'
     struct FailCtx
@@ -273,28 +275,28 @@ struct RegisterTestCase : TestCase
 
     void createTestCase()
     {
-        testCase_ = new TestCaseClass(name(), isIgnored(), source());
+        testCase_ = new TestCaseClass(name(), ignored(), source());
     }
 
-    virtual void innerSetUp()
+    virtual void setUp()
     {
         if (NULL == testCase_)
             createTestCase();
-        testCase_->innerSetUp();
+        testCase_->setUp();
     }
 
-    virtual void execute()
+    virtual void testBody()
     {
         if (NULL == testCase_)
             createTestCase();
-        testCase_->execute();
+        testCase_->testBody();
     }
 
-    virtual void innerTearDown()
+    virtual void tearDown()
     {
         if (NULL == testCase_)
             createTestCase();
-        testCase_->innerTearDown();
+        testCase_->tearDown();
     }
 
     TestCase *testCase_;
@@ -311,9 +313,9 @@ struct RegisterIgnoredTestCase : TestCase
         testRegistry->add(this);
     }
 
-    virtual void innerSetUp()    {}
-    virtual void execute()       {}
-    virtual void innerTearDown() {}
+    virtual void setUp()    {}
+    virtual void testBody() {}
+    virtual void tearDown() {}
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

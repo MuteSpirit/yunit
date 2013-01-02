@@ -153,7 +153,7 @@ void Thunk::invoke()
 Test::Test()
 : testThunk_()
 {
-	testThunk_ = Thunk::create<Test, &Test::execute>(this);
+	testThunk_ = Thunk::create<Test, &Test::testBody>(this);
 }
 
 Test::~Test()
@@ -171,8 +171,8 @@ Fixture::Fixture()
 : setUpThunk_()
 , tearDownThunk_()
 {
-	setUpThunk_ = Thunk::create<Fixture, &Fixture::innerSetUp>(this);
-	tearDownThunk_ = Thunk::create<Fixture, &Fixture::innerTearDown>(this);
+	setUpThunk_ = Thunk::create<Fixture, &Fixture::setUp>(this);
+	tearDownThunk_ = Thunk::create<Fixture, &Fixture::tearDown>(this);
 }
 
 Fixture::~Fixture()
@@ -191,16 +191,16 @@ Thunk Fixture::tearDownThunk()
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-TestCase::TestCase(const char* name, const bool isIgnored, const SourceLine& source)
+TestCase::TestCase(const char* name, const bool ignored, const SourceLine& source)
 : name_(name)
-, isIgnored_(isIgnored)
+, ignored_(ignored)
 , source_(source)
 {
 }
 
 TestCase::TestCase(const TestCase& rhs)
 : name_(rhs.name_)
-, isIgnored_(rhs.isIgnored_)
+, ignored_(rhs.ignored_)
 , source_(rhs.source_)
 {
 }
@@ -210,7 +210,7 @@ TestCase& TestCase::operator=(const TestCase& rhs)
     if (this == &rhs)
         return *this;
     name_ = rhs.name_;
-    isIgnored_ = rhs.isIgnored_;
+    ignored_ = rhs.ignored_;
     source_ = rhs.source_;
     return *this;
 }
@@ -224,9 +224,9 @@ const char* TestCase::name() const
 	return name_;
 }
 
-bool TestCase::isIgnored() const
+bool TestCase::ignored() const
 {
-	return isIgnored_;
+	return ignored_;
 }
 
 const SourceLine& TestCase::source() const
@@ -237,9 +237,9 @@ const SourceLine& TestCase::source() const
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TestRegistry *testRegistry = NULL;
 
-char* TestRegistry::ignored = "ignored";
-char* TestRegistry::success = "success";
-char* TestRegistry::fail = "fail";
+const char* TestRegistry::ignored = "ignored";
+const char* TestRegistry::success = "success";
+const char* TestRegistry::fail = "fail";
 
 struct TestRegistryImpl : TestRegistry
 {
@@ -256,25 +256,25 @@ struct TestRegistryImpl : TestRegistry
             char *errmsg = NULL;
             bool testRes = false, tearDownRes = false;
 
-            if (test->isIgnored())
-                callback(ctx, TestRegistry::ignored, test);
+            if (test->ignored())
+                callback(ctx, const_cast<char*>(TestRegistry::ignored), test);
             else
             {
                 if (callTestCaseThunk(test, test->setUpThunk(), &errmsg))
                 {
                     testRes = callTestCaseThunk(test, test->testThunk(), &errmsg);
                     if (!testRes)
-                        callback(ctx, TestRegistry::fail, new TestRegistry::FailCtx(test, errmsg));
+                        callback(ctx, const_cast<char*>(TestRegistry::fail), new TestRegistry::FailCtx(test, errmsg));
 
                     tearDownRes = callTestCaseThunk(test, test->tearDownThunk(), &errmsg);
                     if (!tearDownRes)
-                        callback(ctx, TestRegistry::fail, new TestRegistry::FailCtx(test, errmsg));
+                        callback(ctx, const_cast<char*>(TestRegistry::fail), new TestRegistry::FailCtx(test, errmsg));
 
                     if (testRes && tearDownRes)
-                        callback(ctx, TestRegistry::success, test);
+                        callback(ctx, const_cast<char*>(TestRegistry::success), test);
                 }
                 else
-                    callback(ctx, TestRegistry::fail, new TestRegistry::FailCtx(test, errmsg));
+                    callback(ctx, const_cast<char*>(TestRegistry::fail), new TestRegistry::FailCtx(test, errmsg));
             }
         }
     }
@@ -297,8 +297,8 @@ void delTestRegistry()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T>
 Chain<T>::Chain()
-: size_(0)
-, tail_(NULL)
+: tail_(NULL)
+, size_(0)
 {
 }
 
