@@ -1,15 +1,9 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // yunit.h
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if _MSC_VER > 1000
-#  pragma once
-#endif
 
-/// @todo Replace all starage guards with #pragma once, because it avoid thinking about it names
-#ifndef _YUNIT_TEST_HEADER_
-#define _YUNIT_TEST_HEADER_
-
-#define YUNIT_NS yUnit
+#ifndef _YUNIT_YUNIT_HEADER_
+#define _YUNIT_YUNIT_HEADER_
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef YUNIT_API
@@ -48,6 +42,32 @@
 #  include TOSTR(CONFIG_HEADER)
 #endif
 
+// yUnit functions 
+#ifndef WITHOUT_YUNIT_NS
+#  define YUNIT_NS yUnit
+#  define YUNIT_NS_PREF(var) yUnit::var
+#  define YUNIT_NS_BEGIN namespace YUNIT_NS {
+#  define YUNIT_NS_END   }
+#else
+#  define YUNIT_NS_BEGIN
+#  define YUNIT_NS_END
+#  define YUNIT_NS_PREF(var) var
+#endif
+
+/// @define ASSERT_MESSAGE_PREFIX(file, line)
+/// @param file literal string
+/// @param line integer value. number of line
+/// You may define your own ASSERT_MESSAGE_PREFIX macro for your specific IDE
+#ifndef ASSERT_MESSAGE_PREFIX
+#  ifdef _MSC_VER
+// implementation for MS Visual Studio error message format
+#    define ASSERT_MESSAGE_PREFIX(file, line) file "(" TOSTR(line) ") : "
+#  else
+#    define ASSERT_MESSAGE_PREFIX(file, line) file ":" TOSTR(line) ":0: error: "
+#  endif
+#endif
+
+
 #ifndef TS_T
 #	if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
 #		define TS_SNPRINTF	_snprintf
@@ -56,4 +76,4 @@
 #	endif
 #endif
 
-#endif // _YUNIT_TEST_HEADER_
+#endif // _YUNIT_YUNI_HEADER_

@@ -12,36 +12,12 @@
 #ifndef _ASSERTS_YUNIT_HEADER_
 #define _ASSERTS_YUNIT_HEADER_
 
+// own headers are included before system headers for detection abscence of dependent headers includence
+#include "../yunit/yunit.h"
+
 #include <string> // for STL strings comparison macro
 #include <stdexcept>
 
-// yUnit functions 
-#ifndef WITHOUT_YUNIT_NS
-#  define YUNIT_NS yUnit
-#  define YUNIT_NS_PREF(var) yUnit::var
-#  define YUNIT_NS_BEGIN namespace YUNIT_NS {
-#  define YUNIT_NS_END   }
-#else
-#  define YUNIT_NS_BEGIN
-#  define YUNIT_NS_END
-#  define YUNIT_NS_PREF(var) var
-#endif
-
-/// @define ASSERT_MESSAGE_PREFIX(file, line)
-/// @param file literal string
-/// @param line integer value. number of line
-/// You may define your own ASSERT_MESSAGE_PREFIX macro for your specific IDE
-#ifndef ASSERT_MESSAGE_PREFIX
-#  ifdef _MSC_VER
-// implementation for MS Visual Studio error message format
-#    define ASSERT_MESSAGE_PREFIX(file, line) file "(" TOSTR(line) ") : "
-#  else
-#    define ASSERT_MESSAGE_PREFIX(file, line) file ":" TOSTR(line) ":0: error: "
-#  endif
-#endif
-
-#define TOSTR_(expression) #expression 
-#define TOSTR(expression) TOSTR_(expression)
 
 YUNIT_NS_BEGIN
 
