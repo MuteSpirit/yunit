@@ -22,6 +22,6 @@ Cppunit tests:
 	- rename test macro, using large letters only @done(2013-01-02 01:11:48)
 	- the enter point for test run (C++) @done(2013-01-02 15:12:26)
 	- rename TestCase::execute to TestCase::testBody @done(2013-01-03 13:46:00)
-	- delete SourceLine class
+	- delete SourceLine class @done(2013-01-04 12:32:22)
 	- macro for test with variable fixtures @done(2013-01-04 10:47:10)
 	- remake TestCase without Thunk usage

@@ -106,32 +106,6 @@ static bool catchCppExceptions(TestCase *testCase, Thunk thunk, char **data)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-SourceLine::SourceLine()
-: fileName_(unknownFileName_)
-, lineNumber_(unknownLineNumber_)
-{
-}
-
-SourceLine::SourceLine(const char* fileName, const int lineNumber)
-: fileName_(fileName)
-, lineNumber_(lineNumber)
-{
-}
-
-const char* SourceLine::fileName() const
-{
-    return fileName_;
-}
-
-int SourceLine::lineNumber() const
-{
-    return lineNumber_;
-}
-
-const char* SourceLine::unknownFileName_ = "<unknown>";
-const int SourceLine::unknownLineNumber_ = -1;
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Thunk::Thunk()
 : thunkPtr_(0)
 , thisPtr_(0)
@@ -150,9 +124,13 @@ void Thunk::invoke()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-TestCase::TestCase(const char* name, const SourceLine& source)
+const char* TestCase::unknownFileName_ = "<unknown>";
+const int TestCase::unknownLineNumber_ = -1;
+
+TestCase::TestCase(const char* name, const char *fileName, const int lineNumber)
 : name_(name)
-, source_(source)
+, fileName_(fileName)
+, lineNumber_(lineNumber)
 {
     setUpThunk_ = Thunk::create<Self, &Self::setUp>(this);
     testBodyThunk_ = Thunk::create<Test, &Test::testBody>(dynamic_cast<Test*>(this));

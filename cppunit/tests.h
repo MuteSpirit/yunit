@@ -18,7 +18,7 @@ YUNIT_NS_BEGIN
     {\
         virtual void testBody();\
     };\
-    registerTest(name, YUNIT_SOURCELINE())\
+    registerTest(name, __FILE__, __LINE__)\
     void TestCase__##name::testBody()
 
 /// @param name test name
@@ -50,16 +50,16 @@ YUNIT_NS_BEGIN
     {\
         virtual void testBody();\
     };\
-    registerTest(name, YUNIT_SOURCELINE())\
+    registerTest(name, __FILE__, __LINE__)\
     void TestCase__##name::testBody()
 
 /// @brief Register ignored test
 #define _TEST(name)\
-    YUNIT_NS_PREF(RegisterIgnoredTestCase) UNIQUENAME(name)(#name, YUNIT_SOURCELINE());\
+    YUNIT_NS_PREF(RegisterIgnoredTestCase) UNIQUENAME(name)(#name, __FILE__, __LINE__);\
     template<typename T> void TestCase ## name ## Fake()
     
-#define registerTest(name, source)\
-    YUNIT_NS_PREF(RegisterTestCase)<TestCase__##name> UNIQUENAME(name)(#name, source);\
+#define registerTest(name, fileName, lineNumber)\
+    YUNIT_NS_PREF(RegisterTestCase)<TestCase__##name> UNIQUENAME(name)(#name, fileName, lineNumber);\
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define CONCAT(a, b) a ## b
@@ -68,30 +68,6 @@ YUNIT_NS_BEGIN
 
 #define UNIQUE_REGISTER_NAME(name) Register ## name
 #define UNIQUE_TEST_NAMESPACE(name) name ## Namespace
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define YUNIT_SOURCELINE()   YUNIT_NS_PREF(SourceLine)(__FILE__, __LINE__)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class SourceLine
-{
-public:
-    SourceLine(const char* fileName, const int lineNumber);
-
-    const char* fileName() const;
-    int lineNumber() const;
-
-public:
-    static const char* unknownFileName_;
-    static const int unknownLineNumber_;
-
-protected:
-    SourceLine();
-
-private:
-    const char* fileName_;
-    int lineNumber_;
-};
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Thunk
@@ -132,14 +108,18 @@ struct TestCase : Test
     virtual bool ignored() = 0;
 
     const char *name_;
-    SourceLine source_;
+    const char* fileName_;
+    const int lineNumber_;
+
+    static const char* unknownFileName_;
+    static const int unknownLineNumber_;
 
     Thunk setUpThunk_;
     Thunk testBodyThunk_;
     Thunk tearDownThunk_;
     
 protected:
-    TestCase(const char* name, const SourceLine& source);
+    TestCase(const char* name, const char* fileName, const int lineNumber);
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -184,8 +164,8 @@ void delTestRegistry();
 template<typename TestClass>
 struct RegisterTestCase : TestCase
 {
-    RegisterTestCase(const char* name, const SourceLine& source)
-    : TestCase(name, source)
+    RegisterTestCase(const char* name, const char* fileName, const int lineNumber)
+    : TestCase(name, fileName, lineNumber)
     , test_(NULL)
     {
         initTestRegistry();
@@ -225,8 +205,8 @@ struct RegisterTestCase : TestCase
 // Ignored test must not execute, so we may create stub TestCase instead of original type
 struct RegisterIgnoredTestCase : TestCase
 {
-    RegisterIgnoredTestCase(const char* name, const SourceLine& source)
-    : TestCase(name, source)
+    RegisterIgnoredTestCase(const char* name, const char* fileName, const int lineNumber)
+    : TestCase(name, fileName, lineNumber)
     {
         initTestRegistry();
         testRegistry->add(this);
