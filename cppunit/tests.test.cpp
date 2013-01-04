@@ -32,7 +32,6 @@ int main(int /*argc*/, char ** /*argv*/)
                 delete [] failCtx->errmsg_;
                 delete failCtx;
             }
-
         }
 
         unsigned int ignoredTestCounter_;
@@ -43,8 +42,12 @@ int main(int /*argc*/, char ** /*argv*/)
 
     testRegistry->executeAllTests(TestResultHandler::onTestEvent, &testCtx); 
 
-    printf("success - %u" "\n"
-           "fail    - %u" "\n", testCtx.successTestCounter_, testCtx.failTestCounter_);
+    printf("ignored - %u" "\n"
+           "success - %u" "\n"
+           "fail    - %u" "\n",
+           testCtx.ignoredTestCounter_,
+           testCtx.successTestCounter_,
+           testCtx.failTestCounter_);
 
     return 0;
 }
@@ -55,4 +58,33 @@ TEST(smokeTest)
 TEST(failedTest)
 {
     isTrue(false);
+}
+
+_TEST(ignoredTest)
+{
+    isTrue(false);
+}
+
+struct SampleFixture
+{
+    unsigned int value_;
+
+    SampleFixture()  // a'la setUp
+    : value_(0)
+    {
+    }
+
+    ~SampleFixture() // a'la tearDown
+    {
+    }
+};
+
+TEST1(successTestWithFixture, SampleFixture)
+{
+    isNull(value_);
+}
+
+TEST1(failTestWithFixture, SampleFixture)
+{
+    areEq(1, value_);
 }

@@ -88,8 +88,8 @@ static bool catchCppExceptions(TestCase *testCase, Thunk thunk, char **data)
         const size_t len = ::strlen(errmsg);
         *data = new char[len + 1/* \0 */];
         ::memcpy(*data, errmsg, len);
-        *data[len] = '\0';
-		return true;
+        (*data)[len] = '\0';
+        return true;
     }
     catch (...)
     {
@@ -150,89 +150,17 @@ void Thunk::invoke()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Test::Test()
-: testThunk_()
-{
-	testThunk_ = Thunk::create<Test, &Test::testBody>(this);
-}
-
-Test::~Test()
-{
-}
-
-Thunk Test::testThunk()
-{
-	return testThunk_;
-}
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Fixture::Fixture()
-: setUpThunk_()
-, tearDownThunk_()
-{
-	setUpThunk_ = Thunk::create<Fixture, &Fixture::setUp>(this);
-	tearDownThunk_ = Thunk::create<Fixture, &Fixture::tearDown>(this);
-}
-
-Fixture::~Fixture()
-{
-}
-
-Thunk Fixture::setUpThunk()
-{
-	return setUpThunk_;
-}
-
-Thunk Fixture::tearDownThunk()
-{
-	return tearDownThunk_;
-}
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-TestCase::TestCase(const char* name, const bool ignored, const SourceLine& source)
+TestCase::TestCase(const char* name, const SourceLine& source)
 : name_(name)
-, ignored_(ignored)
 , source_(source)
 {
-}
-
-TestCase::TestCase(const TestCase& rhs)
-: name_(rhs.name_)
-, ignored_(rhs.ignored_)
-, source_(rhs.source_)
-{
-}
-
-TestCase& TestCase::operator=(const TestCase& rhs)
-{
-    if (this == &rhs)
-        return *this;
-    name_ = rhs.name_;
-    ignored_ = rhs.ignored_;
-    source_ = rhs.source_;
-    return *this;
+    setUpThunk_ = Thunk::create<Self, &Self::setUp>(this);
+    testBodyThunk_ = Thunk::create<Test, &Test::testBody>(dynamic_cast<Test*>(this));
+    tearDownThunk_ = Thunk::create<Self, &Self::tearDown>(this);
 }
 
 TestCase::~TestCase()
-{
-}
-
-const char* TestCase::name() const
-{
-	return name_;
-}
-
-bool TestCase::ignored() const
-{
-	return ignored_;
-}
-
-const SourceLine& TestCase::source() const
-{
-    return source_;
-}
+{}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TestRegistry *testRegistry = NULL;
@@ -254,19 +182,20 @@ struct TestRegistryImpl : TestRegistry
         {
             TestCase *test = *it;
             char *errmsg = NULL;
-            bool testRes = false, tearDownRes = false;
+            bool testRes = false;
+            bool tearDownRes = false;
 
             if (test->ignored())
                 callback(ctx, const_cast<char*>(TestRegistry::ignored), test);
             else
             {
-                if (callTestCaseThunk(test, test->setUpThunk(), &errmsg))
+                if (callTestCaseThunk(test, test->setUpThunk_, &errmsg))
                 {
-                    testRes = callTestCaseThunk(test, test->testThunk(), &errmsg);
+                    testRes = callTestCaseThunk(test, test->testBodyThunk_, &errmsg);
                     if (!testRes)
                         callback(ctx, const_cast<char*>(TestRegistry::fail), new TestRegistry::FailCtx(test, errmsg));
 
-                    tearDownRes = callTestCaseThunk(test, test->tearDownThunk(), &errmsg);
+                    tearDownRes = callTestCaseThunk(test, test->tearDownThunk_, &errmsg);
                     if (!tearDownRes)
                         callback(ctx, const_cast<char*>(TestRegistry::fail), new TestRegistry::FailCtx(test, errmsg));
 
