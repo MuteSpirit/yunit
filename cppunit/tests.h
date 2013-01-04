@@ -14,37 +14,52 @@ YUNIT_NS_BEGIN
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TEST(name)\
-    TEST_(name)\
+    struct TestCase__##name : YUNIT_NS_PREF(Test)\
+    {\
+        virtual void testBody();\
+    };\
     registerTest(name, YUNIT_SOURCELINE())\
-    testBodyDef(name)
+    void TestCase__##name::testBody()
 
-#define TEST1(name, usedFixture)\
-    TEST1_(name, fixtureName(usedFixture))\
+/// @param name test name
+/// @param ... list of fixtures, separated with column (','). 
+/// Fixtures's constructors play 'setUp' role, and destructors - 'tearDown' role
+/// You may use as fixtures a structs or classes with all members, situated in public or protected sections, 
+/// because at such conditions test body can access then without any additional accessors.
+/// @code
+/// struct Fixture
+/// {
+///     unsigned int value_;
+/// 
+///     Fixture()  // a'la setUp
+///     : value_(0)
+///     {}
+/// 
+///     ~Fixture() // a'la tearDown
+///     {}
+/// };
+/// 
+/// TEST1(, Fixture)
+/// {
+///     isNull(value_);
+/// }
+/// @endcode
+//
+#define TEST1(name, ...)\
+    struct TestCase__##name : YUNIT_NS_PREF(Test), __VA_ARGS__\
+    {\
+        virtual void testBody();\
+    };\
     registerTest(name, YUNIT_SOURCELINE())\
-    testBodyDef(name)
+    void TestCase__##name::testBody()
 
-#define TEST2(name, usedFixture1, usedFixture2)\
-    fixture2(fixtureName2(name, usedFixture1, usedFixture2),\
-             fixtureName(usedFixture1),\
-             fixtureName(usedFixture2))\
-    TEST1_(name, fixtureName2(name, usedFixture1, usedFixture2))\
-    registerTest(name, YUNIT_SOURCELINE())\
-    testBodyDef(name)
-
+/// @brief Register ignored test
 #define _TEST(name)\
-    TEST_(name)\
-    registerIgnoredTest(name, YUNIT_SOURCELINE())\
-    ignoredTestBodyDef(name)
-
-#define _TEST1(name, usedFixture)\
-    TEST_(name)\
-    registerIgnoredTest(name, YUNIT_SOURCELINE())\
-    ignoredTestBodyDef(name)
-
-#define _TEST2(name, usedFixture1, usedFixture2)\
-    TEST_(name)\
-    registerIgnoredTest(name, YUNIT_SOURCELINE())\
-    ignoredTestBodyDef(name)
+    YUNIT_NS_PREF(RegisterIgnoredTestCase) UNIQUENAME(name)(#name, YUNIT_SOURCELINE());\
+    template<typename T> void TestCase ## name ## Fake()
+    
+#define registerTest(name, source)\
+    YUNIT_NS_PREF(RegisterTestCase)<TestCase__##name> UNIQUENAME(name)(#name, source);\
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define CONCAT(a, b) a ## b
@@ -56,69 +71,6 @@ YUNIT_NS_BEGIN
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define YUNIT_SOURCELINE()   YUNIT_NS_PREF(SourceLine)(__FILE__, __LINE__)
-
-#define fixtureName(name) name ## Fixture
-#define fixtureName2(name, name1, name2) fixtureName(name ## name1 ## name2)
-
-#define FIXTURE(name)\
-    struct fixtureName(name) : public virtual YUNIT_NS_PREF(Fixture)
-
-#define fixture2(derived, base1, base2)\
-    struct derived : public base1,\
-                     public base2 \
-    {\
-        virtual void setUp()\
-        {\
-            base1::setUp();\
-            base2::setUp();\
-        }\
-        virtual void tearDown()\
-        {\
-            base1::tearDown();\
-            base2::tearDown();\
-        }\
-    };
-
-#define SETUP()\
-    virtual void setUp()
-
-#define TEARDOWN()\
-    virtual void tearDown()
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TEST_(name)\
-    struct TestCase__##name : public YUNIT_NS_PREF(TestCase)\
-    {\
-        TestCase__##name(const char* name, bool ignored, const YUNIT_NS_PREF(SourceLine)& source)\
-        : YUNIT_NS_PREF(TestCase)(name, ignored, source)\
-        {}\
-        virtual void setUp() {}\
-        virtual void testBody();\
-        virtual void tearDown() {}\
-    };
-
-#define TEST1_(name, usedFixture)\
-    struct TestCase__##name : public YUNIT_NS_PREF(TestCase), public usedFixture\
-    {\
-        TestCase__##name(const char* name, bool ignored, const YUNIT_NS_PREF(SourceLine)& source)\
-        : YUNIT_NS_PREF(TestCase)(name, ignored, source)\
-        {}\
-        virtual void testBody();\
-    };
-
-#define registerTest(name, source)\
-    YUNIT_NS_PREF(RegisterTestCase)<TestCase__##name> UNIQUENAME(name)(#name, source);
-
-#define registerIgnoredTest(name, source)\
-    YUNIT_NS_PREF(RegisterIgnoredTestCase)<TestCase__##name> UNIQUENAME(name)(#name, source);
-
-#define testBodyDef(name)\
-    void TestCase__##name::testBody()
-
-#define ignoredTestBodyDef(name)\
-    void TestCase__##name::testBody() {}\
-    template<typename T> void TestCase ## name ## Fake()
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class SourceLine
@@ -163,60 +115,31 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class Test
+struct Test
 {
-public:
     virtual void testBody() = 0;
-    virtual Thunk testThunk();
-    virtual ~Test();
-
-protected:
-    Test();
-
-private:
-    Thunk testThunk_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class Fixture
+struct TestCase : Test
 {
-public:
-    virtual void setUp() = 0;
-    virtual void tearDown() = 0;
+    typedef TestCase Self;
 
-    virtual Thunk setUpThunk();
-    virtual Thunk tearDownThunk();
-
-    virtual ~Fixture();
-
-protected:
-    Fixture();
-
-private:
-    Thunk setUpThunk_;
-    Thunk tearDownThunk_;
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class TestCase : public Test
-               , public virtual Fixture
-{
-public:
     virtual ~TestCase();
 
-    const char* name() const;
-    bool ignored() const;
-    const SourceLine& source() const;
+    virtual void setUp() = 0;
+    virtual void tearDown() = 0;
+    virtual bool ignored() = 0;
 
-protected:
-    TestCase(const char* name, const bool ignored, const SourceLine& source);
-    TestCase(const TestCase& rhs);
-    TestCase& operator=(const TestCase& rhs);
-
-private:
     const char *name_;
-    bool ignored_;
     SourceLine source_;
+
+    Thunk setUpThunk_;
+    Thunk testBodyThunk_;
+    Thunk tearDownThunk_;
+    
+protected:
+    TestCase(const char* name, const SourceLine& source);
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -257,49 +180,45 @@ void delTestRegistry();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @brief Register test case and delay original type object creation until execution
-template<typename TestCaseClass>
+/// @param TestClass type of real test class
+template<typename TestClass>
 struct RegisterTestCase : TestCase
 {
     RegisterTestCase(const char* name, const SourceLine& source)
-    : TestCase(name, false /* not ignore */, source)
-    , testCase_(NULL)
+    : TestCase(name, source)
+    , test_(NULL)
     {
         initTestRegistry();
         testRegistry->add(this);
     }
 
-    ~RegisterTestCase()
+    virtual bool ignored()
     {
-        delete testCase_;
+        return false;
     }
 
-    void createTestCase()
+    ~RegisterTestCase()
     {
-        testCase_ = new TestCaseClass(name(), ignored(), source());
+        delete test_;
     }
 
     virtual void setUp()
     {
-        if (NULL == testCase_)
-            createTestCase();
-        testCase_->setUp();
+        test_ = new TestClass;
     }
 
     virtual void testBody()
     {
-        if (NULL == testCase_)
-            createTestCase();
-        testCase_->testBody();
+        test_->testBody();
     }
 
     virtual void tearDown()
     {
-        if (NULL == testCase_)
-            createTestCase();
-        testCase_->tearDown();
+        delete test_;
+        test_ = NULL;
     }
 
-    TestCase *testCase_;
+    Test *test_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -307,10 +226,15 @@ struct RegisterTestCase : TestCase
 struct RegisterIgnoredTestCase : TestCase
 {
     RegisterIgnoredTestCase(const char* name, const SourceLine& source)
-    : TestCase(name, true /* ignored */, source)
+    : TestCase(name, source)
     {
         initTestRegistry();
         testRegistry->add(this);
+    }
+
+    virtual bool ignored()
+    {
+        return true;
     }
 
     virtual void setUp()    {}
