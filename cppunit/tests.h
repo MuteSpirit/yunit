@@ -69,26 +69,6 @@ YUNIT_NS_BEGIN
 #define UNIQUE_REGISTER_NAME(name) Register ## name
 #define UNIQUE_TEST_NAMESPACE(name) name ## Namespace
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class Thunk
-{
-public:
-    Thunk();
-
-    template<typename T, void (T::* funcPtr)()>
-    static Thunk create(T* thisPtr);
-
-    void invoke();
-
-private:
-    Thunk(void (* thunkPtr)(void*), void* thisPtr);
-
-    template<typename T, void (T::* funcPtr)()>
-    static void thunk(void* thisPtr);
-
-    void (* thunkPtr_)(void*);
-    void* thisPtr_;
-};
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct Test
@@ -113,10 +93,6 @@ struct TestCase : Test
 
     static const char* unknownFileName_;
     static const int unknownLineNumber_;
-
-    Thunk setUpThunk_;
-    Thunk testBodyThunk_;
-    Thunk tearDownThunk_;
     
 protected:
     TestCase(const char* name, const char* fileName, const int lineNumber);
@@ -221,24 +197,6 @@ struct RegisterIgnoredTestCase : TestCase
     virtual void testBody() {}
     virtual void tearDown() {}
 };
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Templates implementation
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename T, void (T::* funcPtr)()>
-Thunk Thunk::create(T* thisPtr)
-{
-    return Thunk(&thunk<T, funcPtr>, thisPtr);
-}
-
-template<typename T, void (T::* funcPtr)()>
-void Thunk::thunk(void* thisPtr)
-{
-    (static_cast<T*>(thisPtr)->*funcPtr)();
-}
-
 
 YUNIT_NS_END
 
