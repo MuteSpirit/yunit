@@ -48,6 +48,27 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class Thunk
+{
+public:
+    Thunk();
+
+    template<typename T, void (T::* funcPtr)()>
+    static Thunk create(T* thisPtr);
+
+    void invoke();
+
+private:
+    Thunk(void (* thunkPtr)(void*), void* thisPtr);
+
+    template<typename T, void (T::* funcPtr)()>
+    static void thunk(void* thisPtr);
+
+    void (* thunkPtr_)(void*);
+    void* thisPtr_;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static bool catchCppExceptions(TestCase *testCase, Thunk thunk, char **data);
 
 static bool callTestCaseThunk(TestCase *testCase, Thunk thunk, char **data)
@@ -123,6 +144,18 @@ void Thunk::invoke()
     (*thunkPtr_)(thisPtr_);
 }
 
+template<typename T, void (T::* funcPtr)()>
+Thunk Thunk::create(T* thisPtr)
+{
+    return Thunk(&thunk<T, funcPtr>, thisPtr);
+}
+
+template<typename T, void (T::* funcPtr)()>
+void Thunk::thunk(void* thisPtr)
+{
+    (static_cast<T*>(thisPtr)->*funcPtr)();
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const char* TestCase::unknownFileName_ = "<unknown>";
 const int TestCase::unknownLineNumber_ = -1;
@@ -132,9 +165,6 @@ TestCase::TestCase(const char* name, const char *fileName, const int lineNumber)
 , fileName_(fileName)
 , lineNumber_(lineNumber)
 {
-    setUpThunk_ = Thunk::create<Self, &Self::setUp>(this);
-    testBodyThunk_ = Thunk::create<Test, &Test::testBody>(dynamic_cast<Test*>(this));
-    tearDownThunk_ = Thunk::create<Self, &Self::tearDown>(this);
 }
 
 TestCase::~TestCase()
@@ -167,13 +197,13 @@ struct TestRegistryImpl : TestRegistry
                 callback(ctx, const_cast<char*>(TestRegistry::ignored), test);
             else
             {
-                if (callTestCaseThunk(test, test->setUpThunk_, &errmsg))
+                if (callTestCaseThunk(test, Thunk::create<TestCase, &TestCase::setUp>(test), &errmsg))
                 {
-                    testRes = callTestCaseThunk(test, test->testBodyThunk_, &errmsg);
+                    testRes = callTestCaseThunk(test, Thunk::create<Test, &Test::testBody>(dynamic_cast<Test*>(test)), &errmsg);
                     if (!testRes)
                         callback(ctx, const_cast<char*>(TestRegistry::fail), new TestRegistry::FailCtx(test, errmsg));
 
-                    tearDownRes = callTestCaseThunk(test, test->tearDownThunk_, &errmsg);
+                    tearDownRes = callTestCaseThunk(test, Thunk::create<TestCase, &TestCase::tearDown>(test), &errmsg);
                     if (!tearDownRes)
                         callback(ctx, const_cast<char*>(TestRegistry::fail), new TestRegistry::FailCtx(test, errmsg));
 

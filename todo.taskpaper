@@ -24,4 +24,4 @@ Cppunit tests:
 	- rename TestCase::execute to TestCase::testBody @done(2013-01-03 13:46:00)
 	- delete SourceLine class @done(2013-01-04 12:32:22)
 	- macro for test with variable fixtures @done(2013-01-04 10:47:10)
-	- remake TestCase without Thunk usage
+	- remake TestCase without Thunk usage @done(2013-01-04 21:45:52)
